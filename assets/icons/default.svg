@@ -1,0 +1,19 @@
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Véhicule par défaut -->
+  <rect x="8" y="24" width="32" height="16" fill="#95A5A6" rx="4"/>
+  
+  <!-- Roue arrière -->
+  <circle cx="16" cy="40" r="6" fill="#2D3436" stroke="#636E72" stroke-width="2"/>
+  <circle cx="16" cy="40" r="3" fill="#FFFFFF"/>
+  
+  <!-- Roue avant -->
+  <circle cx="32" cy="40" r="6" fill="#2D3436" stroke="#636E72" stroke-width="2"/>
+  <circle cx="32" cy="40" r="3" fill="#FFFFFF"/>
+  
+  <!-- Phares -->
+  <circle cx="12" cy="28" r="2" fill="#FDCB6E"/>
+  <circle cx="36" cy="28" r="2" fill="#FDCB6E"/>
+  
+  <!-- Point d'interrogation -->
+  <text x="24" y="34" text-anchor="middle" fill="#2C3E50" font-size="12" font-weight="bold">?</text>
+</svg>

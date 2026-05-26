@@ -1,0 +1,113 @@
+
+
+// ─  splash 
+// logo.png
+// delivery_illustration.png
+// delivery_van.png
+
+
+// ─  login/resgister
+
+// select your role/
+// role_provider.png
+// role_customer.png // “Looking for a transporter?
+// 
+// 
+// get started/
+// truck_side_blue.png
+      // (includes login registor)
+// apple_logo.png
+// facebook_logo.png
+// google_logo.png
+// 
+// registor/login/
+// icon_eye.svg
+// icon_back.svg
+
+ // we also have it in svg
+truck_side_blue.svg
+ role_provider.svg
+  apple_logo.svg
+ facebook_logo.svg
+  google_logo.svg
+
+
+
+// - otp/
+// shared
+// success_check.svg
+
+
+// not present
+// bg_pattern.png
+// delivery_bike.png - not used
+
+
+// ─  booking 
+// icon_map_pin.svg
+// icon_calendar_check_fill.svg
+// icon_house.svg
+// shared 
+// icon_scooter.svg
+// header_notification.svg
+
+
+
+// setings /
+
+// icon_profile.svg
+// icon_pencil.svg
+// icon_location.svg
+// icon_language.svg
+// icon_wallet.svg
+// icon_heart.svg
+// icon_notification.svg
+// icon_headset.svg 
+// icon_chat.svg 
+// icon_document.svg 
+// icon_question.svg
+// icons_logout.svg
+// shared
+// header_notification.svg
+// header_imbox.svg
+
+
+//  - profile 
+// porsonal editing/
+// icon_calendar.svg
+// chaneg pass success
+// shared
+// success_check.svg
+
+
+
+// ─ payments/   
+// payment    
+// icon_card_person.svg
+// icon_mastercard.svg
+// icon_visa.svg
+// logo_paypal.svg
+// logo_stripe.svg
+
+// feedback
+// icon_star_empty.svg // not used
+// icon_star_filled.svg // not used 
+// icon_camera_upload.svg
+// icon_all_good.svg
+
+
+// - nav/
+// icon_home_filled.svg
+// icon_home_unfilled.svg
+// icon_bookings_filled.svg
+// icon_bookings_unfilled.svg
+// icon_settings_filled.svg
+// icon_settings_unfilled.svg
+// icon_profile_filled.svg
+// icon_profile_unfilled.svg
+Generating 2,048 bit RSA key pair and self-signed certificate (SHA256withRSA) with a validity of 10,000 days
+        for: CN=rashid, OU=Unknown, O=fluxtonx, L=Unknown, ST=Unknown, C=Unknown
+[Storing release.keystore]
+
+
+rashid#1
