@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../Service/api_service.dart';
 import '../Utils/responsiveUtils.dart';
 
 class NotificationPage extends StatefulWidget {
@@ -9,14 +10,37 @@ class NotificationPage extends StatefulWidget {
 }
 
 class _NotificationPageState extends State<NotificationPage> {
-  // Track completed state per notification
-  final List<bool> _completed = List.generate(8, (i) => i == 0);
+  final List<bool> _completed = [];
+  final List<Map<String, dynamic>> _notifications = [];
+  bool _isLoading = false;
+  String? _error;
 
-  final List<Map<String, String>> _notifications = List.generate(8, (i) => {
-    'title': 'Goods',
-    'desc': 'Lorem Ipsum Dolor Sit Amet, Consectetur A.',
-    'date': '2024-04-1${i} 24:00:00',
-  });
+  @override
+  void initState() {
+    super.initState();
+    _loadNotifications();
+  }
+
+  Future<void> _loadNotifications() async {
+    setState(() => _isLoading = true);
+    final response = await ApiService.getNotifications();
+    if (!mounted) return;
+    final raw = response['data'];
+    _error = null;
+    if (response['success'] == true && raw is List) {
+      _notifications
+        ..clear()
+        ..addAll(raw.cast<Map>().map((e) => Map<String, dynamic>.from(e)));
+      _completed
+        ..clear()
+        ..addAll(_notifications.map((e) => e['read'] == true));
+    } else {
+      _notifications.clear();
+      _completed.clear();
+      _error = response['message']?.toString() ?? 'Unable to load notifications';
+    }
+    setState(() => _isLoading = false);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -108,7 +132,23 @@ class _NotificationPageState extends State<NotificationPage> {
 
                 // ── Notification list ────────────────────────────────
                 Expanded(
-                  child: ListView.builder(
+                  child: _isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : _error != null
+                          ? Center(
+                              child: Text(
+                                _error!,
+                                style: GoogleFonts.inter(color: Colors.red),
+                              ),
+                            )
+                          : _notifications.isEmpty
+                              ? Center(
+                                  child: Text(
+                                    "No notifications yet",
+                                    style: GoogleFonts.inter(color: Colors.grey[600]),
+                                  ),
+                                )
+                              : ListView.builder(
                     padding: const EdgeInsets.fromLTRB(16, 0, 16, 30),
                     itemCount: _notifications.length,
                     itemBuilder: (_, i) =>
@@ -135,7 +175,7 @@ class _NotificationPageState extends State<NotificationPage> {
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: Colors.grey.shade100),
         boxShadow: [BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 6, offset: const Offset(0, 2))],
       ),
       child: Row(
@@ -160,20 +200,20 @@ class _NotificationPageState extends State<NotificationPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(notif['title']!,
+                Text((notif['title'] ?? "Notification").toString(),
                     style: GoogleFonts.inter(
                         fontSize: 13 * fontScale,
                         fontWeight: FontWeight.w700,
                         color: Colors.black)),
                 const SizedBox(height: 3),
-                Text(notif['desc']!,
+                Text((notif['message'] ?? "").toString(),
                     style: GoogleFonts.inter(
                         fontSize: 11 * fontScale,
                         color: Colors.grey[500]),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis),
                 const SizedBox(height: 3),
-                Text(notif['date']!,
+                Text((notif['createdAt'] ?? "").toString(),
                     style: GoogleFonts.inter(
                         fontSize: 10 * fontScale,
                         color: Colors.grey[400])),

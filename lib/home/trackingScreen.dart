@@ -1,70 +1,64 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../Controller/order_controller.dart';
 import '../Service/socket_service.dart';
 
-class MapScreen extends StatefulWidget {
+/// Customer live-tracking screen.
+/// Connects to the Socket.IO server, joins the order room, and updates a
+/// marker on the map as the driver emits location events.
+class TrackingScreen extends StatefulWidget {
   final Map<String, dynamic> order;
-  const MapScreen({super.key, required this.order});
+  const TrackingScreen({super.key, required this.order});
 
   @override
-  State<MapScreen> createState() => _MapScreenState();
+  State<TrackingScreen> createState() => _TrackingScreenState();
 }
 
-class _MapScreenState extends State<MapScreen> {
+class _TrackingScreenState extends State<TrackingScreen> {
   GoogleMapController? _mapController;
   LatLng? _driverLatLng;
-  StreamSubscription<Position>? _positionStream;
+  String _liveStatus = '';
   final _socket = SocketService();
 
   static const _defaultPosition = LatLng(48.8566, 2.3522); // Paris
 
   String get _orderId => widget.order['id']?.toString() ?? '';
-  String get _from => widget.order['departureAddress']?.toString() ?? 'Pickup';
-  String get _to => widget.order['receiverAddress']?.toString() ?? 'Dropoff';
-  String get _receiver => widget.order['receiverName']?.toString() ?? '';
-  String get _phone => widget.order['receiverPhone']?.toString() ?? '';
-  String get _status => OrderController.statusLabel(
-      widget.order['statusOrder']?.toString() ?? 'active');
-  double get _cost =>
-      double.tryParse(widget.order['deliveryCost']?.toString() ?? '0') ?? 0;
+  String get _from =>
+      widget.order['departureAddress']?.toString() ?? 'Pickup';
+  String get _to =>
+      widget.order['receiverAddress']?.toString() ?? 'Dropoff';
+  String get _statusStr =>
+      _liveStatus.isNotEmpty
+          ? _liveStatus
+          : (widget.order['statusOrder']?.toString() ?? 'active');
 
   @override
   void initState() {
     super.initState();
+    _liveStatus = widget.order['statusOrder']?.toString() ?? 'active';
     _initSocket();
-    _startLocationStream();
   }
 
   Future<void> _initSocket() async {
     await _socket.connect();
     _socket.joinOrderRoom(_orderId);
-  }
 
-  void _startLocationStream() {
-    const settings = LocationSettings(
-      accuracy: LocationAccuracy.high,
-      distanceFilter: 5, // emit every 5 meters
-    );
+    _socket.onDriverLocation((lat, lng) {
+      final pos = LatLng(lat, lng);
+      setState(() => _driverLatLng = pos);
+      _mapController?.animateCamera(CameraUpdate.newLatLng(pos));
+    });
 
-    _positionStream =
-        Geolocator.getPositionStream(locationSettings: settings).listen(
-      (position) {
-        final latLng = LatLng(position.latitude, position.longitude);
-        setState(() => _driverLatLng = latLng);
-        _mapController?.animateCamera(CameraUpdate.newLatLng(latLng));
-        _socket.emitLocation(_orderId, position.latitude, position.longitude);
-      },
-      onError: (_) {},
-    );
+    _socket.onOrderStatusUpdate((status) {
+      setState(() => _liveStatus = status);
+    });
   }
 
   @override
   void dispose() {
-    _positionStream?.cancel();
+    _socket.offDriverLocation();
+    _socket.offOrderStatusUpdate();
     _socket.disconnect();
     _mapController?.dispose();
     super.dispose();
@@ -76,20 +70,28 @@ class _MapScreenState extends State<MapScreen> {
       Marker(
         markerId: const MarkerId('driver'),
         position: _driverLatLng!,
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
-        infoWindow: const InfoWindow(title: 'Your location'),
+        icon: BitmapDescriptor.defaultMarkerWithHue(
+            BitmapDescriptor.hueAzure),
+        infoWindow: const InfoWindow(title: 'Your driver'),
       ),
     };
+  }
+
+  Color get _statusColor {
+    switch (_statusStr) {
+      case 'active':    return Colors.blue;
+      case 'delivered': return Colors.green;
+      case 'canceled':  return Colors.red;
+      default:          return Colors.orange;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Active Delivery',
-          style: GoogleFonts.inter(fontWeight: FontWeight.w700),
-        ),
+        title: Text('Track Order',
+            style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
         backgroundColor: Colors.white,
         elevation: 0,
         foregroundColor: Colors.black,
@@ -99,21 +101,19 @@ class _MapScreenState extends State<MapScreen> {
           GoogleMap(
             initialCameraPosition: CameraPosition(
               target: _driverLatLng ?? _defaultPosition,
-              zoom: 15,
+              zoom: 14,
             ),
             onMapCreated: (c) => _mapController = c,
             markers: _markers,
-            myLocationEnabled: true,
-            myLocationButtonEnabled: true,
             zoomControlsEnabled: false,
           ),
 
-          // Status pill
+          // Status banner
           Positioned(
             top: 12, left: 16, right: 16,
             child: Container(
               padding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(20),
@@ -129,48 +129,61 @@ class _MapScreenState extends State<MapScreen> {
                 children: [
                   Container(
                     width: 8, height: 8,
-                    decoration: const BoxDecoration(
-                        color: Colors.green, shape: BoxShape.circle),
+                    decoration: BoxDecoration(
+                        color: _statusColor, shape: BoxShape.circle),
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    '$_status · €${_cost.toStringAsFixed(2)}',
+                    OrderController.statusLabel(_statusStr),
                     style: GoogleFonts.inter(
-                        fontSize: 13, fontWeight: FontWeight.w600),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: _statusColor),
                   ),
                 ],
               ),
             ),
           ),
 
-          // No GPS yet overlay
+          // Waiting for driver overlay
           if (_driverLatLng == null)
             Center(
               child: Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(14),
+                    boxShadow: [
+                      BoxShadow(
+                          color: Colors.black.withOpacity(0.08),
+                          blurRadius: 14)
+                    ]),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const CircularProgressIndicator(color: Colors.green),
                     const SizedBox(height: 12),
-                    Text('Getting your location…',
-                        style: GoogleFonts.inter(fontSize: 13)),
+                    Text('Waiting for driver location…',
+                        style: GoogleFonts.inter(
+                            fontSize: 13, color: Colors.grey[600])),
+                    const SizedBox(height: 4),
+                    Text('The map updates automatically',
+                        style: GoogleFonts.inter(
+                            fontSize: 11, color: Colors.grey[400])),
                   ],
                 ),
               ),
             ),
 
-          // Bottom delivery info card
+          // Bottom info card
           Positioned(
             bottom: 0, left: 0, right: 0,
             child: Container(
               padding: const EdgeInsets.fromLTRB(20, 18, 20, 28),
               decoration: const BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+                borderRadius:
+                    BorderRadius.vertical(top: Radius.circular(22)),
                 boxShadow: [
                   BoxShadow(color: Colors.black26, blurRadius: 16)
                 ],
@@ -179,7 +192,6 @@ class _MapScreenState extends State<MapScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Handle
                   Center(
                     child: Container(
                       width: 36, height: 4,
@@ -189,32 +201,11 @@ class _MapScreenState extends State<MapScreen> {
                     ),
                   ),
                   const SizedBox(height: 14),
-
-                  _addressRow(Icons.my_location, 'Pickup', _from,
-                      Colors.green),
+                  _addressRow(
+                      Icons.my_location, 'Pickup', _from, Colors.green),
                   const SizedBox(height: 10),
-                  _addressRow(Icons.location_on, 'Dropoff', _to,
-                      Colors.red),
-
-                  if (_receiver.isNotEmpty) ...[
-                    const Divider(height: 20),
-                    Row(
-                      children: [
-                        const Icon(Icons.person_outline,
-                            size: 16, color: Colors.green),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(_receiver,
-                              style: GoogleFonts.inter(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600)),
-                        ),
-                        Text(_phone,
-                            style: GoogleFonts.inter(
-                                fontSize: 12, color: Colors.grey[600])),
-                      ],
-                    ),
-                  ],
+                  _addressRow(
+                      Icons.location_on, 'Dropoff', _to, Colors.red),
                 ],
               ),
             ),

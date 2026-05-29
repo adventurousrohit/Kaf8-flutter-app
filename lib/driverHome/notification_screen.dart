@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../Controller/user_profile_controller.dart';
+import '../Service/api_service.dart';
+import '../Utils/avatar_widget.dart';
 
 class _NotifItem {
   final String title;
@@ -13,41 +17,49 @@ class _NotifItem {
       required this.type});
 }
 
-const List<_NotifItem> _notifications = [
-  _NotifItem(
-      title: 'Goods',
-      body: 'Lorem ipsum dolor sit amet Consectetur Adipiscing elit.',
-      time: '09:41 AM',
-      type: 'goods'),
-  _NotifItem(
-      title: 'Vehicle',
-      body: 'Lorem ipsum dolor sit amet Consectetur Adipiscing elit.',
-      time: '09:20 AM',
-      type: 'vehicle'),
-  _NotifItem(
-      title: 'Goods',
-      body: 'Lorem ipsum dolor sit amet Consectetur Adipiscing elit.',
-      time: '08:55 AM',
-      type: 'goods'),
-  _NotifItem(
-      title: 'Goods',
-      body: 'Lorem ipsum dolor sit amet Consectetur Adipiscing elit.',
-      time: '08:30 AM',
-      type: 'goods'),
-  _NotifItem(
-      title: 'Vehicle',
-      body: 'Lorem ipsum dolor sit amet Consectetur Adipiscing elit.',
-      time: '07:10 AM',
-      type: 'vehicle'),
-  _NotifItem(
-      title: 'Goods',
-      body: 'Lorem ipsum dolor sit amet Consectetur Adipiscing elit.',
-      time: '06:45 AM',
-      type: 'goods'),
-];
-
-class DriverNotificationScreen extends StatelessWidget {
+class DriverNotificationScreen extends StatefulWidget {
   const DriverNotificationScreen({super.key});
+
+  @override
+  State<DriverNotificationScreen> createState() => _DriverNotificationScreenState();
+}
+
+class _DriverNotificationScreenState extends State<DriverNotificationScreen> {
+  List<_NotifItem> _notifications = _notificationsFallback;
+  bool _isLoading = false;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadNotifications();
+  }
+
+  Future<void> _loadNotifications() async {
+    setState(() => _isLoading = true);
+    final response = await ApiService.getNotifications();
+    if (!mounted) return;
+    final data = response['data'];
+    _error = null;
+    if (response['success'] == true && data is List && data.isNotEmpty) {
+      _notifications = data.cast<Map>().map((item) {
+        final map = Map<String, dynamic>.from(item);
+        final type = (map['type'] ?? "system").toString();
+        return _NotifItem(
+          title: (map['title'] ?? "Notification").toString(),
+          body: (map['message'] ?? "").toString(),
+          time: (map['createdAt'] ?? "").toString(),
+          type: type.contains("order") ? "goods" : "vehicle",
+        );
+      }).toList();
+    } else if (response['success'] == true) {
+      _notifications = [];
+    } else {
+      _notifications = [];
+      _error = response['message']?.toString() ?? 'Unable to load notifications';
+    }
+    setState(() => _isLoading = false);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +70,23 @@ class DriverNotificationScreen extends StatelessWidget {
           children: [
             _buildAppBar(context),
             Expanded(
-              child: ListView.builder(
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _error != null
+                      ? Center(
+                          child: Text(
+                            _error!,
+                            style: GoogleFonts.inter(color: Colors.red),
+                          ),
+                        )
+                      : _notifications.isEmpty
+                          ? Center(
+                              child: Text(
+                                'No notifications yet',
+                                style: GoogleFonts.inter(color: Colors.grey[600]),
+                              ),
+                            )
+                  : ListView.builder(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 itemCount: _notifications.length,
@@ -106,16 +134,52 @@ class DriverNotificationScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(width: 10),
-          const CircleAvatar(
-            radius: 17,
-            backgroundImage: NetworkImage(
-                'https://randomuser.me/api/portraits/men/32.jpg'),
-          ),
+          Obx(() {
+            final ctrl = Get.find<UserProfileController>();
+            return AvatarWidget(
+              avatarUrl: ctrl.avatarUrl,
+              name: ctrl.displayName,
+              radius: 17,
+            );
+          }),
         ],
       ),
     );
   }
 }
+
+const List<_NotifItem> _notificationsFallback = [
+  _NotifItem(
+      title: 'Goods',
+      body: 'Lorem ipsum dolor sit amet Consectetur Adipiscing elit.',
+      time: '09:41 AM',
+      type: 'goods'),
+  _NotifItem(
+      title: 'Vehicle',
+      body: 'Lorem ipsum dolor sit amet Consectetur Adipiscing elit.',
+      time: '09:20 AM',
+      type: 'vehicle'),
+  _NotifItem(
+      title: 'Goods',
+      body: 'Lorem ipsum dolor sit amet Consectetur Adipiscing elit.',
+      time: '08:55 AM',
+      type: 'goods'),
+  _NotifItem(
+      title: 'Goods',
+      body: 'Lorem ipsum dolor sit amet Consectetur Adipiscing elit.',
+      time: '08:30 AM',
+      type: 'goods'),
+  _NotifItem(
+      title: 'Vehicle',
+      body: 'Lorem ipsum dolor sit amet Consectetur Adipiscing elit.',
+      time: '07:10 AM',
+      type: 'vehicle'),
+  _NotifItem(
+      title: 'Goods',
+      body: 'Lorem ipsum dolor sit amet Consectetur Adipiscing elit.',
+      time: '06:45 AM',
+      type: 'goods'),
+];
 
 class _NotifCard extends StatelessWidget {
   final _NotifItem item;
@@ -143,7 +207,7 @@ class _NotifCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 8,
               offset: const Offset(0, 2))
         ],
@@ -156,7 +220,7 @@ class _NotifCard extends StatelessWidget {
             width: 46,
             height: 46,
             decoration: BoxDecoration(
-              color: _iconBg.withOpacity(0.15),
+              color: _iconBg.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(_icon, color: _iconBg, size: 24),
@@ -178,7 +242,7 @@ class _NotifCard extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
-                        color: _statusColor.withOpacity(0.1),
+                        color: _statusColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(_statusLabel,

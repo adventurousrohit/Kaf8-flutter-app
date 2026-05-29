@@ -66,9 +66,9 @@
             android:value="AIzaSyAo1Mbtb9XOCL6amHphKGuPvRsolX_6DvM"/>
 
         <!-- Firebase Messaging Default Notification Channel -->
-<!--        <meta-data-->
-<!--            android:name="com.google.firebase.messaging.default_notification_channel_id"-->
-<!--            android:value="kaf8_channel" />-->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="kaf8_channel" />
 
         <!-- Default notification icon (optional) -->
 <!--        <meta-data-->

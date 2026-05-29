@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../Service/api_service.dart';
 import '../Utils/responsiveUtils.dart';
 
 class NotificationSettingScreen extends StatefulWidget {
@@ -12,12 +13,55 @@ class NotificationSettingScreen extends StatefulWidget {
 class _NotificationSettingScreenState
     extends State<NotificationSettingScreen> {
 
+  bool _loading = true;
+  bool _saving  = false;
+
   bool _receiveAll = false;
   bool _prompts    = true;
   bool _calls      = true;
   bool _orders     = true;
 
-  // When "receive all" is toggled, sync all others
+  @override
+  void initState() {
+    super.initState();
+    _loadSettings();
+  }
+
+  Future<void> _loadSettings() async {
+    final res = await ApiService.getNotificationSettings();
+    if (!mounted) return;
+    if (res['success'] == true && res['data'] is Map) {
+      final d = res['data'] as Map;
+      setState(() {
+        _prompts    = d['prompts'] == true;
+        _calls      = d['calls']   == true;
+        _orders     = d['orders']  == true;
+        _receiveAll = _prompts && _calls && _orders;
+      });
+    }
+    setState(() => _loading = false);
+  }
+
+  Future<void> _save() async {
+    setState(() => _saving = true);
+    final res = await ApiService.updateNotificationSettings({
+      'receiveAll': _receiveAll,
+      'prompts':    _prompts,
+      'calls':      _calls,
+      'orders':     _orders,
+    });
+    if (!mounted) return;
+    setState(() => _saving = false);
+    if (res['success'] == true) {
+      Navigator.pop(context);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(res['message']?.toString() ?? "Failed to save"),
+        backgroundColor: Colors.red,
+      ));
+    }
+  }
+
   void _onReceiveAllChanged(bool val) {
     setState(() {
       _receiveAll = val;
@@ -27,11 +71,8 @@ class _NotificationSettingScreenState
     });
   }
 
-  // When any sub-toggle changes, update "receive all" state
   void _updateReceiveAll() {
-    setState(() {
-      _receiveAll = _prompts && _calls && _orders;
-    });
+    setState(() => _receiveAll = _prompts && _calls && _orders);
   }
 
   @override
@@ -43,7 +84,6 @@ class _NotificationSettingScreenState
       backgroundColor: const Color(0xFFEAF4FB),
       body: Stack(
         children: [
-          // Background shapes
           Positioned(top: 0, left: 0,
             child: Image.asset('assets/images/bg_top_left.png',
               width: size.width * 0.60, fit: BoxFit.contain,
@@ -62,7 +102,6 @@ class _NotificationSettingScreenState
           SafeArea(
             child: Column(
               children: [
-                // Header
                 Container(
                   color: Colors.white,
                   padding: const EdgeInsets.symmetric(
@@ -71,7 +110,7 @@ class _NotificationSettingScreenState
                     children: [
                       _circleBack(context),
                       const Spacer(),
-                      Text("Notification setting",
+                      Text("Notification settings",
                         style: GoogleFonts.inter(
                           fontSize: 17 * fontScale,
                           fontWeight: FontWeight.w600)),
@@ -83,83 +122,62 @@ class _NotificationSettingScreenState
                 const Divider(height: 1, thickness: 0.8),
 
                 Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      children: [
-                        const SizedBox(height: 8),
-
-                        // ── Toggle rows ──────────────────────────────
-                        _notifRow(
-                          label: "Receive all notifications",
-                          value: _receiveAll,
-                          fontScale: fontScale,
-                          onChanged: _onReceiveAllChanged,
-                        ),
-                        const SizedBox(height: 20),
-
-                        _notifRow(
-                          label: "Prompts",
-                          value: _prompts,
-                          fontScale: fontScale,
-                          onChanged: (v) {
-                            _prompts = v;
-                            _updateReceiveAll();
-                          },
-                        ),
-                        const SizedBox(height: 20),
-
-                        _notifRow(
-                          label: "Calls",
-                          value: _calls,
-                          fontScale: fontScale,
-                          onChanged: (v) {
-                            _calls = v;
-                            _updateReceiveAll();
-                          },
-                        ),
-                        const SizedBox(height: 20),
-
-                        _notifRow(
-                          label: "Orders",
-                          value: _orders,
-                          fontScale: fontScale,
-                          onChanged: (v) {
-                            _orders = v;
-                            _updateReceiveAll();
-                          },
-                        ),
-
-                        const Spacer(),
-
-                        // ── Confirm button ─────────────────────────────
-                        SizedBox(
-                          width: double.infinity,
-                          height: 52,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.green,
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30))),
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text("Notification settings saved!"),
-                                  backgroundColor: Colors.green));
-                              Navigator.pop(context);
-                            },
-                            child: Text("Confirm",
-                              style: GoogleFonts.inter(
-                                fontSize: 16 * fontScale,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white)),
+                  child: _loading
+                      ? const Center(child: CircularProgressIndicator())
+                      : Padding(
+                          padding: const EdgeInsets.all(20),
+                          child: Column(
+                            children: [
+                              const SizedBox(height: 8),
+                              _notifRow(
+                                label: "Receive all notifications",
+                                value: _receiveAll,
+                                fontScale: fontScale,
+                                onChanged: _onReceiveAllChanged,
+                              ),
+                              const SizedBox(height: 20),
+                              _notifRow(
+                                label: "Prompts",
+                                value: _prompts,
+                                fontScale: fontScale,
+                                onChanged: (v) { _prompts = v; _updateReceiveAll(); },
+                              ),
+                              const SizedBox(height: 20),
+                              _notifRow(
+                                label: "Calls",
+                                value: _calls,
+                                fontScale: fontScale,
+                                onChanged: (v) { _calls = v; _updateReceiveAll(); },
+                              ),
+                              const SizedBox(height: 20),
+                              _notifRow(
+                                label: "Orders",
+                                value: _orders,
+                                fontScale: fontScale,
+                                onChanged: (v) { _orders = v; _updateReceiveAll(); },
+                              ),
+                              const Spacer(),
+                              SizedBox(
+                                width: double.infinity,
+                                height: 52,
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.green,
+                                    elevation: 0,
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(30))),
+                                  onPressed: _saving ? null : _save,
+                                  child: Text(_saving ? "Saving..." : "Confirm",
+                                    style: GoogleFonts.inter(
+                                      fontSize: 16 * fontScale,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white)),
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 20),
-                      ],
-                    ),
-                  ),
                 ),
               ],
             ),

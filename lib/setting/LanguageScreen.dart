@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../Utils/responsiveUtils.dart';
 
 class LanguageScreen extends StatefulWidget {
@@ -9,24 +11,68 @@ class LanguageScreen extends StatefulWidget {
 }
 
 class _LanguageScreenState extends State<LanguageScreen> {
-  // "Used language" section — first is selected by default
-  int _usedSelected = 0;
-  final List<String> _usedLanguages = ['English', 'English'];
+  static const List<Map<String, dynamic>> _languages = [
+    {'name': 'English',   'locale': Locale('en', 'US'), 'flag': '🇬🇧'},
+    {'name': 'Français',  'locale': Locale('fr', 'FR'), 'flag': '🇫🇷'},
+    {'name': 'Español',   'locale': Locale('es', 'ES'), 'flag': '🇪🇸'},
+    {'name': 'Português', 'locale': Locale('pt', 'PT'), 'flag': '🇵🇹'},
+  ];
 
-  // "Other languages" section — none selected by default
-  int? _otherSelected;
-  final List<String> _otherLanguages = ['English', 'English', 'English'];
+  int _selectedIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedLocale();
+  }
+
+  Future<void> _loadSavedLocale() async {
+    final prefs = await SharedPreferences.getInstance();
+    final saved = prefs.getString('locale_code');
+    if (saved == null) return;
+    final idx = _languages.indexWhere((l) {
+      final loc = l['locale'] as Locale;
+      return '${loc.languageCode}_${loc.countryCode}' == saved;
+    });
+    if (idx != -1 && mounted) setState(() => _selectedIndex = idx);
+  }
+
+  Future<void> _confirm() async {
+    final selected = _languages[_selectedIndex];
+    final locale = selected['locale'] as Locale;
+    final localeCode = '${locale.languageCode}_${locale.countryCode}';
+
+    Get.updateLocale(locale);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('locale_code', localeCode);
+
+    Get.back();
+    Get.snackbar(
+      'language_saved'.tr,
+      selected['name'] as String,
+      backgroundColor: Colors.green,
+      colorText: Colors.white,
+      snackPosition: SnackPosition.BOTTOM,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final fontScale = ResponsiveUtils.fontScale(context);
     final size = MediaQuery.of(context).size;
 
+    // Split into current + others
+    final currentLang = _languages[_selectedIndex];
+    final otherLangs = _languages
+        .asMap()
+        .entries
+        .where((e) => e.key != _selectedIndex)
+        .toList();
+
     return Scaffold(
       backgroundColor: const Color(0xFFEAF4FB),
       body: Stack(
         children: [
-          // Background shapes
           Positioned(top: 0, left: 0,
               child: Image.asset('assets/images/bg_top_left.png',
                   width: size.width * 0.60, fit: BoxFit.contain,
@@ -54,7 +100,7 @@ class _LanguageScreenState extends State<LanguageScreen> {
                     children: [
                       _circleBack(context),
                       const Spacer(),
-                      Text("Language",
+                      Text('language_title'.tr,
                           style: GoogleFonts.inter(
                               fontSize: 17 * fontScale,
                               fontWeight: FontWeight.w600)),
@@ -74,7 +120,7 @@ class _LanguageScreenState extends State<LanguageScreen> {
                         const SizedBox(height: 6),
 
                         // ── Used language ──────────────────────────────
-                        Text("Used language",
+                        Text('used_language'.tr,
                             style: GoogleFonts.inter(
                                 fontSize: 15 * fontScale,
                                 fontWeight: FontWeight.w600,
@@ -89,29 +135,18 @@ class _LanguageScreenState extends State<LanguageScreen> {
                                 color: Colors.black.withOpacity(0.04),
                                 blurRadius: 8, offset: const Offset(0, 2))],
                           ),
-                          child: Column(
-                            children: List.generate(
-                                _usedLanguages.length, (i) => Column(
-                              children: [
-                                _languageRow(
-                                  label: _usedLanguages[i],
-                                  isSelected: _usedSelected == i,
-                                  fontScale: fontScale,
-                                  onTap: () => setState(
-                                          () => _usedSelected = i),
-                                ),
-                                if (i < _usedLanguages.length - 1)
-                                  const Divider(height: 1, thickness: 0.7,
-                                      indent: 16, endIndent: 16),
-                              ],
-                            )),
+                          child: _languageRow(
+                            lang: currentLang,
+                            isSelected: true,
+                            fontScale: fontScale,
+                            onTap: null,
                           ),
                         ),
 
                         const SizedBox(height: 24),
 
                         // ── Other languages ────────────────────────────
-                        Text("Other languages",
+                        Text('other_languages'.tr,
                             style: GoogleFonts.inter(
                                 fontSize: 15 * fontScale,
                                 fontWeight: FontWeight.w600,
@@ -127,21 +162,23 @@ class _LanguageScreenState extends State<LanguageScreen> {
                                 blurRadius: 8, offset: const Offset(0, 2))],
                           ),
                           child: Column(
-                            children: List.generate(
-                                _otherLanguages.length, (i) => Column(
-                              children: [
-                                _languageRow(
-                                  label: _otherLanguages[i],
-                                  isSelected: _otherSelected == i,
-                                  fontScale: fontScale,
-                                  onTap: () => setState(
-                                          () => _otherSelected = i),
-                                ),
-                                if (i < _otherLanguages.length - 1)
-                                  const Divider(height: 1, thickness: 0.7,
-                                      indent: 16, endIndent: 16),
-                              ],
-                            )),
+                            children: otherLangs.asMap().entries.map((entry) {
+                              final listIdx = entry.key;
+                              final e = entry.value;
+                              return Column(
+                                children: [
+                                  _languageRow(
+                                    lang: e.value,
+                                    isSelected: false,
+                                    fontScale: fontScale,
+                                    onTap: () => setState(() => _selectedIndex = e.key),
+                                  ),
+                                  if (listIdx < otherLangs.length - 1)
+                                    const Divider(height: 1, thickness: 0.7,
+                                        indent: 16, endIndent: 16),
+                                ],
+                              );
+                            }).toList(),
                           ),
                         ),
 
@@ -157,15 +194,8 @@ class _LanguageScreenState extends State<LanguageScreen> {
                                 elevation: 0,
                                 shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(30))),
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                      content: Text(
-                                          "Language saved: ${_usedLanguages[_usedSelected]}"),
-                                      backgroundColor: Colors.green));
-                              Navigator.pop(context);
-                            },
-                            child: Text("Confirm",
+                            onPressed: _confirm,
+                            child: Text('confirm'.tr,
                                 style: GoogleFonts.inter(
                                     fontSize: 16 * fontScale,
                                     fontWeight: FontWeight.w600,
@@ -199,10 +229,10 @@ class _LanguageScreenState extends State<LanguageScreen> {
   }
 
   Widget _languageRow({
-    required String label,
+    required Map<String, dynamic> lang,
     required bool isSelected,
     required double fontScale,
-    required VoidCallback onTap,
+    required VoidCallback? onTap,
   }) {
     return InkWell(
       onTap: onTap,
@@ -211,26 +241,29 @@ class _LanguageScreenState extends State<LanguageScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: Row(
           children: [
-            // Radio circle
+            Text(lang['flag'] as String,
+                style: const TextStyle(fontSize: 22)),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Text(lang['name'] as String,
+                  style: GoogleFonts.inter(
+                      fontSize: 15 * fontScale,
+                      color: isSelected ? Colors.black : Colors.grey[600],
+                      fontWeight: isSelected
+                          ? FontWeight.w600 : FontWeight.w400)),
+            ),
             isSelected
                 ? Container(
-                width: 22, height: 22,
-                decoration: const BoxDecoration(
-                    color: Colors.green, shape: BoxShape.circle),
-                child: const Icon(Icons.check, size: 13, color: Colors.white))
+                    width: 22, height: 22,
+                    decoration: const BoxDecoration(
+                        color: Colors.green, shape: BoxShape.circle),
+                    child: const Icon(Icons.check, size: 13, color: Colors.white))
                 : Container(
-                width: 22, height: 22,
-                decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                        color: Colors.grey[400]!, width: 1.5))),
-            const SizedBox(width: 14),
-            Text(label,
-                style: GoogleFonts.inter(
-                    fontSize: 15 * fontScale,
-                    color: isSelected ? Colors.black : Colors.grey[500],
-                    fontWeight: isSelected
-                        ? FontWeight.w500 : FontWeight.w400)),
+                    width: 22, height: 22,
+                    decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                            color: Colors.grey[400]!, width: 1.5))),
           ],
         ),
       ),

@@ -74,12 +74,10 @@ class _BaseScreenState extends State<BaseScreen> {
         onPageChanged: (index) => setState(() => _currentIndex = index),
         children: screens,
       ),
-      bottomNavigationBar: _currentIndex == 0
-          ? Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              child: _buildBottomNavBar(navItems, scale, fontScale),
-            )
-          : null,
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        child: _buildBottomNavBar(navItems, scale, fontScale),
+      ),
     );
   }
 

@@ -167,27 +167,15 @@ class _GetStartedScreenState extends State<GetStartedScreen> {
                     assetPath: 'assets/icons/google_icon.png',
                     backgroundColor: const Color(0xFF5384EE),
                     borderRadius: 30,
-                    onPressed: () {},
-                  ),
-                  const SizedBox(height: 12),
-
-                  // ── Facebook ──────────────────────────────────────
-                  SocialButton(
-                    text: "Continue with Facebook",
-                    assetPath: 'assets/icons/facebook_icon.png',
-                    backgroundColor: const Color(0xFF415792),
-                    borderRadius: 30,
-                    onPressed: () {},
-                  ),
-                  const SizedBox(height: 12),
-
-                  // ── Apple ─────────────────────────────────────────
-                  SocialButton(
-                    text: "Continue with Apple",
-                    assetPath: 'assets/icons/apple_icon.png',
-                    backgroundColor: Colors.black,
-                    borderRadius: 30,
-                    onPressed: () {},
+                    onPressed: () {
+                      Get.snackbar(
+                        "Coming Soon",
+                        "Google login will be available in a future update",
+                        backgroundColor: Colors.grey[800],
+                        colorText: Colors.white,
+                        duration: const Duration(seconds: 2),
+                      );
+                    },
                   ),
 
                   SizedBox(height: 20 * scale),

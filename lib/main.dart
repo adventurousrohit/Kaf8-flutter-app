@@ -68,12 +68,31 @@ class MyApp extends StatelessWidget {
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'Auth/splashscreen.dart';
 import 'Controller/theme_controller.dart';
+import 'Controller/order_controller.dart';
+import 'Controller/user_profile_controller.dart';
+import 'Service/fcm_service.dart';
+import 'translations/app_translations.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // TODO: replace with your pk_test_... key from https://dashboard.stripe.com/test/apikeys
+  Stripe.publishableKey = 'pk_test_REPLACE_WITH_YOUR_PUBLISHABLE_KEY';
+
+  // Firebase — graceful: won't crash if google-services.json / GoogleService-Info.plist
+  // are missing yet. Add those files and FCM will activate automatically.
+  try {
+    await Firebase.initializeApp();
+    await FcmService.init();
+  } catch (e) {
+    debugPrint('[Firebase] init failed: $e');
+  }
 
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
@@ -87,13 +106,25 @@ void main() {
     SystemUiMode.edgeToEdge,
   );
 
-  Get.put(ThemeController());
+  // Load saved locale from SharedPreferences
+  final prefs = await SharedPreferences.getInstance();
+  final savedLocale = prefs.getString('locale_code');
+  Locale appLocale = const Locale('en', 'US');
+  if (savedLocale != null) {
+    final parts = savedLocale.split('_');
+    if (parts.length == 2) appLocale = Locale(parts[0], parts[1]);
+  }
 
-  runApp(const MyApp());
+  Get.put(ThemeController());
+  Get.put(OrderController());
+  Get.put(UserProfileController(), permanent: true);
+
+  runApp(MyApp(initialLocale: appLocale));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final Locale initialLocale;
+  const MyApp({super.key, required this.initialLocale});
 
   @override
   Widget build(BuildContext context) {
@@ -102,6 +133,9 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       title: 'Kaf8',
       debugShowCheckedModeBanner: false,
+      translations: AppTranslations(),
+      locale: initialLocale,
+      fallbackLocale: const Locale('en', 'US'),
 
       theme: ThemeData(
         useMaterial3: true,

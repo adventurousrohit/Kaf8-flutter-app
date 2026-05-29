@@ -29,18 +29,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool isLoading                = false;
 
   // Country picker state
-  String selectedFlag = '🇮🇩';
-  String selectedCode = '+62';
+  String selectedFlag = '🇫🇷';
+  String selectedCode = '+33';
 
   final List<Map<String, String>> countries = [
-    {'flag': '🇮🇩', 'code': '+62',  'name': 'Indonesia'},
-    {'flag': '🇮🇳', 'code': '+91',  'name': 'India'},
-    {'flag': '🇺🇸', 'code': '+1',   'name': 'USA'},
+    {'flag': '🇫🇷', 'code': '+33',  'name': 'France'},
+    {'flag': '🇩🇪', 'code': '+49',  'name': 'Germany'},
+    {'flag': '🇧🇪', 'code': '+32',  'name': 'Belgium'},
+    {'flag': '🇳🇱', 'code': '+31',  'name': 'Netherlands'},
+    {'flag': '🇨🇭', 'code': '+41',  'name': 'Switzerland'},
+    {'flag': '🇪🇸', 'code': '+34',  'name': 'Spain'},
+    {'flag': '🇮🇹', 'code': '+39',  'name': 'Italy'},
     {'flag': '🇬🇧', 'code': '+44',  'name': 'UK'},
-    {'flag': '🇦🇺', 'code': '+61',  'name': 'Australia'},
-    {'flag': '🇸🇦', 'code': '+966', 'name': 'Saudi Arabia'},
-    {'flag': '🇦🇪', 'code': '+971', 'name': 'UAE'},
-    {'flag': '🇵🇰', 'code': '+92',  'name': 'Pakistan'},
+    {'flag': '🇵🇹', 'code': '+351', 'name': 'Portugal'},
+    {'flag': '🇵🇱', 'code': '+48',  'name': 'Poland'},
   ];
 
   @override
@@ -115,7 +117,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       email:     email,
       password:  password,
       phone:     '$selectedCode$phone',
-      role:      "transporter",
+      role:      "client",
     );
 
     setState(() => isLoading = false);
@@ -397,14 +399,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   SizedBox(height: 14 * scale),
 
                   // ── Confirm Password ──────────────────────────────────
-                  _label("Password", fontScale),
+                  _label("Confirm Password", fontScale),
                   const SizedBox(height: 8),
                   TextField(
                     controller: confirmPasswordController,
                     obscureText: !isConfirmPasswordVisible,
                     style: GoogleFonts.inter(fontSize: 14 * fontScale),
                     decoration: _fieldDecoration(
-                      hint: "Enter password",
+                      hint: "Re-enter password",
                       hasError: isPasswordWrong,
                       suffixIcon: IconButton(
                         icon: Icon(

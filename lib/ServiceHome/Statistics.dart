@@ -1,6 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../Service/api_service.dart';
 import '../profile/myProfile.dart';
 
 class StatisticsScreen extends StatefulWidget {
@@ -11,35 +12,62 @@ class StatisticsScreen extends StatefulWidget {
 }
 
 class _StatisticsScreenState extends State<StatisticsScreen> {
+  bool _isLoading = false;
+  int _totalOrders = 0;
+  double _totalEarnings = 0;
+  String _period = 'last7days';
 
-  /// 🔥 DATA (24 HOURS)
-  final List<double> earningsData = [
-    5, 10, 20, 5, 25, 5, 48, 5, 35, 10, 15, 10,
-    15, 20, 30, 20, 25, 35, 10, 50, 10, 35, 15, 5
-  ];
-
-  final List<double> ordersData = [
-    22, 25, 30, 32, 21, 26, 40, 38, 18, 25, 20, 28,
-    42, 30, 32, 18, 38, 20, 35, 37, 28, 24, 22, 21
-  ];
+  List<double> earningsData = List.filled(24, 0);
+  List<double> ordersData = List.filled(24, 0);
 
   final List<String> timeLabels = [
-    "1am","3am","5am","7am","9am","11am",
-    "1pm","3pm","5pm","7pm","9pm","11pm"
+    "0:00","2:00","4:00","6:00","8:00","10:00",
+    "12:00","14:00","16:00","18:00","20:00","22:00"
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadStats();
+  }
+
+  Future<void> _loadStats() async {
+    setState(() => _isLoading = true);
+    final summary  = await ApiService.getStatistics(period: _period);
+    final earnings = await ApiService.getEarningsStats(period: _period);
+    final orders   = await ApiService.getOrdersStats(period: _period);
+
+    if (!mounted) return;
+
+    if (summary['success'] == true && summary['data'] is Map) {
+      final s = (summary['data'] as Map)['summary'] ?? {};
+      _totalOrders   = int.tryParse("${s['totalOrders'] ?? 0}") ?? 0;
+      _totalEarnings = double.tryParse("${s['totalEarnings'] ?? 0}") ?? 0;
+    }
+    if (earnings['success'] == true && earnings['data'] is List) {
+      earningsData = (earnings['data'] as List)
+          .map((e) => double.tryParse("${e['value'] ?? 0}") ?? 0)
+          .toList();
+    }
+    if (orders['success'] == true && orders['data'] is List) {
+      ordersData = (orders['data'] as List)
+          .map((e) => double.tryParse("${e['value'] ?? 0}") ?? 0)
+          .toList();
+    }
+
+    setState(() => _isLoading = false);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6FA),
-
       body: SafeArea(
         child: Column(
           children: [
-
-            /// 🔝 HEADER
+            // Header
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 15),
+              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
               child: Row(
                 children: [
                   GestureDetector(
@@ -54,6 +82,24 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                       style: TextStyle(
                           fontSize: 18, fontWeight: FontWeight.w600)),
                   const Spacer(),
+                  GestureDetector(
+                    onTap: () {
+                      setState(() => _period = _period == 'last7days' ? 'last30days' : 'last7days');
+                      _loadStats();
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: Colors.green,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        _period == 'last7days' ? 'Last 7 Days' : 'Last 30 Days',
+                        style: const TextStyle(color: Colors.white, fontSize: 12),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
                   const Icon(Icons.notifications_none),
                   const SizedBox(width: 10),
                   const Icon(Icons.menu),
@@ -61,9 +107,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
               ),
             ),
 
-            const SizedBox(height: 20),
-
-            /// 🔥 SUMMARY
+            // Summary
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 15),
               padding: const EdgeInsets.all(15),
@@ -71,11 +115,11 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(15),
               ),
-              child: const Row(
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _Summary(title: "Total Orders", value: "250"),
-                  _Summary(title: "Total Earnings", value: "₹ 1,23,456"),
+                  _Summary(title: "Total Orders",   value: "$_totalOrders"),
+                  _Summary(title: "Total Earnings", value: "€ ${_totalEarnings.toStringAsFixed(2)}"),
                 ],
               ),
             ),
@@ -83,93 +127,64 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             const SizedBox(height: 20),
 
             Expanded(
-              child: ListView(
-                children: [
-
-                  /// 📊 BAR CHART
-                  _chartCard(
-                    title: "Earnings",
-                    child: BarChart(_barChartData()),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  /// 📈 LINE CHART
-                  _chartCard(
-                    title: "Orders",
-                    child: LineChart(_lineChartData()),
-                  ),
-                ],
-              ),
-            )
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : ListView(
+                      children: [
+                        _chartCard(
+                          title: "Earnings",
+                          child: BarChart(_barChartData()),
+                        ),
+                        const SizedBox(height: 20),
+                        _chartCard(
+                          title: "Orders",
+                          child: LineChart(_lineChartData()),
+                        ),
+                      ],
+                    ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  /// ================= BAR CHART =================
   BarChartData _barChartData() {
+    final maxY = earningsData.isEmpty ? 10.0 : (earningsData.reduce((a, b) => a > b ? a : b) * 1.2).clamp(1.0, double.infinity);
     return BarChartData(
       minY: 0,
-      maxY: 60,
+      maxY: maxY,
       alignment: BarChartAlignment.spaceBetween,
-
-      /// GRID
       gridData: FlGridData(
         show: true,
-        drawVerticalLine: true,
-        horizontalInterval: 10,
-        getDrawingHorizontalLine: (value) =>
+        drawVerticalLine: false,
+        horizontalInterval: maxY / 4,
+        getDrawingHorizontalLine: (_) =>
             FlLine(color: Colors.grey.shade300, strokeWidth: 1),
-        getDrawingVerticalLine: (value) =>
-            FlLine(color: Colors.grey.shade200, strokeWidth: 1),
       ),
-
-      /// TITLES FIXED HERE ✅
       titlesData: FlTitlesData(
-
-        /// ❌ REMOVE TOP
-        topTitles: AxisTitles(
-          sideTitles: SideTitles(showTitles: false),
-        ),
-
-        /// ❌ REMOVE RIGHT
-        rightTitles: AxisTitles(
-          sideTitles: SideTitles(showTitles: false),
-        ),
-
-        /// ✅ LEFT SIDE
+        topTitles:    AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        rightTitles:  AxisTitles(sideTitles: SideTitles(showTitles: false)),
         leftTitles: AxisTitles(
           sideTitles: SideTitles(
             showTitles: true,
-            interval: 10,
-            reservedSize: 30,
-            getTitlesWidget: (value, meta) {
-              return Text(
-                "${value.toInt()}",
-                style: const TextStyle(fontSize: 10),
-              );
-            },
+            interval: maxY / 4,
+            reservedSize: 36,
+            getTitlesWidget: (value, _) =>
+                Text(value.toInt().toString(), style: const TextStyle(fontSize: 10)),
           ),
         ),
-
-        /// ✅ BOTTOM TIME
         bottomTitles: AxisTitles(
           sideTitles: SideTitles(
             showTitles: true,
             interval: 1,
             reservedSize: 30,
-            getTitlesWidget: (value, meta) {
-              int index = value.toInt();
-
-              if (index % 2 == 0 && index ~/ 2 < timeLabels.length) {
+            getTitlesWidget: (value, _) {
+              final i = value.toInt();
+              if (i % 4 == 0 && i ~/ 2 < timeLabels.length) {
                 return Padding(
                   padding: const EdgeInsets.only(top: 8),
-                  child: Text(
-                    timeLabels[index ~/ 2],
-                    style: const TextStyle(fontSize: 10),
-                  ),
+                  child: Text(timeLabels[i ~/ 2], style: const TextStyle(fontSize: 9)),
                 );
               }
               return const SizedBox();
@@ -177,83 +192,55 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           ),
         ),
       ),
-
       borderData: FlBorderData(show: false),
-
-      /// DATA
-      barGroups: List.generate(24, (i) {
-        return BarChartGroupData(
-          x: i,
-          barRods: [
-            BarChartRodData(
-              toY: earningsData[i],
-              width: 6,
-              borderRadius: BorderRadius.circular(3),
-              color: Colors.green,
-            ),
-          ],
-        );
+      barGroups: List.generate(earningsData.length, (i) {
+        return BarChartGroupData(x: i, barRods: [
+          BarChartRodData(
+            toY: earningsData[i],
+            width: 6,
+            borderRadius: BorderRadius.circular(3),
+            color: Colors.green,
+          ),
+        ]);
       }),
     );
   }
 
-  /// ================= LINE CHART =================
   LineChartData _lineChartData() {
+    final maxY = ordersData.isEmpty ? 10.0 : (ordersData.reduce((a, b) => a > b ? a : b) * 1.2).clamp(1.0, double.infinity);
     return LineChartData(
       minX: 0,
-      maxX: 23,
+      maxX: (ordersData.length - 1).toDouble(),
       minY: 0,
-      maxY: 60,
-
-      /// GRID
+      maxY: maxY,
       gridData: FlGridData(
         show: true,
-        drawVerticalLine: true,
-        horizontalInterval: 10,
-        getDrawingHorizontalLine: (value) =>
+        drawVerticalLine: false,
+        horizontalInterval: maxY / 4,
+        getDrawingHorizontalLine: (_) =>
             FlLine(color: Colors.grey.shade300, strokeWidth: 1),
-        getDrawingVerticalLine: (value) =>
-            FlLine(color: Colors.grey.shade200, strokeWidth: 1),
       ),
-
-      /// TITLES FIXED HERE ✅
       titlesData: FlTitlesData(
-
-        /// ❌ REMOVE TOP
-        topTitles: AxisTitles(
-          sideTitles: SideTitles(showTitles: false),
-        ),
-
-        /// ❌ REMOVE RIGHT
-        rightTitles: AxisTitles(
-          sideTitles: SideTitles(showTitles: false),
-        ),
-
-        /// ✅ LEFT
+        topTitles:   AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
         leftTitles: AxisTitles(
           sideTitles: SideTitles(
             showTitles: true,
-            interval: 10,
-            reservedSize: 30,
+            interval: maxY / 4,
+            reservedSize: 36,
           ),
         ),
-
-        /// ✅ BOTTOM
         bottomTitles: AxisTitles(
           sideTitles: SideTitles(
             showTitles: true,
             interval: 1,
             reservedSize: 30,
-            getTitlesWidget: (value, meta) {
-              int index = value.toInt();
-
-              if (index % 2 == 0 && index ~/ 2 < timeLabels.length) {
+            getTitlesWidget: (value, _) {
+              final i = value.toInt();
+              if (i % 4 == 0 && i ~/ 2 < timeLabels.length) {
                 return Padding(
                   padding: const EdgeInsets.only(top: 8),
-                  child: Text(
-                    timeLabels[index ~/ 2],
-                    style: const TextStyle(fontSize: 10),
-                  ),
+                  child: Text(timeLabels[i ~/ 2], style: const TextStyle(fontSize: 9)),
                 );
               }
               return const SizedBox();
@@ -261,10 +248,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           ),
         ),
       ),
-
       borderData: FlBorderData(show: false),
-
-      /// LINE
       lineBarsData: [
         LineChartBarData(
           isCurved: true,
@@ -273,17 +257,17 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           barWidth: 2.5,
           isStrokeCapRound: true,
           dotData: FlDotData(show: false),
-
-          spots: List.generate(
-            24,
-                (i) => FlSpot(i.toDouble(), ordersData[i]),
+          belowBarData: BarAreaData(
+            show: true,
+            color: Colors.green.withOpacity(0.08),
           ),
+          spots: List.generate(ordersData.length,
+              (i) => FlSpot(i.toDouble(), ordersData[i])),
         ),
       ],
     );
   }
 
-  /// ================= CARD =================
   Widget _chartCard({required String title, required Widget child}) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 15),
@@ -292,10 +276,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-          )
+          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)
         ],
       ),
       child: Column(
@@ -307,15 +288,14 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                       fontSize: 16, fontWeight: FontWeight.w600)),
               const Spacer(),
               Container(
-                padding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                 decoration: BoxDecoration(
                   color: Colors.green,
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: const Text("Last 10 Days",
+                child: const Text("Hourly",
                     style: TextStyle(color: Colors.white, fontSize: 12)),
-              )
+              ),
             ],
           ),
           const SizedBox(height: 15),
@@ -326,11 +306,9 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   }
 }
 
-/// 🔹 SUMMARY
 class _Summary extends StatelessWidget {
   final String title;
   final String value;
-
   const _Summary({required this.title, required this.value});
 
   @override

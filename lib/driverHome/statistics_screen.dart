@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../Service/api_service.dart';
 
 // NOTE: Add fl_chart to pubspec.yaml for a production chart.
 // This screen uses a custom painter for the bar/line charts.
@@ -14,6 +15,9 @@ class StatisticsScreen extends StatefulWidget {
 class _StatisticsScreenState extends State<StatisticsScreen> {
   String _earningsFilter = 'Weekly';
   String _ordersFilter = 'Weekly';
+  bool _isLoading = false;
+  int _totalOrders = 0;
+  double _totalEarnings = 0;
 
   // Fake earnings data (Mon–Sun)
   final List<double> _earningsData = [
@@ -27,10 +31,45 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     15, 25, 12, 30, 18, 24, 33
   ];
 
-  final List<String> _xLabels = [
-    'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat',
-    'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat',
-  ];
+  List<String> _xLabels = List.generate(24, (i) => '$i:00');
+
+  @override
+  void initState() {
+    super.initState();
+    _loadStats();
+  }
+
+  Future<void> _loadStats() async {
+    setState(() => _isLoading = true);
+    final period = _earningsFilter == "Weekly" ? "last7days" : "last30days";
+    final summary = await ApiService.getStatistics(period: period);
+    final earnings = await ApiService.getEarningsStats(period: period);
+    final orders = await ApiService.getOrdersStats(period: period);
+
+    if (!mounted) return;
+
+    if (summary['success'] == true && summary['data'] is Map<String, dynamic>) {
+      final summaryData = summary['data']['summary'] ?? {};
+      _totalOrders = int.tryParse("${summaryData['totalOrders'] ?? 0}") ?? 0;
+      _totalEarnings = double.tryParse("${summaryData['totalEarnings'] ?? 0}") ?? 0;
+    }
+    if (earnings['success'] == true && earnings['data'] is List) {
+      final list = earnings['data'] as List;
+      _earningsData
+        ..clear()
+        ..addAll(list.map((e) => double.tryParse("${e['value'] ?? 0}") ?? 0));
+      _xLabels
+        ..clear()
+        ..addAll(list.map((e) => "${e['hour'] ?? ''}"));
+    }
+    if (orders['success'] == true && orders['data'] is List) {
+      _ordersData
+        ..clear()
+        ..addAll((orders['data'] as List)
+            .map((e) => double.tryParse("${e['value'] ?? 0}") ?? 0));
+    }
+    setState(() => _isLoading = false);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,17 +80,21 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           children: [
             _buildAppBar(),
             Expanded(
-              child: ListView(
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : ListView(
                 padding: const EdgeInsets.all(20),
                 children: [
                   _buildSummaryRow(),
                   const SizedBox(height: 20),
                   _buildChartCard(
                     title: 'Earnings',
-                    value: '\$ 123456',
+                    value: '€ ${_totalEarnings.toStringAsFixed(2)}',
                     filter: _earningsFilter,
-                    onFilterChange: (v) =>
-                        setState(() => _earningsFilter = v),
+                    onFilterChange: (v) {
+                      setState(() => _earningsFilter = v);
+                      _loadStats();
+                    },
                     data: _earningsData,
                     labels: _xLabels,
                     isBar: true,
@@ -60,10 +103,12 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                   const SizedBox(height: 20),
                   _buildChartCard(
                     title: 'Orders',
-                    value: '250',
+                    value: '$_totalOrders',
                     filter: _ordersFilter,
-                    onFilterChange: (v) =>
-                        setState(() => _ordersFilter = v),
+                    onFilterChange: (v) {
+                      setState(() => _ordersFilter = v);
+                      _loadStats();
+                    },
                     data: _ordersData,
                     labels: _xLabels,
                     isBar: false,
@@ -122,13 +167,13 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
       children: [
         Expanded(
           child: _summaryCard(
-              label: 'Total Orders', value: '250', icon: Icons.list_alt),
+              label: 'Total Orders', value: '$_totalOrders', icon: Icons.list_alt),
         ),
         const SizedBox(width: 14),
         Expanded(
           child: _summaryCard(
               label: 'Total Earnings',
-              value: '\$ 123456',
+              value: '€ ${_totalEarnings.toStringAsFixed(2)}',
               icon: Icons.attach_money),
         ),
       ],

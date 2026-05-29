@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../Service/api_service.dart';
 import '../Utils/responsiveUtils.dart';
 import 'AddAddressScreen.dart';
 
@@ -13,12 +14,67 @@ class AddressScreens extends StatefulWidget {
 
 class _AddressScreensState extends State<AddressScreens> {
   int _selectedIndex = 0;
+  bool _isLoading = false;
+  List<Map<String, dynamic>> _addresses = [];
 
-  final List<Map<String, String>> _addresses = [
-    {'name': 'John galliano', 'phone': '+1 3712 3789', 'address': 'NYC, Broadway ave 79'},
-    {'name': 'John galliano', 'phone': '+1 3712 3789', 'address': 'NYC, Broadway ave 79'},
-    {'name': 'John galliano', 'phone': '+1 3712 3789', 'address': 'NYC, Broadway ave 79'},
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadAddresses();
+  }
+
+  Future<void> _loadAddresses() async {
+    setState(() => _isLoading = true);
+    final response = await ApiService.getAddresses();
+    if (!mounted) return;
+    final data = response['data'];
+    if (response['success'] == true && data is List) {
+      _addresses = data.cast<Map>().map((e) => Map<String, dynamic>.from(e)).toList();
+      final defaultIndex = _addresses.indexWhere((a) => a['isDefault'] == true);
+      _selectedIndex = defaultIndex >= 0 ? defaultIndex : 0;
+    } else {
+      _addresses = [];
+      Get.snackbar("Error", response['message']?.toString() ?? "Failed to load addresses");
+    }
+    setState(() => _isLoading = false);
+  }
+
+  Future<void> _setDefault(int index) async {
+    final id = _addresses[index]['id']?.toString();
+    if (id == null) return;
+    final response = await ApiService.setDefaultAddress(id);
+    if (response['success'] == true) {
+      await _loadAddresses();
+    } else {
+      Get.snackbar("Error", response['message']?.toString() ?? "Failed to update default address");
+    }
+  }
+
+  Future<void> _delete(int index) async {
+    final id = _addresses[index]['id']?.toString();
+    if (id == null) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text("Delete address"),
+        content: const Text("Are you sure you want to delete this address?"),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false),
+              child: const Text("Cancel")),
+          TextButton(onPressed: () => Navigator.pop(context, true),
+              child: const Text("Delete", style: TextStyle(color: Colors.red))),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    final response = await ApiService.deleteAddress(id);
+    if (response['success'] == true) {
+      await _loadAddresses();
+    } else {
+      Get.snackbar("Error", response['message']?.toString() ?? "Failed to delete");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -101,7 +157,10 @@ class _AddressScreensState extends State<AddressScreens> {
                       const Spacer(),
                       // Plus button
                       GestureDetector(
-                        onTap: () => Get.to(() => const AddAddressScreen()),
+                        onTap: () async {
+                          await Get.to(() => const AddAddressScreen());
+                          _loadAddresses();
+                        },
                         child: const Icon(Icons.add,
                             size: 24, color: Colors.black),
                       ),
@@ -113,7 +172,11 @@ class _AddressScreensState extends State<AddressScreens> {
 
                 // ── Address list ─────────────────────────────────────
                 Expanded(
-                  child: ListView.builder(
+                  child: _isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : _addresses.isEmpty
+                          ? const Center(child: Text("No addresses yet"))
+                          : ListView.builder(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     itemCount: _addresses.length,
                     itemBuilder: (context, index) {
@@ -147,7 +210,7 @@ class _AddressScreensState extends State<AddressScreens> {
                                   CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      addr['name']!,
+                                      (addr['label'] ?? "Saved Address").toString(),
                                       style: GoogleFonts.inter(
                                         fontSize: 16 * fontScale,
                                         fontWeight: FontWeight.w700,
@@ -156,7 +219,7 @@ class _AddressScreensState extends State<AddressScreens> {
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      addr['phone']!,
+                                      (addr['city'] ?? "").toString(),
                                       style: GoogleFonts.inter(
                                         fontSize: 13 * fontScale,
                                         color: Colors.grey[600],
@@ -164,34 +227,46 @@ class _AddressScreensState extends State<AddressScreens> {
                                     ),
                                     const SizedBox(height: 2),
                                     Text(
-                                      addr['address']!,
+                                      "${addr['detailAddress'] ?? ''}${(addr['country'] != null) ? ', ${addr['country']}' : ''}",
                                       style: GoogleFonts.inter(
                                         fontSize: 13 * fontScale,
                                         color: Colors.grey[600],
                                       ),
                                     ),
                                     const SizedBox(height: 12),
-                                    // Green Change pill button
-                                    GestureDetector(
-                                      onTap: () => Get.to(
-                                              () => const AddAddressScreen()),
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 20, vertical: 8),
-                                        decoration: BoxDecoration(
-                                          color: Colors.green,
-                                          borderRadius:
-                                          BorderRadius.circular(20),
-                                        ),
-                                        child: Text(
-                                          "Change",
-                                          style: GoogleFonts.inter(
-                                            fontSize: 13 * fontScale,
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.white,
+                                    Row(
+                                      children: [
+                                        GestureDetector(
+                                          onTap: () => _setDefault(index),
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 16, vertical: 7),
+                                            decoration: BoxDecoration(
+                                              color: Colors.green,
+                                              borderRadius: BorderRadius.circular(20),
+                                            ),
+                                            child: Text("Set default",
+                                              style: GoogleFonts.inter(
+                                                fontSize: 13 * fontScale,
+                                                fontWeight: FontWeight.w600,
+                                                color: Colors.white)),
                                           ),
                                         ),
-                                      ),
+                                        const SizedBox(width: 10),
+                                        GestureDetector(
+                                          onTap: () => _delete(index),
+                                          child: Container(
+                                            padding: const EdgeInsets.all(7),
+                                            decoration: BoxDecoration(
+                                              color: Colors.red.shade50,
+                                              borderRadius: BorderRadius.circular(20),
+                                              border: Border.all(color: Colors.red.shade200),
+                                            ),
+                                            child: Icon(Icons.delete_outline,
+                                                size: 18, color: Colors.red.shade400),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),

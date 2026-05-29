@@ -5,7 +5,9 @@ import 'package:get/get.dart';
 import '../../small-widgets/app_assets.dart';
 import '../../small-widgets/app_colors.dart';
 import '../Service/api_service.dart';
-import '../ServiceHome/mainHomePage.dart';
+import '../Service/fcm_service.dart';
+import '../home/mainhomepage.dart' as customerHome;
+import '../ServiceHome/mainHomePage.dart' as serviceHome;
 import '../driverHome/driverHomePage.dart';
 import 'onBoarding.dart';
 
@@ -36,12 +38,18 @@ class _SplashscreenState extends State<Splashscreen> {
     debugPrint("👤 Stored Role: $role");
 
     if (token != null && token.isNotEmpty) {
+      // Re-upload FCM token so returning users (who skip login) are registered
+      FcmService.uploadCurrentToken();
+
       if (role == "client") {
-        debugPrint("🚀 Navigating to Transporter Home");
+        debugPrint("🚀 Navigating to Customer Home");
+        Get.offAll(() => const customerHome.BaseScreen());
+      } else if (role == "transporter") {
+        debugPrint("🚀 Navigating to Driver Home");
         Get.offAll(() => const DriverHomeScreen());
-      } else if (role == "transporter" || role == "administrator" || role == null) {
-        debugPrint("🚀 Navigating to Client Home (Role: $role)");
-        Get.offAll(() => const BaseScreen());
+      } else if (role == "serviceProvider" || role == "administrator") {
+        debugPrint("🚀 Navigating to Service Provider Home");
+        Get.offAll(() => const serviceHome.BaseScreen());
       } else {
         debugPrint("🚀 Unknown role, going to OnBoardings");
         Get.offAll(() => const OnBoardings());

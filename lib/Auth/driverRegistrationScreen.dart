@@ -20,37 +20,34 @@ class DriverRegistration extends StatefulWidget {
 
 class _DriverRegistrationState extends State<DriverRegistration> {
   // Controllers
-  final _firstNameController    = TextEditingController();
-  final _lastNameController     = TextEditingController();
-  final _phoneController        = TextEditingController();
-  final _locationController     = TextEditingController();
-  final _emailController        = TextEditingController();
-  final _passwordController     = TextEditingController();
-  final _vehicleTypeController  = TextEditingController();
-  final _vehicleModelController = TextEditingController();
-  final _licensePlateController = TextEditingController();
-  final _noteController         = TextEditingController();
+  final _firstNameController = TextEditingController();
+  final _lastNameController  = TextEditingController();
+  final _phoneController     = TextEditingController();
+  final _emailController     = TextEditingController();
+  final _passwordController  = TextEditingController();
+  final _noteController      = TextEditingController();
 
   bool _passwordVisible = false;
   bool _isLoading       = false;
 
   // Country picker
-  String _selectedFlag = '🇮🇩';
-  String _selectedCode = '+62';
+  String _selectedFlag = '🇫🇷';
+  String _selectedCode = '+33';
 
   // Files
   File? _profileImage;
-  File? _ownershipFile;
 
   final List<Map<String, String>> _countries = [
-    {'flag': '🇮🇩', 'code': '+62',  'name': 'Indonesia'},
-    {'flag': '🇮🇳', 'code': '+91',  'name': 'India'},
-    {'flag': '🇺🇸', 'code': '+1',   'name': 'USA'},
+    {'flag': '🇫🇷', 'code': '+33',  'name': 'France'},
+    {'flag': '🇩🇪', 'code': '+49',  'name': 'Germany'},
+    {'flag': '🇧🇪', 'code': '+32',  'name': 'Belgium'},
+    {'flag': '🇳🇱', 'code': '+31',  'name': 'Netherlands'},
+    {'flag': '🇨🇭', 'code': '+41',  'name': 'Switzerland'},
+    {'flag': '🇪🇸', 'code': '+34',  'name': 'Spain'},
+    {'flag': '🇮🇹', 'code': '+39',  'name': 'Italy'},
     {'flag': '🇬🇧', 'code': '+44',  'name': 'UK'},
-    {'flag': '🇦🇺', 'code': '+61',  'name': 'Australia'},
-    {'flag': '🇸🇦', 'code': '+966', 'name': 'Saudi Arabia'},
-    {'flag': '🇦🇪', 'code': '+971', 'name': 'UAE'},
-    {'flag': '🇵🇰', 'code': '+92',  'name': 'Pakistan'},
+    {'flag': '🇵🇹', 'code': '+351', 'name': 'Portugal'},
+    {'flag': '🇵🇱', 'code': '+48',  'name': 'Poland'},
   ];
 
   bool get _isEnabled =>
@@ -65,8 +62,7 @@ class _DriverRegistrationState extends State<DriverRegistration> {
     super.initState();
     for (final c in [
       _firstNameController, _lastNameController, _phoneController,
-      _emailController, _passwordController, _vehicleTypeController,
-      _vehicleModelController, _licensePlateController,
+      _emailController, _passwordController,
     ]) {
       c.addListener(() => setState(() {}));
     }
@@ -76,9 +72,7 @@ class _DriverRegistrationState extends State<DriverRegistration> {
   void dispose() {
     for (final c in [
       _firstNameController, _lastNameController, _phoneController,
-      _locationController, _emailController, _passwordController,
-      _vehicleTypeController, _vehicleModelController,
-      _licensePlateController, _noteController,
+      _emailController, _passwordController, _noteController,
     ]) {
       c.dispose();
     }
@@ -86,15 +80,8 @@ class _DriverRegistrationState extends State<DriverRegistration> {
   }
 
   Future<void> _pickProfileImage() async {
-    final picked = await ImagePicker()
-        .pickImage(source: ImageSource.gallery);
+    final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
     if (picked != null) setState(() => _profileImage = File(picked.path));
-  }
-
-  Future<void> _pickOwnershipFile() async {
-    final picked = await ImagePicker()
-        .pickImage(source: ImageSource.gallery);
-    if (picked != null) setState(() => _ownershipFile = File(picked.path));
   }
 
   void _showCountryPicker() {
@@ -128,19 +115,15 @@ class _DriverRegistrationState extends State<DriverRegistration> {
     setState(() => _isLoading = true);
 
     final response = await ApiService.register(
-      firstName: _firstNameController.text.trim(),
-      lastName:  _lastNameController.text.trim(),
-      fullName:  '${_firstNameController.text.trim()} ${_lastNameController.text.trim()}',
-      email:     _emailController.text.trim(),
-      password:  _passwordController.text.trim(),
-      phone:     '$_selectedCode${_phoneController.text.trim()}',
-      location:  _locationController.text.trim(),
-      address:   _locationController.text.trim(),
-      vehicleType: _vehicleTypeController.text.trim(),
-      vehiclePhoto: _ownershipFile?.path ?? "string",
-      avatar:    _profileImage?.path ?? "string",
+      firstName:    _firstNameController.text.trim(),
+      lastName:     _lastNameController.text.trim(),
+      fullName:     '${_firstNameController.text.trim()} ${_lastNameController.text.trim()}',
+      email:        _emailController.text.trim(),
+      password:     _passwordController.text.trim(),
+      phone:        '$_selectedCode${_phoneController.text.trim()}',
+      avatar:       _profileImage?.path,
       availability: true,
-      role:      "client",
+      role:         "transporter",
     );
 
     setState(() => _isLoading = false);
@@ -437,18 +420,6 @@ class _DriverRegistrationState extends State<DriverRegistration> {
                         ),
                         const SizedBox(height: 14),
 
-                        // Your Location
-                        _label("Your Location", fontScale),
-                        const SizedBox(height: 6),
-                        TextField(
-                            controller: _locationController,
-                            style: GoogleFonts.inter(fontSize: 14 * fontScale),
-                            decoration: _deco("",
-                                prefix: Icon(Icons.my_location_outlined,
-                                    size: 20,
-                                    color: Colors.grey[500]))),
-                        const SizedBox(height: 14),
-
                         // Email
                         _label("Email", fontScale),
                         const SizedBox(height: 6),
@@ -482,104 +453,6 @@ class _DriverRegistrationState extends State<DriverRegistration> {
                           ),
                         ),
                         const SizedBox(height: 14),
-
-                        // Vehicle Type
-                        _label("Vehicle Type", fontScale),
-                        const SizedBox(height: 6),
-                        TextField(
-                            controller: _vehicleTypeController,
-                            style: GoogleFonts.inter(fontSize: 14 * fontScale),
-                            decoration: _deco("Your Vehicle")),
-                        const SizedBox(height: 14),
-
-                        // Vehicle Model
-                        _label("Vehicle Model", fontScale),
-                        const SizedBox(height: 6),
-                        TextField(
-                            controller: _vehicleModelController,
-                            style: GoogleFonts.inter(fontSize: 14 * fontScale),
-                            decoration: _deco("e.g. toyota")),
-                        const SizedBox(height: 14),
-
-                        // License Plate Number
-                        _label("License Plate Number", fontScale),
-                        const SizedBox(height: 6),
-                        TextField(
-                            controller: _licensePlateController,
-                            style: GoogleFonts.inter(fontSize: 14 * fontScale),
-                            decoration: _deco("Enter License Plate")),
-                        const SizedBox(height: 20),
-
-                        // Upload Proof of Vehicle Ownership
-                        Text("Upload Proof of Vehicle Ownership",
-                            style: GoogleFonts.inter(
-                                fontSize: 14 * fontScale,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.black)),
-                        const SizedBox(height: 10),
-                        GestureDetector(
-                          onTap: _pickOwnershipFile,
-                          child: Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                                color: Colors.white,
-                                border: Border.all(
-                                    color: Colors.grey[300]!),
-                                borderRadius: BorderRadius.circular(12)),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 48, height: 48,
-                                  decoration: BoxDecoration(
-                                      color: Colors.grey[100],
-                                      borderRadius:
-                                      BorderRadius.circular(10),
-                                      border: Border.all(
-                                          color: Colors.grey[300]!)),
-                                  child: _ownershipFile != null
-                                      ? ClipRRect(
-                                      borderRadius:
-                                      BorderRadius.circular(10),
-                                      child: Image.file(
-                                          _ownershipFile!,
-                                          fit: BoxFit.cover))
-                                      : Icon(
-                                      Icons.camera_alt_outlined,
-                                      color: Colors.grey[400],
-                                      size: 22),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                    CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        _ownershipFile != null
-                                            ? _ownershipFile!.path
-                                            .split('/')
-                                            .last
-                                            : "Motobike.png",
-                                        style: GoogleFonts.inter(
-                                            fontSize: 13 * fontScale,
-                                            fontWeight: FontWeight.w500,
-                                            color: Colors.black87),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text("JPEG | PNG | PDF",
-                                          style: GoogleFonts.inter(
-                                              fontSize: 11 * fontScale,
-                                              color: Colors.grey[400])),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-
-                        const SizedBox(height: 20),
 
                         // Add Note (Optional)
                         _label("Add Note (Optional)", fontScale),

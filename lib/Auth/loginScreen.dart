@@ -5,14 +5,14 @@ import 'package:kaf8/driverHome/driverHomePage.dart';
 
 import '../profile/EnterEmailScreen.dart';
 import '../Service/api_service.dart';
+import '../Service/fcm_service.dart';
 import '../Utils/appColor.dart';
 import '../Utils/primaryButtion.dart';
 import '../Utils/responsiveUtils.dart';
 import '../Utils/socialButton.dart';
 import '../home/mainhomepage.dart';
+import '../ServiceHome/mainHomePage.dart' as serviceHome;
 import 'RegisterScreenuser.dart';
-import 'driverRegistrationScreen.dart';
-
 import 'driverRegistrationScreen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -66,10 +66,17 @@ class _LoginScreenState extends State<LoginScreen> {
     if (response['success'] == true) {
       Get.snackbar("Success", response['message'] ?? "Login successful",
           backgroundColor: Colors.green, colorText: Colors.white);
-      
+
+      // Upload FCM token now that auth token is saved
+      FcmService.uploadCurrentToken();
+
       final role = await ApiService.getUserRole();
       if (role == "client") {
+        Get.offAll(() => const BaseScreen());
+      } else if (role == "transporter") {
         Get.offAll(() => const DriverHomeScreen());
+      } else if (role == "serviceProvider" || role == "administrator") {
+        Get.offAll(() => const serviceHome.BaseScreen());
       } else {
         Get.offAll(() => const BaseScreen());
       }
@@ -319,21 +326,15 @@ class _LoginScreenState extends State<LoginScreen> {
                           text: "Continue with Google",
                           assetPath: 'assets/icons/google_icon.png',
                           backgroundColor: const Color(0xFF5384EE),
-                          onPressed: () {},
-                        ),
-                        const SizedBox(height: 12),
-                        SocialButton(
-                          text: "Continue with Facebook",
-                          assetPath: 'assets/icons/facebook_icon.png',
-                          backgroundColor: const Color(0xFF415792),
-                          onPressed: () {},
-                        ),
-                        const SizedBox(height: 12),
-                        SocialButton(
-                          text: "Continue with Apple",
-                          assetPath: 'assets/icons/apple_icon.png',
-                          backgroundColor: Colors.black,
-                          onPressed: () {},
+                          onPressed: () {
+                            Get.snackbar(
+                              "Coming Soon",
+                              "Google login will be available in a future update",
+                              backgroundColor: Colors.grey[800],
+                              colorText: Colors.white,
+                              duration: const Duration(seconds: 2),
+                            );
+                          },
                         ),
                         SizedBox(height: 20 * scale),
                         Center(

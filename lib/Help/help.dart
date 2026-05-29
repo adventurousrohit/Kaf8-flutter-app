@@ -16,24 +16,57 @@ class _HelpScreenState extends State<HelpScreen> {
 
   final List<Map<String, dynamic>> _faqs = [
     {
-      'q': 'Lorem ipsum dolor sit amet',
-      'a': 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. '
-          'Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+      'q': 'How do I create a delivery order?',
+      'a': 'Tap the "Send a Package" button on the home screen. Fill in the pickup address, '
+          'delivery address, and package details. Choose a vehicle type, then confirm your order. '
+          'A nearby transporter will accept and handle your delivery.',
       'expanded': false,
     },
     {
-      'q': 'Lorem ipsum dolor sit amet',
-      'a': 'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.',
+      'q': 'How can I track my delivery in real time?',
+      'a': 'Once a transporter accepts your order, you can track their live location on the map '
+          'directly from your order details screen. The map updates every few seconds so you always '
+          'know where your package is.',
       'expanded': false,
     },
     {
-      'q': 'Lorem ipsum dolor sit amet',
-      'a': 'Duis aute irure dolor in reprehenderit in voluptate velit esse.',
+      'q': 'What payment methods are accepted?',
+      'a': 'We accept major credit and debit cards (Visa, Mastercard) via our secure Stripe '
+          'integration. You can also save cards to your account for faster checkout on future orders.',
       'expanded': false,
     },
     {
-      'q': 'Lorem ipsum dolor sit amet',
-      'a': 'Excepteur sint occaecat cupidatat non proident sunt in culpa.',
+      'q': 'How do I cancel an order?',
+      'a': 'You can cancel a pending order before a transporter accepts it. Open the order from '
+          'your Orders tab and tap "Cancel Order". Once a transporter has accepted and is on the way, '
+          'cancellation may incur a fee.',
+      'expanded': false,
+    },
+    {
+      'q': 'What should I do if my package is damaged or lost?',
+      'a': 'Please contact our support team immediately via the Live Chat button below. '
+          'Provide your order number and a description of the issue. We will investigate and '
+          'resolve the matter within 48 hours.',
+      'expanded': false,
+    },
+    {
+      'q': 'How do I become a transporter on KAF8?',
+      'a': 'Select the "Transporter" role during registration. Upload your vehicle details and '
+          'driver license. Once your profile is approved, you can start accepting delivery orders '
+          'near your location.',
+      'expanded': false,
+    },
+    {
+      'q': 'How is the delivery price calculated?',
+      'a': 'The delivery price is based on the distance between pickup and drop-off locations, '
+          'the vehicle type required, and the weight or size of the package. You will always see '
+          'the price before confirming an order.',
+      'expanded': false,
+    },
+    {
+      'q': 'How do I update my delivery address?',
+      'a': 'Go to Settings → My Address to manage your saved addresses. You can add new addresses, '
+          'set a default address, or remove old ones at any time.',
       'expanded': false,
     },
   ];

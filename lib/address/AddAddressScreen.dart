@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../Service/api_service.dart';
 import '../Utils/appColor.dart';
 import '../Utils/responsiveUtils.dart';
 
@@ -11,35 +13,58 @@ class AddAddressScreen extends StatefulWidget {
 }
 
 class _AddAddressScreenState extends State<AddAddressScreen> {
-  final _nameController          = TextEditingController();
-  final _emailController         = TextEditingController();
+  final _labelController         = TextEditingController();
   final _detailAddressController = TextEditingController();
 
   String? _selectedCity;
-  String? _selectedDistrict;
+  String? _selectedRegion;
 
   final List<String> _cities = [
-    'New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix',
+    'Paris', 'Lyon', 'Marseille', 'Toulouse', 'Nice',
+    'Bordeaux', 'Nantes', 'Strasbourg', 'Lille', 'Rennes',
   ];
 
-  final List<String> _districts = [
-    'Manhattan', 'Brooklyn', 'Queens', 'Bronx', 'Staten Island',
+  final List<String> _regions = [
+    'Île-de-France', 'Auvergne-Rhône-Alpes', 'Provence-Alpes-Côte d\'Azur',
+    'Occitanie', 'Nouvelle-Aquitaine', 'Bretagne', 'Normandie',
+    'Grand Est', 'Hauts-de-France', 'Pays de la Loire',
   ];
+  bool _isSubmitting = false;
 
   @override
   void dispose() {
-    _nameController.dispose();
-    _emailController.dispose();
+    _labelController.dispose();
     _detailAddressController.dispose();
     super.dispose();
   }
 
   bool get _isEnabled =>
-      _nameController.text.isNotEmpty &&
-      _emailController.text.isNotEmpty &&
+      !_isSubmitting &&
+      _labelController.text.isNotEmpty &&
       _selectedCity != null &&
-      _selectedDistrict != null &&
       _detailAddressController.text.isNotEmpty;
+
+  Future<void> _submit() async {
+    setState(() => _isSubmitting = true);
+    final response = await ApiService.createAddress({
+      "label": _labelController.text.trim(),
+      "city": _selectedCity,
+      "region": _selectedRegion,
+      "detailAddress": _detailAddressController.text.trim(),
+      "country": "France",
+    });
+    if (!mounted) return;
+    setState(() => _isSubmitting = false);
+    if (response['success'] == true) {
+      Get.back(result: true);
+      return;
+    }
+    Get.snackbar(
+      "Error",
+      response['message']?.toString() ?? "Failed to save address",
+      snackPosition: SnackPosition.BOTTOM,
+    );
+  }
 
   // ── Shared input decoration ─────────────────────────────────────────────
   InputDecoration _inputDeco(String hint) {
@@ -120,27 +145,14 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Full Name
-                    _fieldLabel("Full Name", fontScale),
+                    // Label
+                    _fieldLabel("Label (e.g. Home, Work)", fontScale),
                     const SizedBox(height: 8),
                     TextField(
-                      controller: _nameController,
+                      controller: _labelController,
                       onChanged: (_) => setState(() {}),
                       style: GoogleFonts.inter(fontSize: 14 * fontScale),
-                      decoration: _inputDeco("Full Name"),
-                    ),
-
-                    const SizedBox(height: 18),
-
-                    // Email
-                    _fieldLabel("Email", fontScale),
-                    const SizedBox(height: 8),
-                    TextField(
-                      controller: _emailController,
-                      keyboardType: TextInputType.emailAddress,
-                      onChanged: (_) => setState(() {}),
-                      style: GoogleFonts.inter(fontSize: 14 * fontScale),
-                      decoration: _inputDeco("Email"),
+                      decoration: _inputDeco("Home, Office..."),
                     ),
 
                     const SizedBox(height: 18),
@@ -149,7 +161,7 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
                     _fieldLabel("City", fontScale),
                     const SizedBox(height: 8),
                     _dropdownField(
-                      hint: "City",
+                      hint: "Select city",
                       value: _selectedCity,
                       items: _cities,
                       fontScale: fontScale,
@@ -159,16 +171,16 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
 
                     const SizedBox(height: 18),
 
-                    // District dropdown
-                    _fieldLabel("District", fontScale),
+                    // Region dropdown
+                    _fieldLabel("Region (optional)", fontScale),
                     const SizedBox(height: 8),
                     _dropdownField(
-                      hint: "District",
-                      value: _selectedDistrict,
-                      items: _districts,
+                      hint: "Select region",
+                      value: _selectedRegion,
+                      items: _regions,
                       fontScale: fontScale,
                       onChanged: (val) =>
-                          setState(() => _selectedDistrict = val),
+                          setState(() => _selectedRegion = val),
                     ),
 
                     const SizedBox(height: 18),
@@ -200,12 +212,10 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
                               borderRadius: BorderRadius.circular(30)),
                         ),
                         onPressed: _isEnabled
-                            ? () {
-                                Navigator.pop(context);
-                              }
+                            ? _submit
                             : null,
                         child: Text(
-                          "Confirm",
+                          _isSubmitting ? "Saving..." : "Confirm",
                           style: GoogleFonts.inter(
                             fontSize: 16 * fontScale,
                             fontWeight: FontWeight.w600,
