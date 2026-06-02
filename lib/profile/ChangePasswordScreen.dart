@@ -65,13 +65,13 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     }
   }
 
-  InputDecoration _fieldDeco(String hint, bool visible, VoidCallback toggle,
+  InputDecoration _fieldDeco(String hint, bool visible, VoidCallback toggle, ThemeData theme,
       {IconData prefixIconData = Icons.lock_outline}) {
     return InputDecoration(
       hintText: hint,
       hintStyle: GoogleFonts.inter(color: Colors.grey[400], fontSize: 14),
       filled: true,
-      fillColor: Colors.white,
+      fillColor: theme.cardColor,
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       prefixIcon: Icon(prefixIconData, size: 18, color: Colors.grey[500]),
       suffixIcon: IconButton(
@@ -83,10 +83,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       ),
       border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: Colors.grey[300]!)),
+          borderSide: BorderSide(color: theme.dividerColor)),
       enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: Colors.grey[300]!)),
+          borderSide: BorderSide(color: theme.dividerColor)),
       focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide(color: Appcolor.secondaryColor, width: 1.5)),
@@ -157,16 +157,18 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   Widget build(BuildContext context) {
     final fontScale = ResponsiveUtils.fontScale(context);
     final size = MediaQuery.of(context).size;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFEAF4FB),
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Stack(
         children: [
           Positioned(
               top: 0, left: 0,
               child: Image.asset('assets/images/bg_top_left.png',
                   width: size.width * 0.60, fit: BoxFit.contain,
-                  opacity: const AlwaysStoppedAnimation(0.18))),
+                  opacity: AlwaysStoppedAnimation(isDark ? 0.05 : 0.18))),
           Positioned(
               top: 0, right: 0,
               child: Transform(
@@ -174,18 +176,18 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   transform: Matrix4.rotationY(3.14159),
                   child: Image.asset('assets/images/bg_bottom_right.png',
                       width: size.width * 0.36, fit: BoxFit.contain,
-                      opacity: const AlwaysStoppedAnimation(0.13)))),
+                      opacity: AlwaysStoppedAnimation(isDark ? 0.04 : 0.13)))),
           Positioned(
               bottom: 0, right: 0,
               child: Image.asset('assets/images/bg_bottom_right.png',
                   width: size.width * 0.55, fit: BoxFit.contain,
-                  opacity: const AlwaysStoppedAnimation(0.28))),
+                  opacity: AlwaysStoppedAnimation(isDark ? 0.08 : 0.28))),
 
           SafeArea(
             child: Column(
               children: [
                 Container(
-                  color: Colors.white,
+                  color: theme.appBarTheme.backgroundColor,
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   child: Row(
                     children: [
@@ -195,17 +197,17 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                           width: 36, height: 36,
                           decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              border: Border.all(color: Colors.grey[400]!, width: 1.5),
-                              color: Colors.white.withOpacity(0.6)),
-                          child: const Icon(Icons.arrow_back_ios_new,
-                              size: 15, color: Colors.black),
+                              border: Border.all(color: isDark ? Colors.white24 : Colors.grey[400]!, width: 1.5),
+                              color: theme.cardColor.withOpacity(0.6)),
+                          child: Icon(Icons.arrow_back_ios_new,
+                              size: 15, color: theme.iconTheme.color),
                         ),
                       ),
                       const Spacer(),
                       Text(
                         _isAuthFlow ? "Change Password" : "Reset Password",
                         style: GoogleFonts.inter(
-                            fontSize: 17 * fontScale, fontWeight: FontWeight.w600),
+                            fontSize: 17 * fontScale, fontWeight: FontWeight.w600, color: theme.textTheme.titleLarge?.color),
                       ),
                       const Spacer(),
                       const SizedBox(width: 36),
@@ -223,41 +225,41 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
                         if (_isAuthFlow) ...[
                           // ── Authenticated flow: current password ────
-                          _label("Current Password", fontScale),
+                          _label("Current Password", fontScale, theme),
                           const SizedBox(height: 8),
                           TextField(
                             controller: _currentPasswordController,
                             obscureText: !_currentVisible,
-                            style: GoogleFonts.inter(fontSize: 14 * fontScale),
+                            style: GoogleFonts.inter(fontSize: 14 * fontScale, color: theme.textTheme.bodyLarge?.color),
                             decoration: _fieldDeco(
                                 "Enter current password", _currentVisible,
-                                () => setState(() => _currentVisible = !_currentVisible)),
+                                () => setState(() => _currentVisible = !_currentVisible), theme),
                           ),
                           const SizedBox(height: 18),
                         ] else ...[
                           // ── Forgot-password flow: reset code ────────
-                          _label("Reset Code", fontScale),
+                          _label("Reset Code", fontScale, theme),
                           const SizedBox(height: 8),
                           TextField(
                             controller: _codeController,
                             keyboardType: TextInputType.number,
-                            style: GoogleFonts.inter(fontSize: 14 * fontScale),
+                            style: GoogleFonts.inter(fontSize: 14 * fontScale, color: theme.textTheme.bodyLarge?.color),
                             decoration: InputDecoration(
                               hintText: "Enter 6-digit code from email",
                               hintStyle: GoogleFonts.inter(
                                   color: Colors.grey[400], fontSize: 14),
                               filled: true,
-                              fillColor: Colors.white,
+                              fillColor: theme.cardColor,
                               contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 14, vertical: 14),
                               prefixIcon: Icon(Icons.pin_outlined,
                                   size: 18, color: Colors.grey[500]),
                               border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10),
-                                  borderSide: BorderSide(color: Colors.grey[300]!)),
+                                  borderSide: BorderSide(color: theme.dividerColor)),
                               enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10),
-                                  borderSide: BorderSide(color: Colors.grey[300]!)),
+                                  borderSide: BorderSide(color: theme.dividerColor)),
                               focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10),
                                   borderSide: BorderSide(
@@ -267,29 +269,29 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                           const SizedBox(height: 18),
                         ],
 
-                        _label("New Password", fontScale),
+                        _label("New Password", fontScale, theme),
                         const SizedBox(height: 8),
                         TextField(
                           controller: _newPasswordController,
                           obscureText: !_newVisible,
-                          style: GoogleFonts.inter(fontSize: 14 * fontScale),
+                          style: GoogleFonts.inter(fontSize: 14 * fontScale, color: theme.textTheme.bodyLarge?.color),
                           decoration: _fieldDeco(
                               "Enter new password", _newVisible,
-                              () => setState(() => _newVisible = !_newVisible)),
+                              () => setState(() => _newVisible = !_newVisible), theme),
                         ),
 
                         const SizedBox(height: 18),
 
-                        _label("Confirm Password", fontScale),
+                        _label("Confirm Password", fontScale, theme),
                         const SizedBox(height: 8),
                         TextField(
                           controller: _confirmController,
                           obscureText: !_confirmVisible,
-                          style: GoogleFonts.inter(fontSize: 14 * fontScale),
+                          style: GoogleFonts.inter(fontSize: 14 * fontScale, color: theme.textTheme.bodyLarge?.color),
                           decoration: _fieldDeco(
                               "Re-enter new password", _confirmVisible,
                               () => setState(
-                                  () => _confirmVisible = !_confirmVisible)),
+                                  () => _confirmVisible = !_confirmVisible), theme),
                         ),
 
                         const SizedBox(height: 40),
@@ -300,7 +302,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
                               backgroundColor:
-                                  _isEnabled ? Colors.green : Colors.grey[300],
+                                  _isEnabled ? Colors.green : (isDark ? Colors.white10 : Colors.grey[300]),
                               elevation: 0,
                               shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(30)),
@@ -338,12 +340,12 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     );
   }
 
-  Widget _label(String text, double fontScale) => Text(
+  Widget _label(String text, double fontScale, ThemeData theme) => Text(
         text,
         style: GoogleFonts.inter(
             fontSize: 14 * fontScale,
             fontWeight: FontWeight.w500,
-            color: Colors.black87),
+            color: theme.textTheme.bodyLarge?.color?.withOpacity(0.87)),
       );
 }
 
@@ -355,9 +357,11 @@ class _SuccessDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final fontScale = ResponsiveUtils.fontScale(context);
+    final theme = Theme.of(context);
+
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      backgroundColor: Colors.white,
+      backgroundColor: theme.cardColor,
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -375,7 +379,7 @@ class _SuccessDialog extends StatelessWidget {
               style: GoogleFonts.inter(
                   fontSize: 18 * fontScale,
                   fontWeight: FontWeight.w700,
-                  color: Colors.black),
+                  color: theme.textTheme.titleLarge?.color),
             ),
             const SizedBox(height: 8),
             Text(
@@ -384,7 +388,7 @@ class _SuccessDialog extends StatelessWidget {
                   : "Your password has been successfully reset. Please log in with your new password.",
               textAlign: TextAlign.center,
               style: GoogleFonts.inter(
-                  fontSize: 13 * fontScale, color: Colors.grey[600]),
+                  fontSize: 13 * fontScale, color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6)),
             ),
             const SizedBox(height: 24),
             SizedBox(

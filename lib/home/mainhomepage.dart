@@ -66,8 +66,10 @@ class _BaseScreenState extends State<BaseScreen> {
     final fontScale = ResponsiveUtils.fontScale(context);
     final screens   = _getScreens();
     final navItems  = _getNavItems();
+    final theme = Theme.of(context);
 
     return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: PageView(
         controller: _controller,
         physics: const NeverScrollableScrollPhysics(), // disable swipe — nav controls it
@@ -76,7 +78,7 @@ class _BaseScreenState extends State<BaseScreen> {
       ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-        child: _buildBottomNavBar(navItems, scale, fontScale),
+        child: _buildBottomNavBar(navItems, scale, fontScale, theme),
       ),
     );
   }
@@ -86,19 +88,22 @@ class _BaseScreenState extends State<BaseScreen> {
       List<BottomNavItem> navItems,
       double scale,
       double fontScale,
+      ThemeData theme,
       ) {
+    final isDark = theme.brightness == Brightness.dark;
     return Container(
       padding: EdgeInsets.symmetric(vertical: 10 * scale, horizontal: 8),
       decoration: BoxDecoration(
-        color: Colors.green,
+        color: isDark ? const Color(0xFF1E1E1E) : Colors.green,
         borderRadius: BorderRadius.circular(40),
         boxShadow: [
           BoxShadow(
-            color: Colors.green.withOpacity(0.40),
+            color: (isDark ? Colors.black : Colors.green).withOpacity(0.40),
             blurRadius: 18,
             offset: const Offset(0, 6),
           ),
         ],
+        border: isDark ? Border.all(color: Colors.white10) : null,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -115,7 +120,7 @@ class _BaseScreenState extends State<BaseScreen> {
                   horizontal: isSelected ? 14 : 10, vertical: 6),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? Colors.white.withOpacity(0.20)
+                    ? (isDark ? Colors.green.withOpacity(0.2) : Colors.white.withOpacity(0.20))
                     : Colors.transparent,
                 borderRadius: BorderRadius.circular(24),
               ),
@@ -125,7 +130,7 @@ class _BaseScreenState extends State<BaseScreen> {
                   Icon(
                     item.icon,
                     size: 24 * scale,
-                    color: isSelected ? Colors.white : Colors.white60,
+                    color: isSelected ? (isDark ? Colors.green : Colors.white) : (isDark ? Colors.white54 : Colors.white60),
                   ),
                   const SizedBox(height: 3),
                   Text(
@@ -134,7 +139,7 @@ class _BaseScreenState extends State<BaseScreen> {
                       fontSize: 11 * fontScale,
                       fontWeight:
                       isSelected ? FontWeight.w600 : FontWeight.w400,
-                      color: isSelected ? Colors.white : Colors.white60,
+                      color: isSelected ? (isDark ? Colors.green : Colors.white) : (isDark ? Colors.white54 : Colors.white60),
                     ),
                   ),
                 ],

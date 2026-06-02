@@ -5,6 +5,7 @@ const Map<String, String> enUs = {
   'my_profile': 'My profile',
   'my_address': 'My Address',
   'language': 'Language',
+  'dark_mode': 'Dark Mode',
   'other_activity': 'Other Activity',
   'bank_account': 'Bank Account',
   'notification': 'Notification',

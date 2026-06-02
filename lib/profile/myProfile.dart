@@ -16,9 +16,11 @@ class MyProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final fontScale = ResponsiveUtils.fontScale(context);
     final size = MediaQuery.of(context).size;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFEAF4FB),
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Stack(
         children: [
           // ── Background shapes ──────────────────────────────────────
@@ -27,7 +29,7 @@ class MyProfileScreen extends StatelessWidget {
             child: Image.asset('assets/images/bg_top_left.png',
                 width: size.width * 0.60,
                 fit: BoxFit.contain,
-                opacity: const AlwaysStoppedAnimation(0.18)),
+                opacity: AlwaysStoppedAnimation(isDark ? 0.05 : 0.18)),
           ),
           Positioned(
             top: 0, right: 0,
@@ -37,7 +39,7 @@ class MyProfileScreen extends StatelessWidget {
               child: Image.asset('assets/images/bg_bottom_right.png',
                   width: size.width * 0.36,
                   fit: BoxFit.contain,
-                  opacity: const AlwaysStoppedAnimation(0.13)),
+                  opacity: AlwaysStoppedAnimation(isDark ? 0.04 : 0.13)),
             ),
           ),
           Positioned(
@@ -45,7 +47,7 @@ class MyProfileScreen extends StatelessWidget {
             child: Image.asset('assets/images/bg_bottom_right.png',
                 width: size.width * 0.55,
                 fit: BoxFit.contain,
-                opacity: const AlwaysStoppedAnimation(0.28)),
+                opacity: AlwaysStoppedAnimation(isDark ? 0.08 : 0.28)),
           ),
 
           // ── Main content ───────────────────────────────────────────
@@ -63,15 +65,16 @@ class MyProfileScreen extends StatelessWidget {
                         Align(
                           alignment: Alignment.centerLeft,
                           child: IconButton(
-                            icon: const Icon(Icons.arrow_back_ios,
-                                color: Colors.black, size: 20),
+                            icon: Icon(Icons.arrow_back_ios,
+                                color: theme.iconTheme.color, size: 20),
                             onPressed: () => Navigator.pop(context),
                           ),
                         ),
                       Text("Profile",
                           style: GoogleFonts.inter(
                               fontSize: 18 * fontScale,
-                              fontWeight: FontWeight.w600)),
+                              fontWeight: FontWeight.w600,
+                              color: theme.textTheme.titleLarge?.color)),
                     ],
                   ),
                 ),
@@ -86,7 +89,7 @@ class MyProfileScreen extends StatelessWidget {
                         // Menu list card
                         Container(
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: theme.cardColor,
                             borderRadius: BorderRadius.circular(16),
                             boxShadow: [BoxShadow(
                                 color: Colors.black.withOpacity(0.04),
@@ -94,16 +97,16 @@ class MyProfileScreen extends StatelessWidget {
                           ),
                           child: Column(
                             children: [
-                              _menuRow("Personal Information", fontScale,
+                              _menuRow("Personal Information", fontScale, theme,
                                       () => Get.to(() => const PersonalInformationScreen())),
-                              _divider(),
-                              _menuRow("Personal Editing", fontScale,
+                              _divider(theme),
+                              _menuRow("Personal Editing", fontScale, theme,
                                       () => Get.to(() => const PersonalEditingScreen())),
-                              _divider(),
-                              _menuRow("Change Password", fontScale,
+                              _divider(theme),
+                              _menuRow("Change Password", fontScale, theme,
                                       () => Get.to(() => const ChangePasswordScreen())),
-                              _divider(),
-                              _menuRow("Help", fontScale, () => Get.to(() => const HelpScreen())),
+                              _divider(theme),
+                              _menuRow("Help", fontScale, theme, () => Get.to(() => const HelpScreen())),
                             ],
                           ),
                         ),
@@ -143,7 +146,7 @@ class MyProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _menuRow(String title, double fontScale, VoidCallback onTap) {
+  Widget _menuRow(String title, double fontScale, ThemeData theme, VoidCallback onTap) {
     return InkWell(
       onTap: onTap,
       child: Padding(
@@ -154,7 +157,7 @@ class MyProfileScreen extends StatelessWidget {
             Text(title,
                 style: GoogleFonts.inter(
                     fontSize: 15 * fontScale,
-                    color: Colors.black87)),
+                    color: theme.textTheme.bodyLarge?.color?.withOpacity(0.87))),
             const Icon(Icons.chevron_right, color: Colors.grey, size: 20),
           ],
         ),
@@ -162,8 +165,8 @@ class MyProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _divider() =>
-      const Divider(height: 1, thickness: 0.8, indent: 16, endIndent: 16);
+  Widget _divider(ThemeData theme) =>
+      Divider(height: 1, thickness: 0.8, indent: 16, endIndent: 16, color: theme.dividerColor);
 
   void _showLogoutDialog(BuildContext context) {
     showDialog(

@@ -46,33 +46,35 @@ class _NotificationPageState extends State<NotificationPage> {
   Widget build(BuildContext context) {
     final fontScale = ResponsiveUtils.fontScale(context);
     final size      = MediaQuery.of(context).size;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFEAF4FB),
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Stack(
         children: [
           // ── Background shapes ──────────────────────────────────────
           Positioned(top: 0, left: 0,
               child: Image.asset('assets/images/bg_top_left.png',
                   width: size.width * 0.62, fit: BoxFit.contain,
-                  opacity: const AlwaysStoppedAnimation(0.20))),
+                  opacity: AlwaysStoppedAnimation(isDark ? 0.05 : 0.20))),
           Positioned(top: 0, right: 0,
               child: Transform(alignment: Alignment.center,
                   transform: Matrix4.rotationY(3.14159),
                   child: Image.asset('assets/images/bg_bottom_right.png',
                       width: size.width * 0.36, fit: BoxFit.contain,
-                      opacity: const AlwaysStoppedAnimation(0.13)))),
+                      opacity: AlwaysStoppedAnimation(isDark ? 0.04 : 0.13)))),
           Positioned(bottom: 0, right: 0,
               child: Image.asset('assets/images/bg_bottom_right.png',
                   width: size.width * 0.50, fit: BoxFit.contain,
-                  opacity: const AlwaysStoppedAnimation(0.25))),
+                  opacity: AlwaysStoppedAnimation(isDark ? 0.08 : 0.25))),
 
           SafeArea(
             child: Column(
               children: [
                 // ── Header ──────────────────────────────────────────
                 Container(
-                  color: Colors.white,
+                  color: theme.appBarTheme.backgroundColor,
                   padding: const EdgeInsets.symmetric(
                       horizontal: 16, vertical: 12),
                   child: Row(
@@ -85,9 +87,9 @@ class _NotificationPageState extends State<NotificationPage> {
                           decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               border: Border.all(
-                                  color: Colors.grey[800]!, width: 1.8)),
-                          child: const Icon(Icons.arrow_back_ios_new,
-                              size: 15, color: Colors.black),
+                                  color: isDark ? Colors.white24 : Colors.grey[800]!, width: 1.8)),
+                          child: Icon(Icons.arrow_back_ios_new,
+                              size: 15, color: theme.iconTheme.color),
                         ),
                       ),
                       const Spacer(),
@@ -95,30 +97,8 @@ class _NotificationPageState extends State<NotificationPage> {
                           style: GoogleFonts.inter(
                               fontSize: 17 * fontScale,
                               fontWeight: FontWeight.w600,
-                              color: Colors.black)),
+                              color: theme.textTheme.titleLarge?.color)),
                       const Spacer(),
-                      // Mail icon
-                      // Icon(Icons.mail_outline,
-                      //     size: 22, color: Colors.black87),
-                      // const SizedBox(width: 10),
-                      // // Bell with dot
-                      // Stack(
-                      //   children: [
-                      //     const Icon(Icons.notifications_none,
-                      //         size: 22, color: Colors.black87),
-                      //     Positioned(
-                      //       right: 0, top: 0,
-                      //       child: Container(
-                      //         width: 7, height: 7,
-                      //         decoration: const BoxDecoration(
-                      //             color: Colors.orange,
-                      //             shape: BoxShape.circle),
-                      //       ),
-                      //     ),
-                      //   ],
-                      // ),
-                      // const SizedBox(width: 10),
-                      // Avatar
                       const CircleAvatar(
                         radius: 16,
                         backgroundImage: NetworkImage(
@@ -145,14 +125,14 @@ class _NotificationPageState extends State<NotificationPage> {
                               ? Center(
                                   child: Text(
                                     "No notifications yet",
-                                    style: GoogleFonts.inter(color: Colors.grey[600]),
+                                    style: GoogleFonts.inter(color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6)),
                                   ),
                                 )
                               : ListView.builder(
                     padding: const EdgeInsets.fromLTRB(16, 0, 16, 30),
                     itemCount: _notifications.length,
                     itemBuilder: (_, i) =>
-                        _buildCard(i, fontScale),
+                        _buildCard(i, fontScale, theme),
                   ),
                 ),
               ],
@@ -163,7 +143,7 @@ class _NotificationPageState extends State<NotificationPage> {
     );
   }
 
-  Widget _buildCard(int index, double fontScale) {
+  Widget _buildCard(int index, double fontScale, ThemeData theme) {
     final notif     = _notifications[index];
     final bool done = _completed[index];
 
@@ -171,11 +151,11 @@ class _NotificationPageState extends State<NotificationPage> {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade100),
+        border: Border.all(color: theme.dividerColor),
         boxShadow: [BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: Colors.black.withOpacity(0.04),
             blurRadius: 6, offset: const Offset(0, 2))],
       ),
       child: Row(
@@ -185,7 +165,7 @@ class _NotificationPageState extends State<NotificationPage> {
           Container(
             width: 48, height: 48,
             decoration: BoxDecoration(
-              color: const Color(0xFFB2EBE8),
+              color: const Color(0xFFB2EBE8).withOpacity(theme.brightness == Brightness.dark ? 0.2 : 1.0),
               borderRadius: BorderRadius.circular(10),
             ),
             child: const Center(
@@ -204,19 +184,19 @@ class _NotificationPageState extends State<NotificationPage> {
                     style: GoogleFonts.inter(
                         fontSize: 13 * fontScale,
                         fontWeight: FontWeight.w700,
-                        color: Colors.black)),
+                        color: theme.textTheme.bodyLarge?.color)),
                 const SizedBox(height: 3),
                 Text((notif['message'] ?? "").toString(),
                     style: GoogleFonts.inter(
                         fontSize: 11 * fontScale,
-                        color: Colors.grey[500]),
+                        color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6)),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis),
                 const SizedBox(height: 3),
                 Text((notif['createdAt'] ?? "").toString(),
                     style: GoogleFonts.inter(
                         fontSize: 10 * fontScale,
-                        color: Colors.grey[400])),
+                        color: theme.textTheme.bodySmall?.color?.withOpacity(0.5))),
               ],
             ),
           ),
@@ -230,7 +210,7 @@ class _NotificationPageState extends State<NotificationPage> {
               Text("Mark all as read",
                   style: GoogleFonts.inter(
                       fontSize: 9 * fontScale,
-                      color: Colors.grey[400])),
+                      color: theme.textTheme.bodySmall?.color?.withOpacity(0.5))),
               const SizedBox(height: 8),
               GestureDetector(
                 onTap: () => setState(
@@ -241,7 +221,7 @@ class _NotificationPageState extends State<NotificationPage> {
                   decoration: BoxDecoration(
                     color: done
                         ? Colors.green
-                        : Colors.grey.shade400,
+                        : theme.dividerColor,
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
@@ -249,7 +229,7 @@ class _NotificationPageState extends State<NotificationPage> {
                     style: GoogleFonts.inter(
                         fontSize: 9 * fontScale,
                         fontWeight: FontWeight.w500,
-                        color: Colors.white),
+                        color: done ? Colors.white : theme.textTheme.bodySmall?.color),
                   ),
                 ),
               ),

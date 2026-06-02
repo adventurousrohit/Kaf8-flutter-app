@@ -10,11 +10,13 @@ import 'package:kaf8/setting/LanguageScreen.dart';
 import 'package:kaf8/setting/NotificationSettingScreen.dart';
 
 import '../Controller/user_profile_controller.dart';
+import '../Controller/theme_controller.dart';
 import '../Help/favoritelist.dart';
 import '../Help/helpchat.dart';
 import '../Help/notification.dart';
 import '../Utils/avatar_widget.dart';
 import '../Utils/responsiveUtils.dart';
+import '../home/menuItemScreen.dart';
 import '../profile/myProfile.dart';
 import '../address/addressScreen.dart';
 
@@ -24,11 +26,14 @@ class SettingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final profileCtrl = Get.find<UserProfileController>();
+    final themeCtrl = Get.find<ThemeController>();
     final fontScale = ResponsiveUtils.fontScale(context);
     final size      = MediaQuery.of(context).size;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFEAF4FB),
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Stack(
         children: [
           // ── Top-left geometric background ──────────────────────────
@@ -40,7 +45,7 @@ class SettingScreen extends StatelessWidget {
               width: size.width * 0.65,
               fit: BoxFit.contain,
               alignment: Alignment.topLeft,
-              opacity: const AlwaysStoppedAnimation(0.22),
+              opacity: AlwaysStoppedAnimation(isDark ? 0.05 : 0.22),
             ),
           ),
 
@@ -55,7 +60,7 @@ class SettingScreen extends StatelessWidget {
                 'assets/images/bg_bottom_right.png',
                 width: size.width * 0.38,
                 fit: BoxFit.contain,
-                opacity: const AlwaysStoppedAnimation(0.15),
+                opacity: AlwaysStoppedAnimation(isDark ? 0.04 : 0.15),
               ),
             ),
           ),
@@ -69,7 +74,7 @@ class SettingScreen extends StatelessWidget {
               width: size.width * 0.60,
               fit: BoxFit.contain,
               alignment: Alignment.bottomRight,
-              opacity: const AlwaysStoppedAnimation(0.30),
+              opacity: AlwaysStoppedAnimation(isDark ? 0.08 : 0.30),
             ),
           ),
 
@@ -84,7 +89,7 @@ class SettingScreen extends StatelessWidget {
                 'assets/images/bg_bottom_right.png',
                 width: size.width * 0.32,
                 fit: BoxFit.contain,
-                opacity: const AlwaysStoppedAnimation(0.12),
+                opacity: AlwaysStoppedAnimation(isDark ? 0.03 : 0.12),
               ),
             ),
           ),
@@ -95,7 +100,7 @@ class SettingScreen extends StatelessWidget {
               children: [
                 // ── WHITE HEADER ──────────────────────────────────
                 Container(
-                  color: Colors.white,
+                  color: theme.appBarTheme.backgroundColor,
                   padding: const EdgeInsets.symmetric(
                       horizontal: 16, vertical: 14),
                   child: Row(
@@ -107,7 +112,7 @@ class SettingScreen extends StatelessWidget {
                         style: GoogleFonts.inter(
                           fontSize: 18 * fontScale,
                           fontWeight: FontWeight.w600,
-                          color: Colors.black,
+                          color: theme.textTheme.titleLarge?.color,
                         ),
                       ),
                       const Spacer(),
@@ -116,8 +121,8 @@ class SettingScreen extends StatelessWidget {
                         children: [
                           GestureDetector(
                             onTap: () => Get.to(() => NotificationPage()),
-                            child: const Icon(Icons.notifications_none,
-                                size: 26, color: Colors.black87),
+                            child: Icon(Icons.notifications_none,
+                                size: 26, color: isDark ? Colors.white70 : Colors.black87),
                           ),
                           Positioned(
                             right: 0,
@@ -177,9 +182,9 @@ class SettingScreen extends StatelessWidget {
                                   Container(
                                     width: 100,
                                     height: 100,
-                                    decoration: const BoxDecoration(
+                                    decoration: BoxDecoration(
                                       shape: BoxShape.circle,
-                                      color: Colors.white,
+                                      color: theme.cardColor,
                                     ),
                                     padding: const EdgeInsets.all(3),
                                     child: GestureDetector(
@@ -226,47 +231,54 @@ class SettingScreen extends StatelessWidget {
                                 style: GoogleFonts.inter(
                                     fontSize: 16 * fontScale,
                                     fontWeight: FontWeight.w600,
-                                    color: Colors.black),
+                                    color: theme.textTheme.bodyLarge?.color),
                               ),
                             ),
                           );
                         }),
 
                         // ── GENERAL section ────────────────────────────
-                        _sectionTitle('general'.tr, fontScale),
-                        _menuCard([
-                          _menuItem(Icons.person_outline,       'my_profile'.tr,   fontScale, () => Get.to(() => MyProfileScreen())),
-                          _menuItem(Icons.location_on_outlined, 'my_address'.tr,   fontScale, () => Get.to(() => AddressScreens())),
-                          _menuItem(Icons.language,             'language'.tr,     fontScale, () => Get.to(() => LanguageScreen())),
+                        _sectionTitle('general'.tr, fontScale, theme),
+                        _menuCard(theme, [
+                          _menuItem(Icons.person_outline,       'my_profile'.tr,   fontScale, theme, () => Get.to(() => MyProfileScreen())),
+                          _menuItem(Icons.location_on_outlined, 'my_address'.tr,   fontScale, theme, () => Get.to(() => AddressScreens())),
+                          _menuItem(Icons.language,             'language'.tr,     fontScale, theme, () => Get.to(() => LanguageScreen())),
+                          // Dark Mode Toggle
+                          Obx(() => MenuSwitchWidget(
+                            icon: themeCtrl.themeMode.value == ThemeMode.dark ? Icons.dark_mode : Icons.light_mode_outlined,
+                            title: 'dark_mode'.tr,
+                            value: themeCtrl.themeMode.value == ThemeMode.dark,
+                            onChanged: (val) => themeCtrl.toggleTheme(),
+                          )),
                         ]),
 
                         const SizedBox(height: 20),
 
-                        // ── OTHER ACTIVITY section (blue dashed border) ──
-                        _sectionTitle('other_activity'.tr, fontScale),
-                        _dashedBorderCard([
-                          _menuItem(Icons.account_balance_wallet_outlined, 'bank_account'.tr,   fontScale, () => Get.to(() => BankAccountScreen())),
-                          _menuItem(Icons.notifications_outlined,          'notification'.tr,   fontScale, () => Get.to(() => NotificationSettingScreen())),
-                          _menuItem(Icons.favorite_border,                 'favourite_list'.tr, fontScale, () => Get.to(() => FavoriteList())),
+                        // ── OTHER ACTIVITY section ──
+                        _sectionTitle('other_activity'.tr, fontScale, theme),
+                        _menuCard(theme, [
+                          _menuItem(Icons.account_balance_wallet_outlined, 'bank_account'.tr,   fontScale, theme, () => Get.to(() => BankAccountScreen())),
+                          _menuItem(Icons.notifications_outlined,          'notification'.tr,   fontScale, theme, () => Get.to(() => NotificationSettingScreen())),
+                          _menuItem(Icons.favorite_border,                 'favourite_list'.tr, fontScale, theme, () => Get.to(() => FavoriteList())),
                         ]),
 
                         const SizedBox(height: 20),
 
                         // ── HELP AND SUPPORT section ───────────────────
-                        _sectionTitle('help_support'.tr, fontScale),
-                        _menuCard([
-                          _menuItem(Icons.headset_mic_outlined,  'live_chat'.tr,       fontScale, () => Get.to(() => const HelpChatScreen())),
-                          _menuItem(Icons.chat_bubble_outline,   'about_us'.tr,         fontScale, () => Get.to(() => _StaticInfoScreen(title: 'about_us'.tr,         content: _kAboutUs))),
-                          _menuItem(Icons.description_outlined,  'terms_policies'.tr,  fontScale, () => Get.to(() => _StaticInfoScreen(title: 'terms_policies'.tr,  content: _kTerms))),
-                          _menuItem(Icons.help_outline,          'privacy_policy'.tr,  fontScale, () => Get.to(() => _StaticInfoScreen(title: 'privacy_policy'.tr,  content: _kPrivacy))),
+                        _sectionTitle('help_support'.tr, fontScale, theme),
+                        _menuCard(theme, [
+                          _menuItem(Icons.headset_mic_outlined,  'live_chat'.tr,       fontScale, theme, () => Get.to(() => const HelpChatScreen())),
+                          _menuItem(Icons.chat_bubble_outline,   'about_us'.tr,         fontScale, theme, () => Get.to(() => _StaticInfoScreen(title: 'about_us'.tr,         content: _kAboutUs))),
+                          _menuItem(Icons.description_outlined,  'terms_policies'.tr,  fontScale, theme, () => Get.to(() => _StaticInfoScreen(title: 'terms_policies'.tr,  content: _kTerms))),
+                          _menuItem(Icons.help_outline,          'privacy_policy'.tr,  fontScale, theme, () => Get.to(() => _StaticInfoScreen(title: 'privacy_policy'.tr,  content: _kPrivacy))),
                         ]),
 
                         const SizedBox(height: 20),
 
                         // ── ACCOUNT section ────────────────────────────
-                        _sectionTitle('account'.tr, fontScale),
-                        _menuCard([
-                          _menuItem(Icons.logout, 'log_out'.tr, fontScale, () => _showLogoutDialog(context, profileCtrl), isLogout: true),
+                        _sectionTitle('account'.tr, fontScale, theme),
+                        _menuCard(theme, [
+                          _menuItem(Icons.logout, 'log_out'.tr, fontScale, theme, () => _showLogoutDialog(context, profileCtrl), isLogout: true),
                         ]),
 
                         const SizedBox(height: 20),
@@ -329,7 +341,7 @@ class SettingScreen extends StatelessWidget {
   }
 
   // ── Section title ───────────────────────────────────────────────────────────
-  Widget _sectionTitle(String title, double fontScale) {
+  Widget _sectionTitle(String title, double fontScale, ThemeData theme) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
       child: Text(
@@ -337,18 +349,18 @@ class SettingScreen extends StatelessWidget {
         style: GoogleFonts.inter(
           fontSize: 15 * fontScale,
           fontWeight: FontWeight.w700,
-          color: Colors.black,
+          color: theme.textTheme.titleLarge?.color,
         ),
       ),
     );
   }
 
   // ── White card wrapping a list of menu items ────────────────────────────────
-  Widget _menuCard(List<Widget> items) {
+  Widget _menuCard(ThemeData theme, List<Widget> items) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -362,34 +374,12 @@ class SettingScreen extends StatelessWidget {
     );
   }
 
-  // ── Blue dashed border card (Other Activity) ────────────────────────────────
-  Widget _dashedBorderCard(List<Widget> items) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: CustomPaint(
-        painter: _DashedBorderPainter(
-          color: const Color(0xFF2979FF),
-          radius: 16,
-          dashWidth: 6,
-          dashSpace: 4,
-          strokeWidth: 1.8,
-        ),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Column(children: items),
-        ),
-      ),
-    );
-  }
-
   // ── Single menu row ─────────────────────────────────────────────────────────
   Widget _menuItem(
       IconData icon,
       String title,
       double fontScale,
+      ThemeData theme,
       VoidCallback onTap, {
         bool isLogout = false,
       }) {
@@ -423,7 +413,7 @@ class SettingScreen extends StatelessWidget {
               style: GoogleFonts.inter(
                 fontSize: 15 * fontScale,
                 fontWeight: FontWeight.w500,
-                color: Colors.black87,
+                color: theme.textTheme.bodyLarge?.color?.withOpacity(0.87),
               ),
             ),
           ],
@@ -431,51 +421,6 @@ class SettingScreen extends StatelessWidget {
       ),
     );
   }
-}
-
-// ── Dashed border CustomPainter ─────────────────────────────────────────────
-
-class _DashedBorderPainter extends CustomPainter {
-  final Color color;
-  final double radius;
-  final double dashWidth;
-  final double dashSpace;
-  final double strokeWidth;
-
-  const _DashedBorderPainter({
-    required this.color,
-    required this.radius,
-    required this.dashWidth,
-    required this.dashSpace,
-    required this.strokeWidth,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = strokeWidth
-      ..style = PaintingStyle.stroke;
-
-    final path = Path()
-      ..addRRect(RRect.fromRectAndRadius(
-        Rect.fromLTWH(0, 0, size.width, size.height),
-        Radius.circular(radius),
-      ));
-
-    final PathMetrics metrics = path.computeMetrics();
-    for (final PathMetric metric in metrics) {
-      double distance = 0;
-      while (distance < metric.length) {
-        final extracted = metric.extractPath(distance, distance + dashWidth);
-        canvas.drawPath(extracted, paint);
-        distance += dashWidth + dashSpace;
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 // ── Static content strings ──────────────────────────────────────────────────
@@ -545,24 +490,26 @@ class _StaticInfoScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final fontScale = ResponsiveUtils.fontScale(context);
     final size = MediaQuery.of(context).size;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFEAF4FB),
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Stack(
         children: [
           Positioned(top: 0, left: 0,
               child: Image.asset('assets/images/bg_top_left.png',
                   width: size.width * 0.60, fit: BoxFit.contain,
-                  opacity: const AlwaysStoppedAnimation(0.18))),
+                  opacity: AlwaysStoppedAnimation(isDark ? 0.05 : 0.18))),
           Positioned(bottom: 0, right: 0,
               child: Image.asset('assets/images/bg_bottom_right.png',
                   width: size.width * 0.50, fit: BoxFit.contain,
-                  opacity: const AlwaysStoppedAnimation(0.22))),
+                  opacity: AlwaysStoppedAnimation(isDark ? 0.08 : 0.22))),
           SafeArea(
             child: Column(
               children: [
                 Container(
-                  color: Colors.white,
+                  color: theme.appBarTheme.backgroundColor,
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   child: Row(
                     children: [
@@ -572,9 +519,9 @@ class _StaticInfoScreen extends StatelessWidget {
                           width: 36, height: 36,
                           decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              border: Border.all(color: Colors.grey[800]!, width: 1.8)),
-                          child: const Icon(Icons.arrow_back_ios_new,
-                              size: 15, color: Colors.black),
+                              border: Border.all(color: isDark ? Colors.white24 : Colors.grey[800]!, width: 1.8)),
+                          child: Icon(Icons.arrow_back_ios_new,
+                              size: 15, color: theme.iconTheme.color),
                         ),
                       ),
                       const Spacer(),
@@ -582,20 +529,20 @@ class _StaticInfoScreen extends StatelessWidget {
                           style: GoogleFonts.inter(
                               fontSize: 17 * fontScale,
                               fontWeight: FontWeight.w600,
-                              color: Colors.black)),
+                              color: theme.textTheme.titleLarge?.color)),
                       const Spacer(),
                       const SizedBox(width: 36),
                     ],
                   ),
                 ),
-                const Divider(height: 1, thickness: 0.8, color: Color(0xFFEEEEEE)),
+                Divider(height: 1, thickness: 0.8, color: theme.dividerColor),
                 Expanded(
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.all(20),
                     child: Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: theme.cardColor,
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [BoxShadow(
                               color: Colors.black.withOpacity(0.04),
@@ -605,7 +552,7 @@ class _StaticInfoScreen extends StatelessWidget {
                         content.trim(),
                         style: GoogleFonts.inter(
                             fontSize: 14 * fontScale,
-                            color: Colors.black87,
+                            color: theme.textTheme.bodyMedium?.color?.withOpacity(0.8),
                             height: 1.7),
                       ),
                     ),

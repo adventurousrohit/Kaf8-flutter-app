@@ -53,17 +53,22 @@ class _MessageScreenState extends State<MessageScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
-            _buildAppBar(context),
+            _buildAppBar(context, theme),
             Expanded(
               child: Container(
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [Color(0xFFEAF4FB), Colors.white],
+                    colors: isDark
+                        ? [theme.scaffoldBackgroundColor, theme.scaffoldBackgroundColor]
+                        : [const Color(0xFFEAF4FB), Colors.white],
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                   ),
@@ -72,34 +77,35 @@ class _MessageScreenState extends State<MessageScreen> {
                   padding: const EdgeInsets.all(16),
                   itemCount: _msgs.length,
                   itemBuilder: (context, index) =>
-                      _buildBubble(_msgs[index]),
+                      _buildBubble(_msgs[index], theme),
                 ),
               ),
             ),
-            _buildInputBar(),
+            _buildInputBar(theme),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildAppBar(BuildContext context) {
+  Widget _buildAppBar(BuildContext context, ThemeData theme) {
+    final isDark = theme.brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
       child: Row(
         children: [
-          const Icon(Icons.menu, size: 24, color: Colors.black87),
+          Icon(Icons.menu, size: 24, color: theme.iconTheme.color),
           const SizedBox(width: 14),
           Text('Message',
               style: GoogleFonts.inter(
-                  fontSize: 20, fontWeight: FontWeight.w700)),
+                  fontSize: 20, fontWeight: FontWeight.w700, color: theme.textTheme.titleLarge?.color)),
           const Spacer(),
-          const Icon(Icons.email_outlined, size: 22, color: Colors.black87),
+          Icon(Icons.email_outlined, size: 22, color: theme.iconTheme.color),
           const SizedBox(width: 12),
           Stack(
             children: [
-              const Icon(Icons.notifications_none,
-                  size: 26, color: Colors.black87),
+              Icon(Icons.notifications_none,
+                  size: 26, color: isDark ? Colors.white70 : Colors.black87),
               Positioned(
                 right: 0,
                 top: 0,
@@ -123,7 +129,8 @@ class _MessageScreenState extends State<MessageScreen> {
     );
   }
 
-  Widget _buildBubble(_Message msg) {
+  Widget _buildBubble(_Message msg, ThemeData theme) {
+    final isDark = theme.brightness == Brightness.dark;
     return Align(
       alignment: msg.isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: Column(
@@ -131,9 +138,9 @@ class _MessageScreenState extends State<MessageScreen> {
             msg.isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
           if (!msg.isMe)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 4),
-              child: const CircleAvatar(
+            const Padding(
+              padding: EdgeInsets.only(bottom: 4),
+              child: CircleAvatar(
                 radius: 16,
                 backgroundImage: NetworkImage(
                     'https://randomuser.me/api/portraits/men/45.jpg'),
@@ -145,7 +152,7 @@ class _MessageScreenState extends State<MessageScreen> {
                 const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             constraints: const BoxConstraints(maxWidth: 260),
             decoration: BoxDecoration(
-              color: msg.isMe ? Colors.green : Colors.white,
+              color: msg.isMe ? Colors.green : theme.cardColor,
               borderRadius: BorderRadius.only(
                 topLeft: const Radius.circular(18),
                 topRight: const Radius.circular(18),
@@ -163,7 +170,7 @@ class _MessageScreenState extends State<MessageScreen> {
               msg.text,
               style: GoogleFonts.inter(
                   fontSize: 13,
-                  color: msg.isMe ? Colors.white : Colors.black87,
+                  color: msg.isMe ? Colors.white : theme.textTheme.bodyMedium?.color?.withOpacity(0.87),
                   height: 1.5),
             ),
           ),
@@ -179,11 +186,12 @@ class _MessageScreenState extends State<MessageScreen> {
     );
   }
 
-  Widget _buildInputBar() {
+  Widget _buildInputBar(ThemeData theme) {
+    final isDark = theme.brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         boxShadow: [
           BoxShadow(
               color: Colors.black.withOpacity(0.06),
@@ -209,13 +217,13 @@ class _MessageScreenState extends State<MessageScreen> {
           Expanded(
             child: TextField(
               controller: _msgCtrl,
-              style: GoogleFonts.inter(fontSize: 14),
+              style: GoogleFonts.inter(fontSize: 14, color: theme.textTheme.bodyLarge?.color),
               decoration: InputDecoration(
                 hintText: 'Enter message',
                 hintStyle: GoogleFonts.inter(
                     fontSize: 13, color: Colors.grey[400]),
                 filled: true,
-                fillColor: const Color(0xFFF5F7FA),
+                fillColor: isDark ? Colors.white.withOpacity(0.05) : const Color(0xFFF5F7FA),
                 contentPadding: const EdgeInsets.symmetric(
                     horizontal: 16, vertical: 10),
                 border: OutlineInputBorder(

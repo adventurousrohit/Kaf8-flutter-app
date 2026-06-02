@@ -13,10 +13,11 @@ class AddMenuItemWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: const Color(0XFFF9FAF8),
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(12),
       ),
       child: ListTile(
@@ -25,7 +26,7 @@ class AddMenuItemWidget extends StatelessWidget {
           style: GoogleFonts.poppins(
             fontSize: 15,
             fontWeight: FontWeight.w500,
-            color: const Color(0XFF363A33),
+            color: theme.textTheme.bodyLarge?.color,
           ),
         ),
         trailing: const Icon(

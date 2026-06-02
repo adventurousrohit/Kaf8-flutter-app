@@ -63,12 +63,15 @@ class _DriverNotificationScreenState extends State<DriverNotificationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
-            _buildAppBar(context),
+            _buildAppBar(context, theme),
             Expanded(
               child: _isLoading
                   ? const Center(child: CircularProgressIndicator())
@@ -83,7 +86,7 @@ class _DriverNotificationScreenState extends State<DriverNotificationScreen> {
                           ? Center(
                               child: Text(
                                 'No notifications yet',
-                                style: GoogleFonts.inter(color: Colors.grey[600]),
+                                style: GoogleFonts.inter(color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6)),
                               ),
                             )
                   : ListView.builder(
@@ -91,7 +94,7 @@ class _DriverNotificationScreenState extends State<DriverNotificationScreen> {
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 itemCount: _notifications.length,
                 itemBuilder: (context, index) =>
-                    _NotifCard(item: _notifications[index]),
+                    _NotifCard(item: _notifications[index], theme: theme),
               ),
             ),
           ],
@@ -100,39 +103,40 @@ class _DriverNotificationScreenState extends State<DriverNotificationScreen> {
     );
   }
 
-  Widget _buildAppBar(BuildContext context) {
+  Widget _buildAppBar(BuildContext context, ThemeData theme) {
+    final isDark = theme.brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
       child: Row(
         children: [
           GestureDetector(
             onTap: () => Navigator.of(context).pop(),
-            child: const Icon(Icons.arrow_back_ios_new,
-                size: 20, color: Colors.black87),
+            child: Icon(Icons.arrow_back_ios_new,
+                size: 20, color: theme.iconTheme.color),
           ),
           const SizedBox(width: 10),
           Text('Notifications',
               style: GoogleFonts.inter(
-                  fontSize: 20, fontWeight: FontWeight.w700)),
+                  fontSize: 20, fontWeight: FontWeight.w700, color: theme.textTheme.titleLarge?.color)),
           const Spacer(),
-          const Icon(Icons.email_outlined, size: 22, color: Colors.black87),
-          const SizedBox(width: 12),
-          Stack(
-            children: [
-              const Icon(Icons.notifications_none,
-                  size: 26, color: Colors.black87),
-              Positioned(
-                right: 0,
-                top: 0,
-                child: Container(
-                  width: 7,
-                  height: 7,
-                  decoration: const BoxDecoration(
-                      color: Colors.orange, shape: BoxShape.circle),
-                ),
-              ),
-            ],
-          ),
+          // Icon(Icons.email_outlined, size: 22, color: theme.iconTheme.color),
+          // const SizedBox(width: 12),
+          // Stack(
+          //   children: [
+          //     Icon(Icons.notifications_none,
+          //         size: 26, color: isDark ? Colors.white70 : Colors.black87),
+          //     Positioned(
+          //       right: 0,
+          //       top: 0,
+          //       child: Container(
+          //         width: 7,
+          //         height: 7,
+          //         decoration: const BoxDecoration(
+          //             color: Colors.orange, shape: BoxShape.circle),
+          //       ),
+          //     ),
+          //   ],
+          // ),
           const SizedBox(width: 10),
           Obx(() {
             final ctrl = Get.find<UserProfileController>();
@@ -183,7 +187,8 @@ const List<_NotifItem> _notificationsFallback = [
 
 class _NotifCard extends StatelessWidget {
   final _NotifItem item;
-  const _NotifCard({required this.item});
+  final ThemeData theme;
+  const _NotifCard({required this.item, required this.theme});
 
   Color get _iconBg =>
       item.type == 'goods' ? Colors.green : Colors.blue.shade100;
@@ -203,11 +208,11 @@ class _NotifCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
+              color: Colors.black.withOpacity(0.04),
               blurRadius: 8,
               offset: const Offset(0, 2))
         ],
@@ -220,7 +225,7 @@ class _NotifCard extends StatelessWidget {
             width: 46,
             height: 46,
             decoration: BoxDecoration(
-              color: _iconBg.withValues(alpha: 0.15),
+              color: _iconBg.withOpacity(0.15),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(_icon, color: _iconBg, size: 24),
@@ -236,13 +241,13 @@ class _NotifCard extends StatelessWidget {
                   children: [
                     Text(item.title,
                         style: GoogleFonts.inter(
-                            fontSize: 14, fontWeight: FontWeight.w700)),
+                            fontSize: 14, fontWeight: FontWeight.w700, color: theme.textTheme.bodyLarge?.color)),
                     const Spacer(),
                     Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
-                        color: _statusColor.withValues(alpha: 0.1),
+                        color: _statusColor.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(_statusLabel,
@@ -257,12 +262,12 @@ class _NotifCard extends StatelessWidget {
                 Text(item.body,
                     style: GoogleFonts.inter(
                         fontSize: 12,
-                        color: Colors.grey[500],
+                        color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
                         height: 1.4)),
                 const SizedBox(height: 4),
                 Text(item.time,
                     style: GoogleFonts.inter(
-                        fontSize: 11, color: Colors.grey[400])),
+                        fontSize: 11, color: theme.textTheme.bodySmall?.color?.withOpacity(0.5))),
               ],
             ),
           ),

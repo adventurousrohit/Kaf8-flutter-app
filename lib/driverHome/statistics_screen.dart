@@ -73,19 +73,22 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
-            _buildAppBar(),
+            _buildAppBar(theme),
             Expanded(
               child: _isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : ListView(
                 padding: const EdgeInsets.all(20),
                 children: [
-                  _buildSummaryRow(),
+                  _buildSummaryRow(theme),
                   const SizedBox(height: 20),
                   _buildChartCard(
                     title: 'Earnings',
@@ -99,6 +102,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                     labels: _xLabels,
                     isBar: true,
                     color: Colors.green,
+                    theme: theme,
                   ),
                   const SizedBox(height: 20),
                   _buildChartCard(
@@ -113,6 +117,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                     labels: _xLabels,
                     isBar: false,
                     color: Colors.green,
+                    theme: theme,
                   ),
                   const SizedBox(height: 20),
                 ],
@@ -124,21 +129,26 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     );
   }
 
-  Widget _buildAppBar() {
+  Widget _buildAppBar(ThemeData theme) {
+    final isDark = theme.brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
       child: Row(
         children: [
-          const Icon(Icons.menu, size: 24, color: Colors.black87),
+          GestureDetector(
+            onTap: () => Navigator.pop(context),
+            child: Icon(Icons.arrow_back_ios_new,
+                size: 20, color: theme.iconTheme.color),
+          ),
           const SizedBox(width: 14),
           Text('Statistics',
               style: GoogleFonts.inter(
-                  fontSize: 20, fontWeight: FontWeight.w700)),
+                  fontSize: 20, fontWeight: FontWeight.w700, color: theme.textTheme.titleLarge?.color)),
           const Spacer(),
           Stack(
             children: [
-              const Icon(Icons.notifications_none,
-                  size: 26, color: Colors.black87),
+              Icon(Icons.notifications_none,
+                  size: 26, color: isDark ? Colors.white70 : Colors.black87),
               Positioned(
                 right: 0,
                 top: 0,
@@ -162,19 +172,20 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     );
   }
 
-  Widget _buildSummaryRow() {
+  Widget _buildSummaryRow(ThemeData theme) {
     return Row(
       children: [
         Expanded(
           child: _summaryCard(
-              label: 'Total Orders', value: '$_totalOrders', icon: Icons.list_alt),
+              label: 'Total Orders', value: '$_totalOrders', icon: Icons.list_alt, theme: theme),
         ),
         const SizedBox(width: 14),
         Expanded(
           child: _summaryCard(
               label: 'Total Earnings',
               value: '€ ${_totalEarnings.toStringAsFixed(2)}',
-              icon: Icons.attach_money),
+              icon: Icons.attach_money,
+              theme: theme),
         ),
       ],
     );
@@ -183,11 +194,12 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   Widget _summaryCard(
       {required String label,
       required String value,
-      required IconData icon}) {
+      required IconData icon,
+      required ThemeData theme}) {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
@@ -201,11 +213,11 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         children: [
           Text(label,
               style: GoogleFonts.inter(
-                  fontSize: 12, color: Colors.grey[500])),
+                  fontSize: 12, color: theme.textTheme.bodySmall?.color)),
           const SizedBox(height: 6),
           Text(value,
               style: GoogleFonts.inter(
-                  fontSize: 22, fontWeight: FontWeight.w800)),
+                  fontSize: 22, fontWeight: FontWeight.w800, color: theme.textTheme.titleLarge?.color)),
         ],
       ),
     );
@@ -220,11 +232,12 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     required List<String> labels,
     required bool isBar,
     required Color color,
+    required ThemeData theme,
   }) {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
@@ -240,7 +253,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             children: [
               Text(title,
                   style: GoogleFonts.inter(
-                      fontSize: 15, fontWeight: FontWeight.w700)),
+                      fontSize: 15, fontWeight: FontWeight.w700, color: theme.textTheme.titleLarge?.color)),
               const Spacer(),
               _filterChip(filter, onFilterChange),
             ],
@@ -249,8 +262,8 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           SizedBox(
             height: 130,
             child: isBar
-                ? _BarChartPainterWidget(data: data, labels: labels, color: color)
-                : _LineChartPainterWidget(data: data, labels: labels, color: color),
+                ? _BarChartPainterWidget(data: data, labels: labels, color: color, theme: theme)
+                : _LineChartPainterWidget(data: data, labels: labels, color: color, theme: theme),
           ),
         ],
       ),
@@ -285,13 +298,14 @@ class _BarChartPainterWidget extends StatelessWidget {
   final List<double> data;
   final List<String> labels;
   final Color color;
+  final ThemeData theme;
   const _BarChartPainterWidget(
-      {required this.data, required this.labels, required this.color});
+      {required this.data, required this.labels, required this.color, required this.theme});
 
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
-      painter: _BarChartPainter(data: data, labels: labels, color: color),
+      painter: _BarChartPainter(data: data, labels: labels, color: color, theme: theme),
     );
   }
 }
@@ -300,11 +314,13 @@ class _BarChartPainter extends CustomPainter {
   final List<double> data;
   final List<String> labels;
   final Color color;
+  final ThemeData theme;
   _BarChartPainter(
-      {required this.data, required this.labels, required this.color});
+      {required this.data, required this.labels, required this.color, required this.theme});
 
   @override
   void paint(Canvas canvas, Size size) {
+    if (data.isEmpty) return;
     final max = data.reduce((a, b) => a > b ? a : b);
     final barWidth = (size.width - 20) / data.length - 4;
     final paint = Paint()..color = color;
@@ -312,7 +328,7 @@ class _BarChartPainter extends CustomPainter {
 
     for (int i = 0; i < data.length; i++) {
       final x = 10.0 + i * ((size.width - 20) / data.length);
-      final barH = (data[i] / max) * (size.height - 24);
+      final barH = (data[i] / (max == 0 ? 1 : max)) * (size.height - 24);
       final isHigh = data[i] == max;
       canvas.drawRRect(
         RRect.fromRectAndCorners(
@@ -331,7 +347,7 @@ class _BarChartPainter extends CustomPainter {
       final x = 10.0 + i * ((size.width - 20) / data.length);
       tp.text = TextSpan(
         text: labels[i],
-        style: const TextStyle(fontSize: 9, color: Colors.grey),
+        style: TextStyle(fontSize: 9, color: theme.textTheme.bodySmall?.color),
       );
       tp.layout();
       tp.paint(canvas,
@@ -351,14 +367,15 @@ class _LineChartPainterWidget extends StatelessWidget {
   final List<double> data;
   final List<String> labels;
   final Color color;
+  final ThemeData theme;
   const _LineChartPainterWidget(
-      {required this.data, required this.labels, required this.color});
+      {required this.data, required this.labels, required this.color, required this.theme});
 
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
       painter:
-          _LineChartPainter(data: data, labels: labels, color: color),
+          _LineChartPainter(data: data, labels: labels, color: color, theme: theme),
     );
   }
 }
@@ -367,14 +384,15 @@ class _LineChartPainter extends CustomPainter {
   final List<double> data;
   final List<String> labels;
   final Color color;
+  final ThemeData theme;
   _LineChartPainter(
-      {required this.data, required this.labels, required this.color});
+      {required this.data, required this.labels, required this.color, required this.theme});
 
   @override
   void paint(Canvas canvas, Size size) {
     if (data.isEmpty) return;
     final max = data.reduce((a, b) => a > b ? a : b);
-    final stepX = (size.width - 20) / (data.length - 1);
+    final stepX = (size.width - 20) / (data.length == 1 ? 1 : (data.length - 1));
     final linePaint = Paint()
       ..color = color
       ..strokeWidth = 2.5
@@ -394,7 +412,7 @@ class _LineChartPainter extends CustomPainter {
     for (int i = 0; i < data.length; i++) {
       final x = 10.0 + i * stepX;
       final y = (size.height - 24) -
-          (data[i] / max) * (size.height - 24);
+          (data[i] / (max == 0 ? 1 : max)) * (size.height - 24);
       if (i == 0) {
         path.moveTo(x, y);
         fillPath.moveTo(x, size.height - 24);
@@ -417,7 +435,7 @@ class _LineChartPainter extends CustomPainter {
       final x = 10.0 + i * stepX;
       tp.text = TextSpan(
         text: labels[i],
-        style: const TextStyle(fontSize: 9, color: Colors.grey),
+        style: TextStyle(fontSize: 9, color: theme.textTheme.bodySmall?.color),
       );
       tp.layout();
       tp.paint(canvas,

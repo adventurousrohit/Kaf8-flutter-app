@@ -80,9 +80,11 @@ class _AddressScreensState extends State<AddressScreens> {
   Widget build(BuildContext context) {
     final fontScale = ResponsiveUtils.fontScale(context);
     final size      = MediaQuery.of(context).size;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFEAF4FB),
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Stack(
         children: [
           // ── Top-left geometric background ──────────────────────────
@@ -92,7 +94,7 @@ class _AddressScreensState extends State<AddressScreens> {
               'assets/images/bg_top_left.png',
               width: size.width * 0.62,
               fit: BoxFit.contain,
-              opacity: const AlwaysStoppedAnimation(0.20),
+              opacity: AlwaysStoppedAnimation(isDark ? 0.05 : 0.20),
             ),
           ),
           // ── Top-right ──────────────────────────────────────────────
@@ -105,7 +107,7 @@ class _AddressScreensState extends State<AddressScreens> {
                 'assets/images/bg_bottom_right.png',
                 width: size.width * 0.36,
                 fit: BoxFit.contain,
-                opacity: const AlwaysStoppedAnimation(0.13),
+                opacity: AlwaysStoppedAnimation(isDark ? 0.04 : 0.13),
               ),
             ),
           ),
@@ -116,7 +118,7 @@ class _AddressScreensState extends State<AddressScreens> {
               'assets/images/bg_bottom_right.png',
               width: size.width * 0.50,
               fit: BoxFit.contain,
-              opacity: const AlwaysStoppedAnimation(0.25),
+              opacity: AlwaysStoppedAnimation(isDark ? 0.08 : 0.25),
             ),
           ),
 
@@ -126,7 +128,7 @@ class _AddressScreensState extends State<AddressScreens> {
               children: [
                 // ── Header ──────────────────────────────────────────
                 Container(
-                  color: Colors.white,
+                  color: theme.appBarTheme.backgroundColor,
                   padding: const EdgeInsets.symmetric(
                       horizontal: 16, vertical: 12),
                   child: Row(
@@ -139,10 +141,10 @@ class _AddressScreensState extends State<AddressScreens> {
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(
-                                color: Colors.grey[800]!, width: 1.8),
+                                color: isDark ? Colors.white24 : Colors.grey[800]!, width: 1.8),
                           ),
-                          child: const Icon(Icons.arrow_back_ios_new,
-                              size: 15, color: Colors.black),
+                          child: Icon(Icons.arrow_back_ios_new,
+                              size: 15, color: theme.iconTheme.color),
                         ),
                       ),
                       const Spacer(),
@@ -151,7 +153,7 @@ class _AddressScreensState extends State<AddressScreens> {
                         style: GoogleFonts.inter(
                           fontSize: 17 * fontScale,
                           fontWeight: FontWeight.w600,
-                          color: Colors.black,
+                          color: theme.textTheme.titleLarge?.color,
                         ),
                       ),
                       const Spacer(),
@@ -161,8 +163,8 @@ class _AddressScreensState extends State<AddressScreens> {
                           await Get.to(() => const AddAddressScreen());
                           _loadAddresses();
                         },
-                        child: const Icon(Icons.add,
-                            size: 24, color: Colors.black),
+                        child: Icon(Icons.add,
+                            size: 24, color: theme.iconTheme.color),
                       ),
                     ],
                   ),
@@ -175,7 +177,7 @@ class _AddressScreensState extends State<AddressScreens> {
                   child: _isLoading
                       ? const Center(child: CircularProgressIndicator())
                       : _addresses.isEmpty
-                          ? const Center(child: Text("No addresses yet"))
+                          ? Center(child: Text("No addresses yet", style: TextStyle(color: theme.textTheme.bodyMedium?.color)))
                           : ListView.builder(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     itemCount: _addresses.length,
@@ -190,7 +192,7 @@ class _AddressScreensState extends State<AddressScreens> {
                           margin: const EdgeInsets.only(bottom: 14),
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: theme.cardColor,
                             borderRadius: BorderRadius.circular(16),
                             boxShadow: [
                               BoxShadow(
@@ -214,7 +216,7 @@ class _AddressScreensState extends State<AddressScreens> {
                                       style: GoogleFonts.inter(
                                         fontSize: 16 * fontScale,
                                         fontWeight: FontWeight.w700,
-                                        color: Colors.black,
+                                        color: theme.textTheme.bodyLarge?.color,
                                       ),
                                     ),
                                     const SizedBox(height: 4),
@@ -222,7 +224,7 @@ class _AddressScreensState extends State<AddressScreens> {
                                       (addr['city'] ?? "").toString(),
                                       style: GoogleFonts.inter(
                                         fontSize: 13 * fontScale,
-                                        color: Colors.grey[600],
+                                        color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
                                       ),
                                     ),
                                     const SizedBox(height: 2),
@@ -230,7 +232,7 @@ class _AddressScreensState extends State<AddressScreens> {
                                       "${addr['detailAddress'] ?? ''}${(addr['country'] != null) ? ', ${addr['country']}' : ''}",
                                       style: GoogleFonts.inter(
                                         fontSize: 13 * fontScale,
-                                        color: Colors.grey[600],
+                                        color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
                                       ),
                                     ),
                                     const SizedBox(height: 12),
@@ -258,9 +260,9 @@ class _AddressScreensState extends State<AddressScreens> {
                                           child: Container(
                                             padding: const EdgeInsets.all(7),
                                             decoration: BoxDecoration(
-                                              color: Colors.red.shade50,
+                                              color: Colors.red.withOpacity(0.1),
                                               borderRadius: BorderRadius.circular(20),
-                                              border: Border.all(color: Colors.red.shade200),
+                                              border: Border.all(color: Colors.red.withOpacity(0.3)),
                                             ),
                                             child: Icon(Icons.delete_outline,
                                                 size: 18, color: Colors.red.shade400),
@@ -290,7 +292,7 @@ class _AddressScreensState extends State<AddressScreens> {
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                      color: Colors.grey[400]!,
+                                      color: isDark ? Colors.white24 : Colors.grey[400]!,
                                       width: 1.5),
                                 ),
                               ),

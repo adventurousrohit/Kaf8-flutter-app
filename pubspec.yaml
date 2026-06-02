@@ -163,6 +163,14 @@ flutter:
     - assets/icons/tow_truck.svg
     - assets/icons/truck.svg
     - assets/icons/van.svg
+    - assets/icons/ic_bicycle.png
+    - assets/icons/ic_car.png
+    - assets/icons/ic_motorcycle.png
+    - assets/icons/ic_mini_bus.png
+    - assets/icons/ic_van.png
+    - assets/icons/ic_scooter.png
+    - assets/icons/ic_truck.png
+    - assets/icons/ic_breakdown_vehicle.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

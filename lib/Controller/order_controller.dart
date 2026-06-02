@@ -20,7 +20,9 @@ class OrderController extends GetxController {
 
   Future<void> fetchPending() async {
     isLoadingPending.value = true;
+    print("📋 Controller: Fetching Pending Orders...");
     final result = await ApiService.getMyOrders(status: 'pending');
+    print("📋 Controller: Pending Orders Result success=${result['success']}");
     isLoadingPending.value = false;
     if (result['success'] == true) {
       pendingOrders.value = _asList(result['data']);
@@ -29,7 +31,9 @@ class OrderController extends GetxController {
 
   Future<void> fetchActive() async {
     isLoadingActive.value = true;
+    print("📋 Controller: Fetching Active Orders...");
     final result = await ApiService.getMyOrders(status: 'active');
+    print("📋 Controller: Active Orders Result success=${result['success']}");
     isLoadingActive.value = false;
     if (result['success'] == true) {
       activeOrders.value = _asList(result['data']);
@@ -38,11 +42,13 @@ class OrderController extends GetxController {
 
   Future<void> fetchHistory() async {
     isLoadingHistory.value = true;
+    print("📋 Controller: Fetching History Orders...");
     // Fetch both delivered + canceled in parallel and merge
     final results = await Future.wait([
       ApiService.getMyOrders(status: 'delivered'),
       ApiService.getMyOrders(status: 'canceled'),
     ]);
+    print("📋 Controller: History Results received");
     isLoadingHistory.value = false;
     final merged = <Map<String, dynamic>>[];
     for (final r in results) {

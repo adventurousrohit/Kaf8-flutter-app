@@ -91,10 +91,13 @@ class _PaymentScreensState extends State<PaymentScreens> {
   Widget build(BuildContext context) {
 
     final SwitchController switchController = Get.put(SwitchController());
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: theme.appBarTheme.backgroundColor,
         elevation: 0,
         centerTitle: true,
         leadingWidth: 100,
@@ -103,12 +106,12 @@ class _PaymentScreensState extends State<PaymentScreens> {
           child: Row(
             children: [
               const SizedBox(width: 10),
-              const Icon(Icons.arrow_back_ios, color: Colors.black, size: 18),
+              Icon(Icons.arrow_back_ios, color: theme.iconTheme.color, size: 18),
               const SizedBox(width: 4),
               Text(
                 "Back",
                 style: GoogleFonts.poppins(
-                  color: Colors.black,
+                  color: theme.textTheme.bodyLarge?.color,
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
                 ),
@@ -121,7 +124,7 @@ class _PaymentScreensState extends State<PaymentScreens> {
           style: GoogleFonts.poppins(
             fontSize: 17,
             fontWeight: FontWeight.bold,
-            color: Color(0XFF363A33),
+            color: theme.textTheme.titleLarge?.color,
           ),
         ),
       ),
@@ -134,7 +137,7 @@ class _PaymentScreensState extends State<PaymentScreens> {
               margin: const EdgeInsets.only(bottom: 10),
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: const Color(0XFFF9FAF8),
+                color: theme.cardColor,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
@@ -149,6 +152,7 @@ class _PaymentScreensState extends State<PaymentScreens> {
                           style: GoogleFonts.poppins(
                             fontSize: 15,
                             fontWeight: FontWeight.w500,
+                            color: theme.textTheme.bodyLarge?.color,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -158,7 +162,7 @@ class _PaymentScreensState extends State<PaymentScreens> {
                               : "Saved methods: $_savedMethodsCount",
                           style: GoogleFonts.poppins(
                             fontSize: 11,
-                            color: Colors.grey[600],
+                            color: theme.textTheme.bodySmall?.color,
                           ),
                         ),
                       ],
@@ -177,32 +181,32 @@ class _PaymentScreensState extends State<PaymentScreens> {
                 ],
               ),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: Divider(thickness: 1, color: Color(0XFFE8EBE6)),
+              child: Divider(thickness: 1, color: theme.dividerColor),
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             DeliveryTextFormField(
               hintText: "Cardholder name",
               controller: _holderController,
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             DeliveryTextFormField(
               hintText: "Card name",
               controller: _cardController,
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             DeliveryTextFormField(
               hintText: "Expiration date",
               controller: _expController,
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             DeliveryTextFormField(
               hintText: "CVV",
               controller: _cvvController,
             ),
-            SizedBox(height: 153),
+            const SizedBox(height: 153),
             SizedBox(
               width: double.infinity,
               height: 52,

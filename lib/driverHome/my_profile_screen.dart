@@ -143,65 +143,67 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
     super.dispose();
   }
 
-  InputDecoration _inputDecoration(String hint, {bool readOnly = false, Widget? prefix}) {
+  InputDecoration _inputDecoration(String hint, ThemeData theme, {bool readOnly = false, Widget? prefix}) {
     return InputDecoration(
       hintText: hint,
       hintStyle: GoogleFonts.inter(fontSize: 14, color: Colors.grey[400]),
       filled: true,
-      fillColor: readOnly ? Colors.grey[50] : Colors.white,
+      fillColor: readOnly ? (theme.brightness == Brightness.dark ? Colors.white.withOpacity(0.05) : Colors.grey[50]) : theme.cardColor,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       prefixIcon: prefix,
       border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey[300]!)),
+          borderSide: BorderSide(color: theme.dividerColor)),
       enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey[300]!)),
+          borderSide: BorderSide(color: theme.dividerColor)),
       focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: Appcolor.secondaryColor, width: 1.5)),
     );
   }
 
-  Widget _fieldLabel(String text, double fontScale) => Padding(
+  Widget _fieldLabel(String text, double fontScale, ThemeData theme) => Padding(
         padding: const EdgeInsets.only(bottom: 6),
         child: Text(text,
             style: GoogleFonts.inter(
                 fontSize: 13 * fontScale,
                 fontWeight: FontWeight.w500,
-                color: Colors.black87)),
+                color: theme.textTheme.bodyLarge?.color?.withOpacity(0.87))),
       );
 
   @override
   Widget build(BuildContext context) {
     final fontScale = ResponsiveUtils.fontScale(context);
     final size = MediaQuery.of(context).size;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFEAF4FB),
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Stack(
         children: [
           Positioned(top: 0, left: 0,
             child: Image.asset('assets/images/bg_top_left.png',
               width: size.width * 0.60, fit: BoxFit.contain,
-              opacity: const AlwaysStoppedAnimation(0.18))),
+              opacity: AlwaysStoppedAnimation(isDark ? 0.05 : 0.18))),
           Positioned(top: 0, right: 0,
             child: Transform(alignment: Alignment.center,
               transform: Matrix4.rotationY(3.14159),
               child: Image.asset('assets/images/bg_bottom_right.png',
                 width: size.width * 0.36, fit: BoxFit.contain,
-                opacity: const AlwaysStoppedAnimation(0.13)))),
+                opacity: AlwaysStoppedAnimation(isDark ? 0.04 : 0.13)))),
           Positioned(bottom: 0, right: 0,
             child: Image.asset('assets/images/bg_bottom_right.png',
               width: size.width * 0.55, fit: BoxFit.contain,
-              opacity: const AlwaysStoppedAnimation(0.28))),
+              opacity: AlwaysStoppedAnimation(isDark ? 0.08 : 0.28))),
 
           SafeArea(
             child: Column(
               children: [
                 // Header
                 Container(
-                  color: Colors.white,
+                  color: theme.appBarTheme.backgroundColor,
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   child: Row(
                     children: [
@@ -211,16 +213,17 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
                           width: 36, height: 36,
                           decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              border: Border.all(color: Colors.grey[400]!, width: 1.5)),
-                          child: const Icon(Icons.arrow_back_ios_new,
-                              size: 15, color: Colors.black),
+                              border: Border.all(color: isDark ? Colors.white24 : Colors.grey[400]!, width: 1.5)),
+                          child: Icon(Icons.arrow_back_ios_new,
+                              size: 15, color: theme.iconTheme.color),
                         ),
                       ),
                       const Spacer(),
                       Text("My Profile",
                         style: GoogleFonts.inter(
                             fontSize: 17 * fontScale,
-                            fontWeight: FontWeight.w600)),
+                            fontWeight: FontWeight.w600,
+                            color: theme.textTheme.titleLarge?.color)),
                       const Spacer(),
                       const SizedBox(width: 36),
                     ],
@@ -282,43 +285,43 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
                               const SizedBox(height: 24),
 
                               // First name
-                              _fieldLabel("First Name", fontScale),
+                              _fieldLabel("First Name", fontScale, theme),
                               TextField(
                                 controller: _firstNameController,
-                                style: GoogleFonts.inter(fontSize: 14 * fontScale),
-                                decoration: _inputDecoration("First name"),
+                                style: GoogleFonts.inter(fontSize: 14 * fontScale, color: theme.textTheme.bodyLarge?.color),
+                                decoration: _inputDecoration("First name", theme),
                               ),
 
                               const SizedBox(height: 14),
 
                               // Last name
-                              _fieldLabel("Last Name", fontScale),
+                              _fieldLabel("Last Name", fontScale, theme),
                               TextField(
                                 controller: _lastNameController,
-                                style: GoogleFonts.inter(fontSize: 14 * fontScale),
-                                decoration: _inputDecoration("Last name"),
+                                style: GoogleFonts.inter(fontSize: 14 * fontScale, color: theme.textTheme.bodyLarge?.color),
+                                decoration: _inputDecoration("Last name", theme),
                               ),
 
                               const SizedBox(height: 14),
 
                               // Phone
-                              _fieldLabel("Phone Number", fontScale),
+                              _fieldLabel("Phone Number", fontScale, theme),
                               TextField(
                                 controller: _phoneController,
                                 keyboardType: TextInputType.phone,
                                 inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9+\s]'))],
-                                style: GoogleFonts.inter(fontSize: 14 * fontScale),
-                                decoration: _inputDecoration("Phone number"),
+                                style: GoogleFonts.inter(fontSize: 14 * fontScale, color: theme.textTheme.bodyLarge?.color),
+                                decoration: _inputDecoration("Phone number", theme),
                               ),
 
                               const SizedBox(height: 14),
 
                               // Location
-                              _fieldLabel("Your Location", fontScale),
+                              _fieldLabel("Your Location", fontScale, theme),
                               TextField(
                                 controller: _locationController,
-                                style: GoogleFonts.inter(fontSize: 14 * fontScale),
-                                decoration: _inputDecoration("City / area",
+                                style: GoogleFonts.inter(fontSize: 14 * fontScale, color: theme.textTheme.bodyLarge?.color),
+                                decoration: _inputDecoration("City / area", theme,
                                     prefix: Icon(Icons.my_location_outlined,
                                         size: 20, color: Colors.grey[500])),
                               ),
@@ -326,50 +329,50 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
                               const SizedBox(height: 14),
 
                               // Email (read-only)
-                              _fieldLabel("Email", fontScale),
+                              _fieldLabel("Email", fontScale, theme),
                               TextField(
                                 readOnly: true,
                                 controller: TextEditingController(text: _email),
                                 style: GoogleFonts.inter(
                                     fontSize: 14 * fontScale,
                                     color: Colors.grey[500]),
-                                decoration: _inputDecoration("Email", readOnly: true),
+                                decoration: _inputDecoration("Email", theme, readOnly: true),
                               ),
 
                               const SizedBox(height: 20),
 
                               // ── Driver-specific fields ────────────────
-                              _sectionHeader("Driver Details", fontScale),
+                              _sectionHeader("Driver Details", fontScale, theme),
                               const SizedBox(height: 12),
 
                               // Driver license number
-                              _fieldLabel("Driver License Number", fontScale),
+                              _fieldLabel("Driver License Number", fontScale, theme),
                               TextField(
                                 controller: _licenseController,
-                                style: GoogleFonts.inter(fontSize: 14 * fontScale),
-                                decoration: _inputDecoration("License number"),
+                                style: GoogleFonts.inter(fontSize: 14 * fontScale, color: theme.textTheme.bodyLarge?.color),
+                                decoration: _inputDecoration("License number", theme),
                               ),
 
                               const SizedBox(height: 14),
 
                               // Service area
-                              _fieldLabel("Service Area", fontScale),
+                              _fieldLabel("Service Area", fontScale, theme),
                               TextField(
                                 controller: _serviceAreaController,
-                                style: GoogleFonts.inter(fontSize: 14 * fontScale),
-                                decoration: _inputDecoration("e.g. Paris, Lyon, Marseille"),
+                                style: GoogleFonts.inter(fontSize: 14 * fontScale, color: theme.textTheme.bodyLarge?.color),
+                                decoration: _inputDecoration("e.g. Paris, Lyon, Marseille", theme),
                               ),
 
                               const SizedBox(height: 14),
 
                               // Bio / Note
-                              _fieldLabel("About / Note (Optional)", fontScale),
+                              _fieldLabel("About / Note (Optional)", fontScale, theme),
                               TextField(
                                 controller: _bioController,
                                 maxLines: 3,
-                                style: GoogleFonts.inter(fontSize: 14 * fontScale),
+                                style: GoogleFonts.inter(fontSize: 14 * fontScale, color: theme.textTheme.bodyLarge?.color),
                                 decoration: _inputDecoration(
-                                    "Short service presentation or welcome message..."),
+                                    "Short service presentation or welcome message...", theme),
                               ),
 
                               const SizedBox(height: 20),
@@ -380,9 +383,9 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                                   decoration: BoxDecoration(
-                                    color: Colors.white,
+                                    color: theme.cardColor,
                                     borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(color: Colors.grey[200]!),
+                                    border: Border.all(color: theme.dividerColor),
                                   ),
                                   child: Row(
                                     children: [
@@ -438,12 +441,12 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
     );
   }
 
-  Widget _sectionHeader(String title, double fontScale) => Text(
+  Widget _sectionHeader(String title, double fontScale, ThemeData theme) => Text(
     title,
     style: GoogleFonts.inter(
         fontSize: 15 * fontScale,
         fontWeight: FontWeight.w700,
-        color: Colors.black87),
+        color: theme.textTheme.titleLarge?.color),
   );
 
 }

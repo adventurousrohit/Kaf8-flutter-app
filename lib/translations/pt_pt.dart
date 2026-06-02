@@ -5,6 +5,7 @@ const Map<String, String> ptPt = {
   'my_profile': 'Meu perfil',
   'my_address': 'Meu endereço',
   'language': 'Idioma',
+  'dark_mode': 'Modo Escuro',
   'other_activity': 'Outra atividade',
   'bank_account': 'Conta bancária',
   'notification': 'Notificação',

@@ -88,13 +88,19 @@ class _TrackingScreenState extends State<TrackingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Track Order',
-            style: GoogleFonts.inter(fontWeight: FontWeight.w700)),
-        backgroundColor: Colors.white,
+            style: GoogleFonts.inter(fontWeight: FontWeight.w700, color: theme.textTheme.titleLarge?.color)),
+        backgroundColor: theme.appBarTheme.backgroundColor,
         elevation: 0,
-        foregroundColor: Colors.black,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios_new, size: 20, color: theme.iconTheme.color),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       body: Stack(
         children: [
@@ -115,7 +121,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
               padding:
                   const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: theme.cardColor,
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
@@ -151,7 +157,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
               child: Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: theme.cardColor,
                     borderRadius: BorderRadius.circular(14),
                     boxShadow: [
                       BoxShadow(
@@ -165,11 +171,11 @@ class _TrackingScreenState extends State<TrackingScreen> {
                     const SizedBox(height: 12),
                     Text('Waiting for driver location…',
                         style: GoogleFonts.inter(
-                            fontSize: 13, color: Colors.grey[600])),
+                            fontSize: 13, color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6))),
                     const SizedBox(height: 4),
                     Text('The map updates automatically',
                         style: GoogleFonts.inter(
-                            fontSize: 11, color: Colors.grey[400])),
+                            fontSize: 11, color: theme.textTheme.bodySmall?.color?.withOpacity(0.5))),
                   ],
                 ),
               ),
@@ -180,11 +186,11 @@ class _TrackingScreenState extends State<TrackingScreen> {
             bottom: 0, left: 0, right: 0,
             child: Container(
               padding: const EdgeInsets.fromLTRB(20, 18, 20, 28),
-              decoration: const BoxDecoration(
-                color: Colors.white,
+              decoration: BoxDecoration(
+                color: theme.cardColor,
                 borderRadius:
-                    BorderRadius.vertical(top: Radius.circular(22)),
-                boxShadow: [
+                    const BorderRadius.vertical(top: Radius.circular(22)),
+                boxShadow: const [
                   BoxShadow(color: Colors.black26, blurRadius: 16)
                 ],
               ),
@@ -196,16 +202,16 @@ class _TrackingScreenState extends State<TrackingScreen> {
                     child: Container(
                       width: 36, height: 4,
                       decoration: BoxDecoration(
-                          color: Colors.grey[300],
+                          color: theme.dividerColor,
                           borderRadius: BorderRadius.circular(4)),
                     ),
                   ),
                   const SizedBox(height: 14),
                   _addressRow(
-                      Icons.my_location, 'Pickup', _from, Colors.green),
+                      Icons.my_location, 'Pickup', _from, Colors.green, theme),
                   const SizedBox(height: 10),
                   _addressRow(
-                      Icons.location_on, 'Dropoff', _to, Colors.red),
+                      Icons.location_on, 'Dropoff', _to, Colors.red, theme),
                 ],
               ),
             ),
@@ -216,7 +222,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
   }
 
   Widget _addressRow(
-      IconData icon, String label, String address, Color color) {
+      IconData icon, String label, String address, Color color, ThemeData theme) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -228,11 +234,11 @@ class _TrackingScreenState extends State<TrackingScreen> {
             children: [
               Text(label,
                   style: GoogleFonts.inter(
-                      fontSize: 11, color: Colors.grey[500])),
+                      fontSize: 11, color: theme.textTheme.bodySmall?.color?.withOpacity(0.5))),
               const SizedBox(height: 2),
               Text(address,
                   style: GoogleFonts.inter(
-                      fontSize: 13, fontWeight: FontWeight.w500),
+                      fontSize: 13, fontWeight: FontWeight.w500, color: theme.textTheme.bodyLarge?.color),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis),
             ],

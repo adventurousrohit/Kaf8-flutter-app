@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../Controller/order_controller.dart';
+import 'call_screen.dart';
 
 class OrderDetailsScreen extends StatelessWidget {
   const OrderDetailsScreen({super.key, required this.order});
@@ -49,17 +51,18 @@ class OrderDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
-            _buildAppBar(context),
+            _buildAppBar(context, theme),
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
-                  _buildDetailCard(context),
+                  _buildDetailCard(context, theme),
                 ],
               ),
             ),
@@ -69,24 +72,25 @@ class OrderDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildAppBar(BuildContext context) {
+  Widget _buildAppBar(BuildContext context, ThemeData theme) {
+    final isDark = theme.brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+            icon: Icon(Icons.arrow_back_ios_new, size: 20, color: theme.iconTheme.color),
             onPressed: () => Navigator.pop(context),
           ),
           const SizedBox(width: 14),
           Text('Order Details',
               style: GoogleFonts.inter(
-                  fontSize: 20, fontWeight: FontWeight.w700)),
+                  fontSize: 20, fontWeight: FontWeight.w700, color: theme.textTheme.titleLarge?.color)),
           const Spacer(),
           Stack(
             children: [
-              const Icon(Icons.notifications_none,
-                  size: 26, color: Colors.black87),
+              Icon(Icons.notifications_none,
+                  size: 26, color: isDark ? Colors.white70 : Colors.black87),
               Positioned(
                 right: 0,
                 top: 0,
@@ -110,12 +114,13 @@ class OrderDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailCard(BuildContext context) {
+  Widget _buildDetailCard(BuildContext context, ThemeData theme) {
+    final isDark = theme.brightness == Brightness.dark;
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
@@ -134,7 +139,7 @@ class OrderDetailsScreen extends StatelessWidget {
                 width: 56,
                 height: 56,
                 decoration: BoxDecoration(
-                  color: Colors.grey[100],
+                  color: isDark ? Colors.white10 : Colors.grey[100],
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Stack(
@@ -166,7 +171,7 @@ class OrderDetailsScreen extends StatelessWidget {
                       children: [
                         Text(_parcelType,
                             style: GoogleFonts.inter(
-                                fontSize: 15, fontWeight: FontWeight.w700)),
+                                fontSize: 15, fontWeight: FontWeight.w700, color: theme.textTheme.bodyLarge?.color)),
                         const Spacer(),
                         Container(
                           padding: const EdgeInsets.symmetric(
@@ -188,7 +193,7 @@ class OrderDetailsScreen extends StatelessWidget {
                         style: GoogleFonts.inter(
                             fontSize: 18,
                             fontWeight: FontWeight.w800,
-                            color: Colors.black)),
+                            color: theme.textTheme.bodyLarge?.color)),
                   ],
                 ),
               ),
@@ -201,19 +206,20 @@ class OrderDetailsScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: const Color(0xFFF5F7FA),
+              color: isDark ? Colors.white.withOpacity(0.05) : const Color(0xFFF5F7FA),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Column(
               children: [
-                _priceRow('Delivery cost', '€${_deliveryCost.toStringAsFixed(2)}'),
+                _priceRow('Delivery cost', '€${_deliveryCost.toStringAsFixed(2)}', theme),
                 _priceRow(
                   'Payment',
                   OrderController.paymentMethodLabel(order['paymentMethod']?.toString()),
+                  theme
                 ),
-                _priceRow('Status', OrderController.statusLabel(_status)),
-                const Divider(height: 16),
-                _priceRow('Order ID', _orderId, bold: true),
+                _priceRow('Status', OrderController.statusLabel(_status), theme),
+                Divider(height: 16, color: theme.dividerColor),
+                _priceRow('Order ID', _orderId, theme, bold: true),
               ],
             ),
           ),
@@ -245,12 +251,12 @@ class OrderDetailsScreen extends StatelessWidget {
               CircleAvatar(
                 radius: 16,
                 backgroundColor: Colors.green.withValues(alpha: 0.1),
-                child: const Icon(Icons.person, color: Colors.green),
+                child: const Icon(Icons.person, color: Colors.green, size: 18),
               ),
               const SizedBox(width: 8),
               Text(_receiverName,
                   style: GoogleFonts.inter(
-                      fontSize: 13, fontWeight: FontWeight.w600)),
+                      fontSize: 13, fontWeight: FontWeight.w600, color: theme.textTheme.bodyLarge?.color)),
               const SizedBox(width: 8),
               Text(_receiverPhone,
                   style: GoogleFonts.inter(
@@ -273,24 +279,23 @@ class OrderDetailsScreen extends StatelessWidget {
                     content: 'From: $_fromAddress\n\nTo: $_toAddress',
                   ),
                   style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: Colors.grey.shade300),
+                    side: BorderSide(color: theme.dividerColor),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12)),
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                   child: Text('Delivery Status',
                       style: GoogleFonts.inter(
-                          fontSize: 13, color: Colors.black87)),
+                          fontSize: 13, color: theme.textTheme.bodyMedium?.color)),
                 ),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () => _showAddressDialog(
-                    context,
-                    title: 'Customer',
-                    content: 'Name: $_receiverName\nPhone: $_receiverPhone',
-                  ),
+                  onPressed: () => Get.to(() => CallScreen(
+                        name: _receiverName,
+                        duration: 'Calling...',
+                      )),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
                     shape: RoundedRectangleBorder(
@@ -312,7 +317,7 @@ class OrderDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _priceRow(String label, String value, {bool bold = false}) {
+  Widget _priceRow(String label, String value, ThemeData theme, {bool bold = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
@@ -321,13 +326,13 @@ class OrderDetailsScreen extends StatelessWidget {
               style: GoogleFonts.inter(
                   fontSize: 12,
                   fontWeight: bold ? FontWeight.w700 : FontWeight.w400,
-                  color: Colors.black87)),
+                  color: theme.textTheme.bodyLarge?.color?.withOpacity(0.87))),
           const Spacer(),
           Text(value,
               style: GoogleFonts.inter(
                   fontSize: 12,
                   fontWeight: bold ? FontWeight.w700 : FontWeight.w400,
-                  color: Colors.black87)),
+                  color: theme.textTheme.bodyLarge?.color?.withOpacity(0.87))),
         ],
       ),
     );

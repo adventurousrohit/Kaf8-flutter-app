@@ -60,8 +60,11 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F6FA),
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -71,16 +74,15 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
               child: Row(
                 children: [
                   GestureDetector(
-                    onTap: () => Get.to(() => const MyProfileScreen()),
-                    child: const CircleAvatar(
-                      backgroundImage: NetworkImage(
-                          "https://randomuser.me/api/portraits/men/32.jpg"),
-                    ),
+                    onTap: () => Navigator.pop(context),
+                    child: Icon(Icons.arrow_back_ios_new,
+                        size: 20, color: theme.iconTheme.color),
                   ),
+                  const SizedBox(width: 14),
                   const Spacer(),
-                  const Text("Statistics",
+                  Text("Statistics",
                       style: TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.w600)),
+                          fontSize: 18, fontWeight: FontWeight.w600, color: theme.textTheme.titleLarge?.color)),
                   const Spacer(),
                   GestureDetector(
                     onTap: () {
@@ -100,9 +102,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                     ),
                   ),
                   const SizedBox(width: 10),
-                  const Icon(Icons.notifications_none),
-                  const SizedBox(width: 10),
-                  const Icon(Icons.menu),
+                  Icon(Icons.notifications_none, color: theme.iconTheme.color),
                 ],
               ),
             ),
@@ -112,14 +112,14 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
               margin: const EdgeInsets.symmetric(horizontal: 15),
               padding: const EdgeInsets.all(15),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: theme.cardColor,
                 borderRadius: BorderRadius.circular(15),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _Summary(title: "Total Orders",   value: "$_totalOrders"),
-                  _Summary(title: "Total Earnings", value: "€ ${_totalEarnings.toStringAsFixed(2)}"),
+                  _Summary(title: "Total Orders",   value: "$_totalOrders", theme: theme),
+                  _Summary(title: "Total Earnings", value: "€ ${_totalEarnings.toStringAsFixed(2)}", theme: theme),
                 ],
               ),
             ),
@@ -133,12 +133,14 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                       children: [
                         _chartCard(
                           title: "Earnings",
-                          child: BarChart(_barChartData()),
+                          theme: theme,
+                          child: BarChart(_barChartData(theme)),
                         ),
                         const SizedBox(height: 20),
                         _chartCard(
                           title: "Orders",
-                          child: LineChart(_lineChartData()),
+                          theme: theme,
+                          child: LineChart(_lineChartData(theme)),
                         ),
                       ],
                     ),
@@ -149,7 +151,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     );
   }
 
-  BarChartData _barChartData() {
+  BarChartData _barChartData(ThemeData theme) {
     final maxY = earningsData.isEmpty ? 10.0 : (earningsData.reduce((a, b) => a > b ? a : b) * 1.2).clamp(1.0, double.infinity);
     return BarChartData(
       minY: 0,
@@ -160,7 +162,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         drawVerticalLine: false,
         horizontalInterval: maxY / 4,
         getDrawingHorizontalLine: (_) =>
-            FlLine(color: Colors.grey.shade300, strokeWidth: 1),
+            FlLine(color: theme.dividerColor, strokeWidth: 1),
       ),
       titlesData: FlTitlesData(
         topTitles:    AxisTitles(sideTitles: SideTitles(showTitles: false)),
@@ -171,7 +173,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             interval: maxY / 4,
             reservedSize: 36,
             getTitlesWidget: (value, _) =>
-                Text(value.toInt().toString(), style: const TextStyle(fontSize: 10)),
+                Text(value.toInt().toString(), style: TextStyle(fontSize: 10, color: theme.textTheme.bodySmall?.color)),
           ),
         ),
         bottomTitles: AxisTitles(
@@ -184,7 +186,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
               if (i % 4 == 0 && i ~/ 2 < timeLabels.length) {
                 return Padding(
                   padding: const EdgeInsets.only(top: 8),
-                  child: Text(timeLabels[i ~/ 2], style: const TextStyle(fontSize: 9)),
+                  child: Text(timeLabels[i ~/ 2], style: TextStyle(fontSize: 9, color: theme.textTheme.bodySmall?.color)),
                 );
               }
               return const SizedBox();
@@ -206,7 +208,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     );
   }
 
-  LineChartData _lineChartData() {
+  LineChartData _lineChartData(ThemeData theme) {
     final maxY = ordersData.isEmpty ? 10.0 : (ordersData.reduce((a, b) => a > b ? a : b) * 1.2).clamp(1.0, double.infinity);
     return LineChartData(
       minX: 0,
@@ -218,7 +220,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         drawVerticalLine: false,
         horizontalInterval: maxY / 4,
         getDrawingHorizontalLine: (_) =>
-            FlLine(color: Colors.grey.shade300, strokeWidth: 1),
+            FlLine(color: theme.dividerColor, strokeWidth: 1),
       ),
       titlesData: FlTitlesData(
         topTitles:   AxisTitles(sideTitles: SideTitles(showTitles: false)),
@@ -228,6 +230,8 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             showTitles: true,
             interval: maxY / 4,
             reservedSize: 36,
+            getTitlesWidget: (value, _) =>
+                Text(value.toInt().toString(), style: TextStyle(fontSize: 10, color: theme.textTheme.bodySmall?.color)),
           ),
         ),
         bottomTitles: AxisTitles(
@@ -240,7 +244,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
               if (i % 4 == 0 && i ~/ 2 < timeLabels.length) {
                 return Padding(
                   padding: const EdgeInsets.only(top: 8),
-                  child: Text(timeLabels[i ~/ 2], style: const TextStyle(fontSize: 9)),
+                  child: Text(timeLabels[i ~/ 2], style: TextStyle(fontSize: 9, color: theme.textTheme.bodySmall?.color)),
                 );
               }
               return const SizedBox();
@@ -268,12 +272,12 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     );
   }
 
-  Widget _chartCard({required String title, required Widget child}) {
+  Widget _chartCard({required String title, required Widget child, required ThemeData theme}) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 15),
       padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)
@@ -284,8 +288,8 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           Row(
             children: [
               Text(title,
-                  style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.w600)),
+                  style: TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.w600, color: theme.textTheme.bodyLarge?.color)),
               const Spacer(),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
@@ -309,18 +313,19 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
 class _Summary extends StatelessWidget {
   final String title;
   final String value;
-  const _Summary({required this.title, required this.value});
+  final ThemeData theme;
+  const _Summary({required this.title, required this.value, required this.theme});
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: const TextStyle(color: Colors.grey)),
+        Text(title, style: TextStyle(color: theme.textTheme.bodySmall?.color)),
         const SizedBox(height: 5),
         Text(value,
-            style: const TextStyle(
-                fontSize: 18, fontWeight: FontWeight.bold)),
+            style: TextStyle(
+                fontSize: 18, fontWeight: FontWeight.bold, color: theme.textTheme.bodyLarge?.color)),
       ],
     );
   }

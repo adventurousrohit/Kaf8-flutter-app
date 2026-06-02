@@ -14,6 +14,7 @@ import '../Service/vehicle_type_model.dart';
 import '../Utils/responsiveUtils.dart';
 import '../home/homeorder.dart';
 import '../profile/myProfile.dart';
+import '../driverHome/call_screen.dart';
 
 class UserModel {
   final String transporterId;
@@ -91,12 +92,13 @@ const List<_BannerItem> _fallbackBanners = [
   ),
 ];
 
+// ── Fallback vehicle items now use local PNG assets ─────────────────────────
 const List<_VehicleItem> _fallbackVehicleItems = [
   _VehicleItem(
     VehicleTypeModel(
       id: 'fallback-bicycle',
       name: 'Bicycle',
-      icon: '🚲',
+      icon: 'assets/images/vehicles/icon_bicycle.png',
       baseCost: 8,
       description: '',
     ),
@@ -105,7 +107,7 @@ const List<_VehicleItem> _fallbackVehicleItems = [
     VehicleTypeModel(
       id: 'fallback-motorcycle',
       name: 'Motorcycle',
-      icon: '🏍️',
+      icon: 'assets/images/shared/scooter.png',
       baseCost: 15,
       description: '',
     ),
@@ -114,7 +116,7 @@ const List<_VehicleItem> _fallbackVehicleItems = [
     VehicleTypeModel(
       id: 'fallback-scooter',
       name: 'Scooter',
-      icon: '🛵',
+      icon: 'assets/images/vehicles/icon_scooter_blue.png',
       baseCost: 12,
       description: '',
     ),
@@ -123,7 +125,7 @@ const List<_VehicleItem> _fallbackVehicleItems = [
     VehicleTypeModel(
       id: 'fallback-car',
       name: 'Car',
-      icon: '🚗',
+      icon: 'assets/images/vehicles/icon_car.png',
       baseCost: 25,
       description: '',
     ),
@@ -132,7 +134,7 @@ const List<_VehicleItem> _fallbackVehicleItems = [
     VehicleTypeModel(
       id: 'fallback-van',
       name: 'Van',
-      icon: '🚚',
+      icon: 'assets/images/vehicles/icon_van.png',
       baseCost: 35,
       description: '',
     ),
@@ -141,7 +143,7 @@ const List<_VehicleItem> _fallbackVehicleItems = [
     VehicleTypeModel(
       id: 'fallback-minibus',
       name: 'MiniBus',
-      icon: '🚌',
+      icon: 'assets/images/vehicles/icon_minibus.png',
       baseCost: 50,
       description: '',
     ),
@@ -150,7 +152,7 @@ const List<_VehicleItem> _fallbackVehicleItems = [
     VehicleTypeModel(
       id: 'fallback-truck',
       name: 'Truck',
-      icon: '🚛',
+      icon: 'assets/images/vehicles/icon_truck.png',
       baseCost: 60,
       description: '',
     ),
@@ -159,7 +161,7 @@ const List<_VehicleItem> _fallbackVehicleItems = [
     VehicleTypeModel(
       id: 'fallback-breakdown',
       name: 'Breakdown Vehicle',
-      icon: '🚜',
+      icon: 'assets/images/vehicles/icon_breakdown_vehicle.png',
       baseCost: 80,
       description: '',
     ),
@@ -177,7 +179,7 @@ class _HomePageState extends State<HomePage> {
   final PageController _pageController = PageController();
   final TextEditingController _searchController = TextEditingController();
   final UserProfileController _profileController =
-      Get.find<UserProfileController>();
+  Get.find<UserProfileController>();
 
   int _currentBannerIndex = 0;
   String _currentAddress = 'Fetching location...';
@@ -190,6 +192,10 @@ class _HomePageState extends State<HomePage> {
   List<_BannerItem> _banners = _fallbackBanners;
   List<_VehicleItem> _vehicleItems = _fallbackVehicleItems;
   bool _driversLoading = false;
+
+  // Filter state
+  double _minRating = 0.0;
+  bool _onlyOnline = false;
 
   @override
   void initState() {
@@ -248,8 +254,8 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       _locationPermissionDenied =
           result.status == LocationAccessStatus.denied ||
-          result.status == LocationAccessStatus.deniedForever ||
-          result.status == LocationAccessStatus.serviceDisabled;
+              result.status == LocationAccessStatus.deniedForever ||
+              result.status == LocationAccessStatus.serviceDisabled;
     });
   }
 
@@ -262,11 +268,11 @@ class _HomePageState extends State<HomePage> {
         .whereType<Map>()
         .map(
           (item) => _BannerItem(
-            title: '${item['title'] ?? ''}',
-            subtitle: '${item['subtitle'] ?? ''}',
-            imageUrl: '${item['imageUrl'] ?? ''}',
-          ),
-        )
+        title: '${item['title'] ?? ''}',
+        subtitle: '${item['subtitle'] ?? ''}',
+        imageUrl: '${item['imageUrl'] ?? ''}',
+      ),
+    )
         .where((b) => b.title.isNotEmpty)
         .toList();
     if (parsed.isEmpty) return;
@@ -282,9 +288,40 @@ class _HomePageState extends State<HomePage> {
     if (result['success'] != true || result['data'] is! List) return;
     final parsed = (result['data'] as List)
         .whereType<Map>()
-        .map((e) => VehicleTypeModel.fromJson(Map<String, dynamic>.from(e)))
-        .where((v) => v.id.isNotEmpty && v.name.isNotEmpty)
-        .map((v) => _VehicleItem(v))
+        .map((e) {
+      final model = VehicleTypeModel.fromJson(Map<String, dynamic>.from(e));
+      // Map icon strings (emojis or old names) to local PNG assets from assets/icons/
+      String iconPath = model.icon;
+      final name = model.name.toLowerCase();
+      if (iconPath.contains('🚲') || name.contains('bicycle')) {
+        iconPath = 'assets/icons/ic_bicycle.png';
+      } else if (iconPath.contains('🏍️') || name.contains('motorcycle')) {
+        iconPath = 'assets/icons/ic_motorcycle.png';
+      } else if (iconPath.contains('🛵') || name.contains('scooter')) {
+        iconPath = 'assets/icons/ic_scooter.png';
+      } else if (iconPath.contains('🚗') || name.contains('car')) {
+        iconPath = 'assets/icons/ic_car.png';
+      } else if (iconPath.contains('🚚') || name.contains('van')) {
+        iconPath = 'assets/icons/ic_van.png';
+      } else if (iconPath.contains('🚌') ||
+          name.contains('minibus') ||
+          name.contains('mini bus')) {
+        iconPath = 'assets/icons/ic_mini_bus.png';
+      } else if (iconPath.contains('🚛') || name.contains('truck')) {
+        iconPath = 'assets/icons/ic_truck.png';
+      } else if (iconPath.contains('🚜') || name.contains('breakdown')) {
+        iconPath = 'assets/icons/ic_breakdown_vehicle.png';
+      }
+
+      return _VehicleItem(VehicleTypeModel(
+        id: model.id,
+        name: model.name,
+        icon: iconPath,
+        baseCost: model.baseCost,
+        description: model.description,
+      ));
+    })
+        .where((v) => v.model.id.isNotEmpty && v.model.name.isNotEmpty)
         .toList();
     if (parsed.isEmpty) return;
     setState(() => _vehicleItems = parsed);
@@ -295,10 +332,10 @@ class _HomePageState extends State<HomePage> {
     setState(() => _driversLoading = true);
     final result = _userPosition != null
         ? await ApiService.getNearbyTransporters(
-            latitude: _userPosition!.latitude,
-            longitude: _userPosition!.longitude,
-            radius: 10,
-          )
+      latitude: _userPosition!.latitude,
+      longitude: _userPosition!.longitude,
+      radius: 10,
+    )
         : await ApiService.getTransporters(limit: 10);
     if (!mounted) return;
 
@@ -349,23 +386,152 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _performSearch(String query) {
+    _filterDrivers();
+  }
+
+  void _filterDrivers() {
+    final query = _searchController.text.toLowerCase();
     setState(() {
-      _nearbyDrivers = query.isEmpty
-          ? _originalNearbyDrivers
-          : _originalNearbyDrivers
-                .where(
-                  (d) => d.fullName.toLowerCase().contains(query.toLowerCase()),
-                )
-                .toList();
+      _nearbyDrivers = _originalNearbyDrivers.where((d) {
+        final matchesSearch = d.fullName.toLowerCase().contains(query);
+        final matchesRating = d.rating >= _minRating;
+        final matchesOnline = !_onlyOnline || d.isOnline;
+        return matchesSearch && matchesRating && matchesOnline;
+      }).toList();
     });
   }
 
-  void _applyFilter(double minRating) {
-    setState(() {
-      _nearbyDrivers = _originalNearbyDrivers
-          .where((d) => d.rating >= minRating)
-          .toList();
-    });
+  void _showFilterBottomSheet() {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    Get.bottomSheet(
+      StatefulBuilder(
+        builder: (context, setModalState) {
+          return Container(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+            decoration: BoxDecoration(
+              color: theme.cardColor,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            child: SafeArea(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: isDark ? Colors.grey[700] : Colors.grey[300],
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    "Filter Carriers",
+                    style: GoogleFonts.inter(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: theme.textTheme.titleLarge?.color,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Online only toggle
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Show online carriers only",
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          color: theme.textTheme.bodyLarge?.color,
+                        ),
+                      ),
+                      Switch(
+                        value: _onlyOnline,
+                        activeColor: Colors.green,
+                        onChanged: (val) {
+                          setModalState(() => _onlyOnline = val);
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Rating slider
+                  Text(
+                    "Minimum Rating: ${_minRating.toStringAsFixed(1)}",
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      color: theme.textTheme.bodyLarge?.color,
+                    ),
+                  ),
+                  Slider(
+                    value: _minRating,
+                    min: 0,
+                    max: 5,
+                    divisions: 10,
+                    activeColor: Colors.green,
+                    label: _minRating.toStringAsFixed(1),
+                    onChanged: (val) {
+                      setModalState(() => _minRating = val);
+                    },
+                  ),
+
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
+                      onPressed: () {
+                        _filterDrivers();
+                        Get.back();
+                      },
+                      child: Text(
+                        "Apply Filters",
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Center(
+                    child: TextButton(
+                      onPressed: () {
+                        setModalState(() {
+                          _minRating = 0.0;
+                          _onlyOnline = false;
+                        });
+                        _filterDrivers();
+                        Get.back();
+                      },
+                      child: Text(
+                        "Reset All",
+                        style: TextStyle(color: Colors.grey[500]),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+      ),
+    );
   }
 
   Future<void> _openLocationSettings() async {
@@ -387,9 +553,11 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     final fontScale = ResponsiveUtils.fontScale(context);
     final size = MediaQuery.of(context).size;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFEAF4FB),
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Stack(
         children: [
           // ── Top-left geometric background ──────────────────────────
@@ -401,7 +569,7 @@ class _HomePageState extends State<HomePage> {
               width: size.width * 0.60,
               fit: BoxFit.contain,
               alignment: Alignment.topLeft,
-              opacity: const AlwaysStoppedAnimation(0.18),
+              opacity: AlwaysStoppedAnimation(isDark ? 0.05 : 0.18),
             ),
           ),
 
@@ -417,7 +585,7 @@ class _HomePageState extends State<HomePage> {
                 width: size.width * 0.38,
                 fit: BoxFit.contain,
                 alignment: Alignment.topRight,
-                opacity: const AlwaysStoppedAnimation(0.15),
+                opacity: AlwaysStoppedAnimation(isDark ? 0.04 : 0.15),
               ),
             ),
           ),
@@ -427,9 +595,9 @@ class _HomePageState extends State<HomePage> {
             child: Column(
               children: [
                 // ── HEADER ──────────────────────────────────────────
-                _buildHeader(fontScale),
+                _buildHeader(fontScale, theme),
                 // ── SEARCH BAR ──────────────────────────────────────
-                _buildSearchBar(fontScale),
+                _buildSearchBar(fontScale, theme),
                 const SizedBox(height: 12),
 
                 // ── SCROLLABLE BODY ──────────────────────────────────
@@ -447,16 +615,16 @@ class _HomePageState extends State<HomePage> {
                       children: [
                         if (_locationPermissionDenied ||
                             _notificationPermissionDenied)
-                          _buildPermissionCards(),
-                        _buildBanner(size, fontScale),
+                          _buildPermissionCards(theme),
+                        _buildBanner(size, fontScale, isDark),
                         const SizedBox(height: 8),
-                        _buildPageDots(),
+                        _buildPageDots(isDark),
                         const SizedBox(height: 18),
-                        _buildVehicleGrid(fontScale),
+                        _buildVehicleGrid(fontScale, isDark),
                         const SizedBox(height: 18),
-                        _buildSectionHeader("Carriers near me", fontScale),
+                        _buildSectionHeader("Carriers near me", fontScale, theme),
                         const SizedBox(height: 12),
-                        _buildDriverCards(),
+                        _buildDriverCards(theme),
                         const SizedBox(height: 20),
                       ],
                     ),
@@ -471,13 +639,19 @@ class _HomePageState extends State<HomePage> {
   }
 
   // ── Header ─────────────────────────────────────────────────────────────────
-  Widget _buildHeader(double fontScale) {
+  Widget _buildHeader(double fontScale, ThemeData theme) {
     return Container(
       color: Colors.transparent,
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
       child: Row(
         children: [
-          const Icon(Icons.location_on, color: Colors.black54, size: 22),
+          Icon(
+            Icons.location_on,
+            color: theme.brightness == Brightness.dark
+                ? Colors.white70
+                : Colors.black54,
+            size: 22,
+          ),
           const SizedBox(width: 8),
           Expanded(
             child: Column(
@@ -493,11 +667,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                     const SizedBox(width: 4),
-                    Icon(
-                      Icons.chevron_right,
-                      size: 14,
-                      color: Colors.grey[600],
-                    ),
+                    Icon(Icons.chevron_right, size: 14, color: Colors.grey[600]),
                   ],
                 ),
                 Text(
@@ -505,7 +675,7 @@ class _HomePageState extends State<HomePage> {
                   style: GoogleFonts.inter(
                     fontSize: 15 * fontScale,
                     fontWeight: FontWeight.w600,
-                    color: Colors.black,
+                    color: theme.textTheme.bodyLarge?.color,
                   ),
                   overflow: TextOverflow.ellipsis,
                   maxLines: 1,
@@ -514,15 +684,16 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           const SizedBox(width: 8),
-          // Bell with dot
           GestureDetector(
             onTap: () => Get.to(() => NotificationPage()),
             child: Stack(
               children: [
-                const Icon(
+                Icon(
                   Icons.notifications_none,
                   size: 28,
-                  color: Colors.black87,
+                  color: theme.brightness == Brightness.dark
+                      ? Colors.white70
+                      : Colors.black87,
                 ),
                 Positioned(
                   right: 0,
@@ -540,7 +711,6 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           const SizedBox(width: 10),
-          // User avatar
           GestureDetector(
             onTap: () => Get.to(() => const MyProfileScreen()),
             child: Obx(() {
@@ -558,7 +728,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   // ── Search bar ─────────────────────────────────────────────────────────────
-  Widget _buildSearchBar(double fontScale) {
+  Widget _buildSearchBar(double fontScale, ThemeData theme) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
@@ -566,7 +736,7 @@ class _HomePageState extends State<HomePage> {
           Expanded(
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: theme.cardColor,
                 borderRadius: BorderRadius.circular(30),
                 boxShadow: [
                   BoxShadow(
@@ -578,18 +748,17 @@ class _HomePageState extends State<HomePage> {
               ),
               child: TextField(
                 controller: _searchController,
-                style: GoogleFonts.inter(fontSize: 14 * fontScale),
+                style: GoogleFonts.inter(
+                  fontSize: 14 * fontScale,
+                  color: theme.textTheme.bodyLarge?.color,
+                ),
                 decoration: InputDecoration(
                   hintText: "Search here",
                   hintStyle: GoogleFonts.inter(
                     fontSize: 14 * fontScale,
                     color: Colors.grey[400],
                   ),
-                  prefixIcon: Icon(
-                    Icons.search,
-                    color: Colors.grey[400],
-                    size: 20,
-                  ),
+                  prefixIcon: Icon(Icons.search, color: Colors.grey[400], size: 20),
                   filled: true,
                   fillColor: Colors.transparent,
                   contentPadding: const EdgeInsets.symmetric(vertical: 12),
@@ -610,13 +779,12 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           const SizedBox(width: 10),
-          // Filter button
           GestureDetector(
-            onTap: () => _applyFilter(4.5),
+            onTap: _showFilterBottomSheet,
             child: Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: theme.cardColor,
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
@@ -635,7 +803,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   // ── Banner ─────────────────────────────────────────────────────────────────
-  Widget _buildBanner(Size size, double fontScale) {
+  Widget _buildBanner(Size size, double fontScale, bool isDark) {
     return SizedBox(
       height: 180,
       child: PageView.builder(
@@ -718,7 +886,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   // ── Page dots ──────────────────────────────────────────────────────────────
-  Widget _buildPageDots() {
+  Widget _buildPageDots(bool isDark) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(_banners.length, (i) {
@@ -729,7 +897,9 @@ class _HomePageState extends State<HomePage> {
           width: active ? 24 : 8,
           height: 5,
           decoration: BoxDecoration(
-            color: active ? Colors.green : Colors.grey[350],
+            color: active
+                ? Colors.green
+                : (isDark ? Colors.grey[700] : Colors.grey[350]),
             borderRadius: BorderRadius.circular(4),
           ),
         );
@@ -738,7 +908,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   // ── Vehicle grid ───────────────────────────────────────────────────────────
-  Widget _buildVehicleGrid(double fontScale) {
+  Widget _buildVehicleGrid(double fontScale, bool isDark) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: GridView.builder(
@@ -747,50 +917,18 @@ class _HomePageState extends State<HomePage> {
         itemCount: _vehicleItems.length,
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 4,
-          mainAxisSpacing: 12,
+          mainAxisSpacing: 16,
           crossAxisSpacing: 12,
-          childAspectRatio: 0.80,
+          childAspectRatio: 0.78,
         ),
         itemBuilder: (context, index) {
           final item = _vehicleItems[index];
           return GestureDetector(
             onTap: () => Get.to(() => homeorder(selectedVehicle: item.model)),
-            child: Column(
-              children: [
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 6,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Center(
-                      child: Text(
-                        item.model.icon,
-                        style: const TextStyle(fontSize: 28),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  item.model.name == 'Breakdown Vehicle'
-                      ? 'Breakdown\nVehicle'
-                      : item.model.name,
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(
-                    fontSize: 11 * fontScale,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black87,
-                  ),
-                ),
-              ],
+            child: _VehicleCell(
+              item: item,
+              fontScale: fontScale,
+              isDark: isDark,
             ),
           );
         },
@@ -799,7 +937,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   // ── Section header ─────────────────────────────────────────────────────────
-  Widget _buildSectionHeader(String title, double fontScale) {
+  Widget _buildSectionHeader(String title, double fontScale, ThemeData theme) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
@@ -811,7 +949,7 @@ class _HomePageState extends State<HomePage> {
               style: GoogleFonts.inter(
                 fontSize: 17 * fontScale,
                 fontWeight: FontWeight.w700,
-                color: Colors.black,
+                color: theme.textTheme.titleLarge?.color,
               ),
               overflow: TextOverflow.ellipsis,
             ),
@@ -823,7 +961,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   // ── Driver cards ───────────────────────────────────────────────────────────
-  Widget _buildDriverCards() {
+  Widget _buildDriverCards(ThemeData theme) {
     if (_driversLoading) {
       return const SizedBox(
         height: 230,
@@ -861,13 +999,14 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildPermissionCards() {
+  Widget _buildPermissionCards(ThemeData theme) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
       child: Column(
         children: [
           if (_locationPermissionDenied)
             _permissionCard(
+              theme: theme,
               icon: Icons.location_off,
               text: "Location access is needed for accurate nearby carriers.",
               button: "Enable",
@@ -875,9 +1014,9 @@ class _HomePageState extends State<HomePage> {
             ),
           if (_notificationPermissionDenied)
             _permissionCard(
+              theme: theme,
               icon: Icons.notifications_off,
-              text:
-                  "Enable notifications to receive booking updates instantly.",
+              text: "Enable notifications to receive booking updates instantly.",
               button: "Allow",
               onTap: _openNotificationSettings,
             ),
@@ -887,6 +1026,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _permissionCard({
+    required ThemeData theme,
     required IconData icon,
     required String text,
     required String button,
@@ -896,14 +1036,22 @@ class _HomePageState extends State<HomePage> {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         children: [
           Icon(icon, color: Colors.orange),
           const SizedBox(width: 10),
-          Expanded(child: Text(text, style: const TextStyle(fontSize: 12))),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(
+                fontSize: 12,
+                color: theme.textTheme.bodyMedium?.color,
+              ),
+            ),
+          ),
           TextButton(onPressed: onTap, child: Text(button)),
         ],
       ),
@@ -915,18 +1063,99 @@ class _HomePageState extends State<HomePage> {
       _nearbyDrivers = _nearbyDrivers
           .map(
             (d) => d.transporterId == transporterId
-                ? d.copyWith(isFavorite: isFavorite)
-                : d,
-          )
+            ? d.copyWith(isFavorite: isFavorite)
+            : d,
+      )
           .toList();
       _originalNearbyDrivers = _originalNearbyDrivers
           .map(
             (d) => d.transporterId == transporterId
-                ? d.copyWith(isFavorite: isFavorite)
-                : d,
-          )
+            ? d.copyWith(isFavorite: isFavorite)
+            : d,
+      )
           .toList();
     });
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// VEHICLE CELL
+// Large rounded-square card with PNG asset icon + label below.
+// Matches the screenshot style exactly.
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _VehicleCell extends StatelessWidget {
+  final _VehicleItem item;
+  final double fontScale;
+  final bool isDark;
+
+  const _VehicleCell({
+    required this.item,
+    required this.fontScale,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cardColor = isDark ? const Color(0xFF252525) : Colors.white;
+    // Soft blue-tinted shadow in light mode (matches screenshot); darker shadow in dark mode
+    final shadowColor = isDark
+        ? Colors.black.withOpacity(0.35)
+        : const Color(0xFF90CAF9).withOpacity(0.30);
+
+    final displayName = item.model.name == 'Breakdown Vehicle'
+        ? 'Breakdown\nVehicle'
+        : item.model.name;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        // ── Card ────────────────────────────────────────────────────
+        Expanded(
+          child: Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: cardColor,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: shadowColor,
+                  blurRadius: 14,
+                  spreadRadius: 0,
+                  offset: const Offset(0, 5),
+                ),
+              ],
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(15),
+              child: Image.asset(
+                item.model.icon,
+                fit: BoxFit.contain,
+                errorBuilder: (_, __, ___) => Icon(
+                  Icons.directions_car_outlined,
+                  size: 32,
+                  color: isDark ? Colors.grey[500] : Colors.grey[400],
+                ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        // ── Label ───────────────────────────────────────────────────
+        Text(
+          displayName,
+          textAlign: TextAlign.center,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: GoogleFonts.inter(
+            fontSize: 12 * fontScale,
+            fontWeight: FontWeight.w500,
+            color: isDark ? const Color(0xFFEAEAEA) : const Color(0xFF1A1A1A),
+            height: 1.25,
+          ),
+        ),
+      ],
+    );
   }
 }
 
@@ -972,45 +1201,50 @@ class _DriverCardState extends State<_DriverCard> {
   }
 
   Future<void> _makePhoneCall() async {
-    final phone = widget.driver.phone.trim();
-    if (phone.isEmpty) {
-      Get.snackbar(
-        "Call",
-        "No phone number available",
-        snackPosition: SnackPosition.BOTTOM,
-      );
-      return;
-    }
-    final uri = Uri(scheme: 'tel', path: phone);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    } else {
-      Get.snackbar(
-        "Call",
-        "Unable to start phone call",
-        snackPosition: SnackPosition.BOTTOM,
-      );
-    }
+    Get.to(() => CallScreen(
+          name: widget.driver.fullName,
+          avatarUrl: widget.driver.avatarUrl.isNotEmpty
+              ? widget.driver.avatarUrl
+              : 'https://randomuser.me/api/portraits/men/33.jpg',
+          duration: 'Calling...',
+        ));
   }
 
   void _openQuickActions() {
+    final isDark =
+        Theme.of(context).brightness == Brightness.dark;
     Get.bottomSheet(
       Container(
-        color: Colors.white,
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
         child: SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.symmetric(vertical: 10),
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.grey[700] : Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
               ListTile(
                 leading: Icon(
                   widget.driver.isFavorite
                       ? Icons.favorite
                       : Icons.favorite_border,
+                  color: isDark ? Colors.white70 : null,
                 ),
                 title: Text(
                   widget.driver.isFavorite
                       ? "Remove from favourites"
                       : "Add to favourites",
+                  style: TextStyle(
+                      color: isDark ? Colors.white : Colors.black87),
                 ),
                 onTap: () {
                   Get.back();
@@ -1018,16 +1252,22 @@ class _DriverCardState extends State<_DriverCard> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.call),
-                title: const Text("Call carrier"),
+                leading: Icon(Icons.call,
+                    color: isDark ? Colors.white70 : null),
+                title: Text("Call carrier",
+                    style: TextStyle(
+                        color: isDark ? Colors.white : Colors.black87)),
                 onTap: () {
                   Get.back();
                   _makePhoneCall();
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.person_outline),
-                title: const Text("View profile"),
+                leading: Icon(Icons.person_outline,
+                    color: isDark ? Colors.white70 : null),
+                title: Text("View profile",
+                    style: TextStyle(
+                        color: isDark ? Colors.white : Colors.black87)),
                 onTap: () => Get.back(),
               ),
             ],
@@ -1039,15 +1279,16 @@ class _DriverCardState extends State<_DriverCard> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return GestureDetector(
       onLongPress: _openQuickActions,
       child: Container(
         width: 300,
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: theme.cardColor,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey.shade200, width: 1.5),
+          border: Border.all(color: theme.dividerColor, width: 1.5),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.05),
@@ -1069,8 +1310,8 @@ class _DriverCardState extends State<_DriverCard> {
                   ),
                   decoration: BoxDecoration(
                     color: widget.driver.isOnline
-                        ? Colors.green.shade50
-                        : Colors.grey.shade100,
+                        ? Colors.green.withOpacity(0.1)
+                        : Colors.grey.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
@@ -1092,23 +1333,23 @@ class _DriverCardState extends State<_DriverCard> {
                     decoration: BoxDecoration(
                       color: widget.driver.isFavorite
                           ? Colors.green
-                          : Colors.grey.shade300,
+                          : Colors.grey.withOpacity(0.3),
                       shape: BoxShape.circle,
                     ),
                     child: _isFavoriteLoading
                         ? const SizedBox(
-                            width: 12,
-                            height: 12,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 1.6,
-                              color: Colors.white,
-                            ),
-                          )
+                      width: 12,
+                      height: 12,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 1.6,
+                        color: Colors.white,
+                      ),
+                    )
                         : const Icon(
-                            Icons.favorite,
-                            size: 18,
-                            color: Colors.white,
-                          ),
+                      Icons.favorite,
+                      size: 18,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ],
@@ -1140,7 +1381,8 @@ class _DriverCardState extends State<_DriverCard> {
                               ? Colors.green
                               : Colors.grey,
                           shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 1.5),
+                          border: Border.all(
+                              color: theme.cardColor, width: 1.5),
                         ),
                       ),
                     ),
@@ -1153,20 +1395,18 @@ class _DriverCardState extends State<_DriverCard> {
                     children: [
                       Text(
                         widget.driver.fullName,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: 13,
+                          color: theme.textTheme.bodyLarge?.color,
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 3),
                       Row(
                         children: [
-                          const Icon(
-                            Icons.location_on,
-                            size: 11,
-                            color: Colors.grey,
-                          ),
+                          const Icon(Icons.location_on,
+                              size: 11, color: Colors.grey),
                           const SizedBox(width: 3),
                           Expanded(
                             child: Text(
@@ -1185,15 +1425,14 @@ class _DriverCardState extends State<_DriverCard> {
                       const SizedBox(height: 3),
                       Row(
                         children: [
-                          const Icon(
-                            Icons.star,
-                            size: 13,
-                            color: Colors.orange,
-                          ),
+                          const Icon(Icons.star,
+                              size: 13, color: Colors.orange),
                           const SizedBox(width: 3),
                           Text(
                             "${widget.driver.rating.toStringAsFixed(1)} (${widget.driver.reviewCount})",
-                            style: const TextStyle(fontSize: 11),
+                            style: TextStyle(
+                                fontSize: 11,
+                                color: theme.textTheme.bodyMedium?.color),
                           ),
                         ],
                       ),
@@ -1211,13 +1450,9 @@ class _DriverCardState extends State<_DriverCard> {
                   ),
                 ),
                 // Action buttons
-                Row(
-                  children: [
-                    GestureDetector(
-                      onTap: _makePhoneCall,
-                      child: _actionBtn(Icons.call),
-                    ),
-                  ],
+                GestureDetector(
+                  onTap: _makePhoneCall,
+                  child: _actionBtn(Icons.call),
                 ),
               ],
             ),

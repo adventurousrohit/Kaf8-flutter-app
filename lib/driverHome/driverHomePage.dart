@@ -8,6 +8,7 @@ import 'package:kaf8/Service/api_service.dart';
 import 'package:kaf8/Controller/order_controller.dart';
 import 'package:kaf8/Controller/user_profile_controller.dart';
 import 'package:kaf8/Utils/avatar_widget.dart';
+import 'package:kaf8/Controller/theme_controller.dart';
 import 'package:kaf8/driverHome/my_profile_screen.dart';
 import 'package:kaf8/driverHome/orders_screen.dart';
 import 'package:kaf8/driverHome/statistics_screen.dart';
@@ -262,8 +263,12 @@ class _DriverHomeScreenState extends State<DriverHomeScreen>
   }
 
   Future<bool> _showGoOfflineSheet() async {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     final result = await showModalBottomSheet<bool>(
       context: context,
+      backgroundColor: theme.scaffoldBackgroundColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -273,16 +278,16 @@ class _DriverHomeScreenState extends State<DriverHomeScreen>
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(width: 40, height: 4,
-                decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
+                decoration: BoxDecoration(color: theme.dividerColor, borderRadius: BorderRadius.circular(2))),
             const SizedBox(height: 20),
-            const Icon(Icons.wifi_off_rounded, size: 48, color: Colors.grey),
+            Icon(Icons.wifi_off_rounded, size: 48, color: isDark ? Colors.white54 : Colors.grey),
             const SizedBox(height: 12),
             Text('Go Offline?',
-                style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w700)),
+                style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w700, color: theme.textTheme.titleLarge?.color)),
             const SizedBox(height: 8),
             Text("You won't receive new delivery requests while offline.",
                 textAlign: TextAlign.center,
-                style: GoogleFonts.inter(fontSize: 14, color: Colors.grey[600])),
+                style: GoogleFonts.inter(fontSize: 14, color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6))),
             const SizedBox(height: 24),
             Row(children: [
               Expanded(
@@ -290,9 +295,10 @@ class _DriverHomeScreenState extends State<DriverHomeScreen>
                   onPressed: () => Navigator.pop(ctx, false),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
+                    side: BorderSide(color: theme.dividerColor),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: Text('Cancel', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                  child: Text('Cancel', style: GoogleFonts.inter(fontWeight: FontWeight.w600, color: theme.textTheme.bodyLarge?.color)),
                 ),
               ),
               const SizedBox(width: 12),
@@ -384,6 +390,8 @@ class _DriverHomeScreenState extends State<DriverHomeScreen>
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     // Gate: require location before the driver can use the home screen
     if (_locationStatus != _LocationStatus.ok &&
@@ -393,7 +401,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen>
 
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: const Color(0xFFEAF4FB),
+      backgroundColor: theme.scaffoldBackgroundColor,
 
       // ── GREEN NAVIGATION DRAWER ─────────────────────────────────────────
       drawer: _buildDrawer(context),
@@ -401,7 +409,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen>
       body: SafeArea(
         child: Column(
           children: [
-            _buildHeader(),
+            _buildHeader(theme),
             Expanded(
               child: RefreshIndicator(
                 color: Colors.green,
@@ -410,15 +418,15 @@ class _DriverHomeScreenState extends State<DriverHomeScreen>
                   padding: EdgeInsets.zero,
                   children: [
                     const SizedBox(height: 12),
-                    _buildBanner(size),
+                    _buildBanner(size, isDark),
                     const SizedBox(height: 10),
-                    _buildPageDots(),
+                    _buildPageDots(theme),
                     const SizedBox(height: 18),
-                    _buildStatGrid(),
+                    _buildStatGrid(theme),
                     const SizedBox(height: 18),
-                    _buildTabBar(),
+                    _buildTabBar(theme),
                     const SizedBox(height: 16),
-                    _showReviews ? _buildReviewsList() : _buildVehicleGrid(),
+                    _showReviews ? _buildReviewsList(theme) : _buildVehicleGrid(theme),
                     const SizedBox(height: 30),
                   ],
                 ),
@@ -522,13 +530,18 @@ class _DriverHomeScreenState extends State<DriverHomeScreen>
   // ── DRAWER ─────────────────────────────────────────────────────────────────
   Widget _buildDrawer(BuildContext context) {
     final size = MediaQuery.of(context).size;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Drawer(
       width: size.width * 0.85,
+      backgroundColor: isDark ? const Color(0xFF121212) : Colors.green,
       child: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFF2ECC71), Color(0xFF27AE60)],
+            colors: isDark
+                ? [const Color(0xFF1E1E1E), const Color(0xFF121212)]
+                : [const Color(0xFF2ECC71), const Color(0xFF27AE60)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -537,7 +550,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen>
           children: [
             // ── Background polygon shapes ──────────────────────────
             Positioned.fill(
-              child: CustomPaint(painter: _DrawerBgPainter()),
+              child: CustomPaint(painter: _DrawerBgPainter(isDark: isDark)),
             ),
 
             // ── Content ───────────────────────────────────────────
@@ -584,7 +597,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen>
                                 _profileCtrl.profile.value?['email']?.toString() ?? '',
                                 style: GoogleFonts.inter(
                                     fontSize: 13,
-                                    color: Colors.white.withValues(alpha: 0.85)),
+                                    color: Colors.white.withOpacity(0.85)),
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ],
@@ -596,16 +609,17 @@ class _DriverHomeScreenState extends State<DriverHomeScreen>
                     const SizedBox(height: 28),
 
                     // ── Card 1: General ──────────────────────────
-                    _drawerCard([
+                    _drawerCard(theme, [
                       _drawerItem(
                         icon: Icons.person_outline,
                         label: "My profile",
+                        theme: theme,
                         onTap: () {
                           Navigator.pop(context);
                           Get.to(() => DriverProfileScreen());
                         },
                       ),
-                      _drawerDivider(),
+                      _drawerDivider(theme),
                       // Online / Offline with toggle
                       Padding(
                         padding: const EdgeInsets.symmetric(
@@ -633,7 +647,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen>
                                       style: GoogleFonts.inter(
                                           fontSize: 15,
                                           fontWeight: FontWeight.w600,
-                                          color: _isOnline ? Colors.green : Colors.grey[700])),
+                                          color: _isOnline ? Colors.green : (isDark ? Colors.white70 : Colors.grey[700]))),
                                   Text(_isOnline ? 'Receiving new orders' : 'Not receiving orders',
                                       style: GoogleFonts.inter(
                                           fontSize: 11, color: Colors.grey[500])),
@@ -658,19 +672,34 @@ class _DriverHomeScreenState extends State<DriverHomeScreen>
                           ],
                         ),
                       ),
-                      _drawerDivider(),
+                      _drawerDivider(theme),
+                      // Dark Mode toggle
+                      Obx(() {
+                        final themeCtrl = Get.find<ThemeController>();
+                        final isDarkNow = themeCtrl.themeMode.value == ThemeMode.dark;
+                        return _drawerToggle(
+                          icon: isDarkNow ? Icons.dark_mode : Icons.light_mode_outlined,
+                          label: "dark_mode".tr,
+                          value: isDarkNow,
+                          theme: theme,
+                          onChanged: (val) => themeCtrl.toggleTheme(),
+                        );
+                      }),
+                      _drawerDivider(theme),
                       _drawerItem(
                         icon: Icons.notifications_outlined,
                         label: "Notification",
+                        theme: theme,
                         onTap: () {
                           Navigator.pop(context);
                           Get.to(() => const DriverNotificationScreen());
                         },
                       ),
-                      _drawerDivider(),
+                      _drawerDivider(theme),
                       _drawerItem(
                         icon: Icons.bar_chart_outlined,
                         label: "Statistics",
+                        theme: theme,
                         onTap: () {
                           Navigator.pop(context);
                           Get.to(() => const StatisticsScreen());
@@ -681,28 +710,31 @@ class _DriverHomeScreenState extends State<DriverHomeScreen>
                     const SizedBox(height: 16),
 
                     // ── Card 2: Support ──────────────────────────
-                    _drawerCard([
+                    _drawerCard(theme, [
                       _drawerItem(
                         icon: Icons.headset_mic_outlined,
                         label: "Help & Support",
+                        theme: theme,
                         onTap: () {
                           Navigator.pop(context);
                           Get.to(() => const HelpScreen());
                         },
                       ),
-                      _drawerDivider(),
+                      _drawerDivider(theme),
                       _drawerItem(
                         icon: Icons.language_outlined,
                         label: "Language",
+                        theme: theme,
                         onTap: () {
                           Navigator.pop(context);
                           Get.to(() => const LanguageScreen());
                         },
                       ),
-                      _drawerDivider(),
+                      _drawerDivider(theme),
                       _drawerItem(
                         icon: Icons.chat_bubble_outline,
                         label: "About us",
+                        theme: theme,
                         onTap: () {
                           Navigator.pop(context);
                         },
@@ -712,10 +744,11 @@ class _DriverHomeScreenState extends State<DriverHomeScreen>
                     const SizedBox(height: 16),
 
                     // ── Card 3: Log out ──────────────────────────
-                    _drawerCard([
+                    _drawerCard(theme, [
                       _drawerItem(
                         icon: Icons.logout,
                         label: "Log out",
+                        theme: theme,
                         onTap: () {
                           Navigator.pop(context);
                           _showLogoutDialog(context);
@@ -772,10 +805,10 @@ class _DriverHomeScreenState extends State<DriverHomeScreen>
   }
 
   // ── Drawer card (white rounded container) ──────────────────────────────────
-  Widget _drawerCard(List<Widget> children) {
+  Widget _drawerCard(ThemeData theme, List<Widget> children) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(children: children),
@@ -786,6 +819,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen>
   Widget _drawerItem({
     required IconData icon,
     required String label,
+    required ThemeData theme,
     required VoidCallback onTap,
   }) {
     return InkWell(
@@ -808,20 +842,62 @@ class _DriverHomeScreenState extends State<DriverHomeScreen>
                 style: GoogleFonts.inter(
                     fontSize: 15,
                     fontWeight: FontWeight.w500,
-                    color: Colors.black87)),
+                    color: theme.textTheme.bodyLarge?.color?.withOpacity(0.87))),
           ],
         ),
       ),
     );
   }
 
-  Widget _drawerDivider() => const Divider(
-      height: 1, thickness: 0.7, indent: 16, endIndent: 16);
+  Widget _drawerDivider(ThemeData theme) => Divider(
+      height: 1, thickness: 0.7, indent: 16, endIndent: 16, color: theme.dividerColor);
+
+  Widget _drawerToggle({
+    required IconData icon,
+    required String label,
+    required bool value,
+    required ThemeData theme,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.green, width: 1.5),
+            ),
+            child: Icon(icon, size: 18, color: Colors.green),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Text(label,
+                style: GoogleFonts.inter(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    color: theme.textTheme.bodyLarge?.color?.withOpacity(0.87))),
+          ),
+          Transform.scale(
+            scale: 0.85,
+            child: Switch(
+              value: value,
+              onChanged: onChanged,
+              activeThumbColor: Colors.white,
+              activeTrackColor: Colors.green,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   // ── Header ─────────────────────────────────────────────────────────────────
-  Widget _buildHeader() {
+  Widget _buildHeader(ThemeData theme) {
     return Container(
-      color: const Color(0xFFEAF4FB),
+      color: theme.scaffoldBackgroundColor,
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
       child: Row(
         children: [
@@ -831,13 +907,13 @@ class _DriverHomeScreenState extends State<DriverHomeScreen>
             child: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: theme.cardColor,
                 borderRadius: BorderRadius.circular(10),
                 boxShadow: [BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.06),
+                    color: Colors.black.withOpacity(0.06),
                     blurRadius: 6)],
               ),
-              child: const Icon(Icons.menu, size: 20, color: Colors.black87),
+              child: Icon(Icons.menu, size: 20, color: theme.iconTheme.color),
             ),
           ),
           const SizedBox(width: 10),
@@ -866,12 +942,12 @@ class _DriverHomeScreenState extends State<DriverHomeScreen>
                           width: 100,
                           child: LinearProgressIndicator(
                               color: Colors.green,
-                              backgroundColor: Colors.grey[200]))
+                              backgroundColor: theme.dividerColor))
                       : Text(_currentAddress,
                           style: GoogleFonts.inter(
                               fontSize: 13,
                               fontWeight: FontWeight.w700,
-                              color: Colors.black),
+                              color: theme.textTheme.bodyLarge?.color),
                           overflow: TextOverflow.ellipsis),
                 ],
               ),
@@ -883,8 +959,8 @@ class _DriverHomeScreenState extends State<DriverHomeScreen>
             onTap: () => Get.to(() => const DriverNotificationScreen()),
             child: Stack(
               children: [
-                const Icon(Icons.notifications_none,
-                    size: 28, color: Colors.black87),
+                Icon(Icons.notifications_none,
+                    size: 28, color: theme.brightness == Brightness.dark ? Colors.white70 : Colors.black87),
                 Positioned(
                   right: 0, top: 0,
                   child: Container(
@@ -913,7 +989,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen>
   }
 
   // ── Banner ─────────────────────────────────────────────────────────────────
-  Widget _buildBanner(Size size) {
+  Widget _buildBanner(Size size, bool isDark) {
     return SizedBox(
       height: 175,
       child: PageView.builder(
@@ -957,7 +1033,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen>
                         Text(_banners[index]['sub']!,
                             style: GoogleFonts.inter(
                                 fontSize: 12,
-                                color: Colors.white.withValues(alpha: 0.9))),
+                                color: Colors.white.withOpacity(0.9))),
                       ],
                     ),
                   ),
@@ -984,7 +1060,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen>
   }
 
   // ── Page dots ──────────────────────────────────────────────────────────────
-  Widget _buildPageDots() {
+  Widget _buildPageDots(ThemeData theme) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(_banners.length, (i) {
@@ -995,7 +1071,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen>
           width: active ? 24 : 8,
           height: 4,
           decoration: BoxDecoration(
-              color: active ? Colors.green : Colors.grey[350],
+              color: active ? Colors.green : (theme.brightness == Brightness.dark ? Colors.white24 : Colors.grey[350]),
               borderRadius: BorderRadius.circular(4)),
         );
       }),
@@ -1003,7 +1079,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen>
   }
 
   // ── Stat grid ──────────────────────────────────────────────────────────────
-  Widget _buildStatGrid() {
+  Widget _buildStatGrid(ThemeData theme) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
@@ -1018,7 +1094,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen>
               style: GoogleFonts.inter(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
-                  color: Colors.black87)),
+                  color: theme.textTheme.titleLarge?.color)),
           const SizedBox(height: 12),
           Row(children: [
             Expanded(child: _statCard(
@@ -1060,7 +1136,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen>
                 style: GoogleFonts.inter(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
-                    color: Colors.white.withValues(alpha: 0.85))),
+                    color: Colors.white.withOpacity(0.85))),
           ],
         ),
       ),
@@ -1068,32 +1144,32 @@ class _DriverHomeScreenState extends State<DriverHomeScreen>
   }
 
   // ── Tab bar ────────────────────────────────────────────────────────────────
-  Widget _buildTabBar() {
+  Widget _buildTabBar(ThemeData theme) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(children: [
-        _tabBtn('My Vehicles', !_showReviews),
+        _tabBtn('My Vehicles', !_showReviews, theme),
         const SizedBox(width: 12),
-        _tabBtn('Reviews', _showReviews),
+        _tabBtn('Reviews', _showReviews, theme),
       ]),
     );
   }
 
-  Widget _tabBtn(String label, bool active) {
+  Widget _tabBtn(String label, bool active, ThemeData theme) {
     return GestureDetector(
       onTap: () => setState(() => _showReviews = label == 'Reviews'),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 9),
         decoration: BoxDecoration(
-            color: active ? Colors.green : Colors.white,
+            color: active ? Colors.green : theme.cardColor,
             borderRadius: BorderRadius.circular(30),
             border: Border.all(
-                color: active ? Colors.green : Colors.grey.shade300, width: 1)),
+                color: active ? Colors.green : theme.dividerColor, width: 1)),
         child: Text(label,
             style: GoogleFonts.inter(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: active ? Colors.white : Colors.grey[600])),
+                color: active ? Colors.white : theme.textTheme.bodyMedium?.color?.withOpacity(0.6))),
       ),
     );
   }
@@ -1113,11 +1189,15 @@ class _DriverHomeScreenState extends State<DriverHomeScreen>
   }
 
   Future<void> _showVehicleOptions(Map<String, dynamic> vehicle) async {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     final id = vehicle['id']?.toString() ?? '';
     if (id.isEmpty) return;
     final isLast = _myVehicles.length <= 1;
     await showModalBottomSheet(
       context: context,
+      backgroundColor: theme.scaffoldBackgroundColor,
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (ctx) => Padding(
@@ -1127,7 +1207,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen>
           children: [
             Container(width: 40, height: 4,
                 decoration: BoxDecoration(
-                    color: Colors.grey[300],
+                    color: theme.dividerColor,
                     borderRadius: BorderRadius.circular(2))),
             const SizedBox(height: 16),
             Row(children: [
@@ -1137,10 +1217,10 @@ class _DriverHomeScreenState extends State<DriverHomeScreen>
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text(vehicle['brand']?.toString() ?? '',
                     style: GoogleFonts.inter(
-                        fontSize: 15, fontWeight: FontWeight.w700)),
+                        fontSize: 15, fontWeight: FontWeight.w700, color: theme.textTheme.titleLarge?.color)),
                 Text('${_vehicleLabel(vehicle['type']?.toString())} · ${vehicle['registration'] ?? ''}',
                     style: GoogleFonts.inter(
-                        fontSize: 12, color: Colors.grey[500])),
+                        fontSize: 12, color: theme.textTheme.bodyMedium?.color?.withOpacity(0.5))),
               ]),
             ]),
             const SizedBox(height: 20),
@@ -1166,7 +1246,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen>
                         fontWeight: FontWeight.w600, color: Colors.red)),
                 style: OutlinedButton.styleFrom(
                   side: BorderSide(
-                      color: isLast ? Colors.grey.shade300 : Colors.red),
+                      color: isLast ? theme.dividerColor : Colors.red),
                   padding: const EdgeInsets.symmetric(vertical: 13),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12)),
@@ -1194,7 +1274,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen>
   }
 
   // ── Vehicle grid ───────────────────────────────────────────────────────────
-  Widget _buildVehicleGrid() {
+  Widget _buildVehicleGrid(ThemeData theme) {
     if (_vehiclesLoading) {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 32),
@@ -1218,7 +1298,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen>
             childAspectRatio: 0.82),
         itemBuilder: (context, index) {
           // Last tile is always the "+" add button
-          if (index == _myVehicles.length) return _buildAddTile();
+          if (index == _myVehicles.length) return _buildAddTile(theme);
 
           final v = _myVehicles[index];
           final emoji = _vehicleEmoji(v['type']?.toString());
@@ -1231,10 +1311,10 @@ class _DriverHomeScreenState extends State<DriverHomeScreen>
                 Expanded(
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: theme.cardColor,
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
+                          color: Colors.black.withOpacity(0.05),
                           blurRadius: 6,
                           offset: const Offset(0, 2))],
                     ),
@@ -1251,7 +1331,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen>
                     style: GoogleFonts.inter(
                         fontSize: 11,
                         fontWeight: FontWeight.w500,
-                        color: Colors.black87)),
+                        color: theme.textTheme.bodyLarge?.color)),
                 if (brand.isNotEmpty)
                   Text(type,
                       textAlign: TextAlign.center,
@@ -1265,7 +1345,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen>
     );
   }
 
-  Widget _buildAddTile() {
+  Widget _buildAddTile(ThemeData theme) {
     return GestureDetector(
       onTap: _openAddVehicleSheet,
       child: Column(
@@ -1273,10 +1353,10 @@ class _DriverHomeScreenState extends State<DriverHomeScreen>
           Expanded(
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.green.withValues(alpha: 0.08),
+                color: Colors.green.withOpacity(0.08),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                    color: Colors.green.withValues(alpha: 0.4),
+                    color: Colors.green.withOpacity(0.4),
                     width: 1.5,
                     strokeAlign: BorderSide.strokeAlignInside),
               ),
@@ -1298,7 +1378,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen>
   }
 
   // ── Reviews list ───────────────────────────────────────────────────────────
-  Widget _buildReviewsList() {
+  Widget _buildReviewsList(ThemeData theme) {
     if (_reviewsLoading) {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 40),
@@ -1319,20 +1399,20 @@ class _DriverHomeScreenState extends State<DriverHomeScreen>
       child: Column(
         children: _reviews.map((r) => Padding(
           padding: const EdgeInsets.only(bottom: 14),
-          child: _reviewCard(r),
+          child: _reviewCard(r, theme),
         )).toList(),
       ),
     );
   }
 
-  Widget _reviewCard(_ReviewItem r) {
+  Widget _reviewCard(_ReviewItem r, ThemeData theme) {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withOpacity(0.05),
             blurRadius: 8,
             offset: const Offset(0, 2))],
       ),
@@ -1349,7 +1429,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen>
                 Row(children: [
                   Text(r.name,
                       style: GoogleFonts.inter(
-                          fontSize: 13, fontWeight: FontWeight.w700)),
+                          fontSize: 13, fontWeight: FontWeight.w700, color: theme.textTheme.bodyLarge?.color)),
                   const Spacer(),
                   Text(r.time,
                       style: GoogleFonts.inter(
@@ -1365,7 +1445,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen>
                 const SizedBox(height: 6),
                 Text(r.text,
                     style: GoogleFonts.inter(
-                        fontSize: 12, color: Colors.grey[600], height: 1.5)),
+                        fontSize: 12, color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7), height: 1.5)),
               ],
             ),
           ),
@@ -1381,6 +1461,9 @@ class _DriverHomeScreenState extends State<DriverHomeScreen>
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _DrawerBgPainter extends CustomPainter {
+  final bool isDark;
+  _DrawerBgPainter({this.isDark = false});
+
   @override
   void paint(Canvas canvas, Size size) {
     final w = size.width;
@@ -1388,7 +1471,7 @@ class _DrawerBgPainter extends CustomPainter {
 
     final paint = Paint()
       ..style = PaintingStyle.fill
-      ..color = Colors.white.withValues(alpha: 0.07);
+      ..color = isDark ? Colors.white.withOpacity(0.03) : Colors.white.withOpacity(0.07);
 
     // Large polygon — top-right area
     final Path p1 = Path()
@@ -1410,7 +1493,7 @@ class _DrawerBgPainter extends CustomPainter {
     // Small polygon — mid-right
     final paint2 = Paint()
       ..style = PaintingStyle.fill
-      ..color = Colors.black.withValues(alpha: 0.06);
+      ..color = isDark ? Colors.black.withOpacity(0.03) : Colors.black.withOpacity(0.06);
 
     final Path p3 = Path()
       ..moveTo(w * 0.60, h * 0.10)

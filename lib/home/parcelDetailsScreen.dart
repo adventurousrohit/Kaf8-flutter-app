@@ -40,14 +40,14 @@ class _ParcelDetailsScreenState extends State<ParcelDetailsScreen> {
     VehicleTypeModel(
       id: 'fallback-motorcycle',
       name: 'Motorcycle',
-      icon: '🏍️',
+      icon: 'assets/icons/ic_motorcycle.png',
       baseCost: 15,
       description: '',
     ),
     VehicleTypeModel(
       id: 'fallback-truck',
       name: 'Truck',
-      icon: '🚛',
+      icon: 'assets/icons/ic_truck.png',
       baseCost: 40,
       description: '',
     ),
@@ -101,7 +101,36 @@ class _ParcelDetailsScreenState extends State<ParcelDetailsScreen> {
     if (result['success'] == true && result['data'] is List) {
       final parsed = (result['data'] as List)
           .whereType<Map>()
-          .map((e) => VehicleTypeModel.fromJson(Map<String, dynamic>.from(e)))
+          .map((e) {
+            final model = VehicleTypeModel.fromJson(Map<String, dynamic>.from(e));
+            String iconPath = model.icon;
+            final name = model.name.toLowerCase();
+            if (iconPath.contains('🚲') || name.contains('bicycle')) {
+              iconPath = 'assets/icons/ic_bicycle.png';
+            } else if (iconPath.contains('🏍️') || name.contains('motorcycle')) {
+              iconPath = 'assets/icons/ic_motorcycle.png';
+            } else if (iconPath.contains('🛵') || name.contains('scooter')) {
+              iconPath = 'assets/icons/ic_scooter.png';
+            } else if (iconPath.contains('🚗') || name.contains('car')) {
+              iconPath = 'assets/icons/ic_car.png';
+            } else if (iconPath.contains('🚚') || name.contains('van')) {
+              iconPath = 'assets/icons/ic_van.png';
+            } else if (iconPath.contains('🚌') || name.contains('minibus') || name.contains('mini bus')) {
+              iconPath = 'assets/icons/ic_mini_bus.png';
+            } else if (iconPath.contains('🚛') || name.contains('truck')) {
+              iconPath = 'assets/icons/ic_truck.png';
+            } else if (iconPath.contains('🚜') || name.contains('breakdown')) {
+              iconPath = 'assets/icons/ic_breakdown_vehicle.png';
+            }
+
+            return VehicleTypeModel(
+              id: model.id,
+              name: model.name,
+              icon: iconPath,
+              baseCost: model.baseCost,
+              description: model.description,
+            );
+          })
           .where((v) => v.id.isNotEmpty)
           .toList();
       if (parsed.isNotEmpty) {
@@ -195,12 +224,15 @@ class _ParcelDetailsScreenState extends State<ParcelDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SingleChildScrollView(
         child: Column(
           children: [
-            _buildHeader(),
+            _buildHeader(theme),
             Padding(
               padding: const EdgeInsets.all(20.0),
               child: Column(
@@ -209,7 +241,7 @@ class _ParcelDetailsScreenState extends State<ParcelDetailsScreen> {
                   Text(
                     "Parcel Size",
                     style: GoogleFonts.poppins(
-                      color: Colors.black,
+                      color: theme.textTheme.titleLarge?.color,
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                     ),
@@ -222,16 +254,19 @@ class _ParcelDetailsScreenState extends State<ParcelDetailsScreen> {
                         "Small",
                         "0.1 kg to 1.0 kg",
                         AppAssets.box,
+                        theme,
                       ),
                       _buildSizeCard(
                         "Medium",
                         "0.1 kg to 3.0 kg",
                         AppAssets.box,
+                        theme,
                       ),
                       _buildSizeCard(
                         "Large",
                         "0.1 kg to 20.0 kg",
                         AppAssets.box,
+                        theme,
                       ),
                     ],
                   ),
@@ -242,6 +277,7 @@ class _ParcelDetailsScreenState extends State<ParcelDetailsScreen> {
                     style: GoogleFonts.poppins(
                       fontWeight: FontWeight.w700,
                       fontSize: 16,
+                      color: theme.textTheme.titleLarge?.color,
                     ),
                   ),
                   const SizedBox(height: 15),
@@ -264,7 +300,7 @@ class _ParcelDetailsScreenState extends State<ParcelDetailsScreen> {
                                         (MediaQuery.of(context).size.width -
                                             70) /
                                         2,
-                                    child: _buildVehicleCard(vehicle),
+                                    child: _buildVehicleCard(vehicle, theme),
                                   ),
                                 )
                                 .toList(),
@@ -279,6 +315,7 @@ class _ParcelDetailsScreenState extends State<ParcelDetailsScreen> {
                     style: GoogleFonts.inter(
                       fontWeight: FontWeight.w700,
                       fontSize: 16,
+                      color: theme.textTheme.titleLarge?.color,
                     ),
                   ),
                   const SizedBox(height: 15),
@@ -286,11 +323,11 @@ class _ParcelDetailsScreenState extends State<ParcelDetailsScreen> {
                     spacing: 10,
                     runSpacing: 10,
                     children: [
-                      _buildTypeChip("Goods"),
-                      _buildTypeChip("Medicine"),
-                      _buildTypeChip("Cosmetics"),
-                      _buildTypeChip("Electronic"),
-                      _buildTypeChip("Computer"),
+                      _buildTypeChip("Goods", theme),
+                      _buildTypeChip("Medicine", theme),
+                      _buildTypeChip("Cosmetics", theme),
+                      _buildTypeChip("Electronic", theme),
+                      _buildTypeChip("Computer", theme),
                     ],
                   ),
 
@@ -300,16 +337,18 @@ class _ParcelDetailsScreenState extends State<ParcelDetailsScreen> {
                     style: GoogleFonts.poppins(
                       fontWeight: FontWeight.w700,
                       fontSize: 16,
+                      color: theme.textTheme.titleLarge?.color,
                     ),
                   ),
                   const SizedBox(height: 15),
                   Row(
                     children: [
-                      _buildPaymentCard("Pay Now", "pay_now"),
+                      _buildPaymentCard("Pay Now", "pay_now", theme),
                       const SizedBox(width: 10),
                       _buildPaymentCard(
                         "Pay after Delivery",
                         "pay_on_delivery",
+                        theme,
                       ),
                     ],
                   ),
@@ -320,21 +359,24 @@ class _ParcelDetailsScreenState extends State<ParcelDetailsScreen> {
                     style: GoogleFonts.poppins(
                       fontWeight: FontWeight.w700,
                       fontSize: 16,
-                      color: Colors.black,
+                      color: theme.textTheme.titleLarge?.color,
                     ),
                   ),
                   const SizedBox(height: 7),
                   _costRow(
                     "$selectedSize Package",
                     "€${_sizeCost[selectedSize]?.toStringAsFixed(2)}",
+                    theme,
                   ),
                   _costRow(
                     _selectedVehicle?.name ?? 'Vehicle',
                     "€${(_selectedVehicle?.baseCost ?? 0).toStringAsFixed(2)}",
+                    theme,
                   ),
                   _costRow(
                     "Total Cost",
                     "€${_deliveryCost.toStringAsFixed(2)}",
+                    theme,
                     isTotal: true,
                   ),
 
@@ -377,16 +419,16 @@ class _ParcelDetailsScreenState extends State<ParcelDetailsScreen> {
                     height: 55,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0XFFE8EBE6),
+                        backgroundColor: isDark ? Colors.white10 : const Color(0XFFE8EBE6),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(15),
                         ),
                       ),
                       onPressed: () => Navigator.pop(context),
-                      child: const Text(
+                      child: Text(
                         "Back to home",
                         style: TextStyle(
-                          color: Color(0XFFB6B8B6),
+                          color: isDark ? Colors.white38 : Color(0XFFB6B8B6),
                           fontSize: 18,
                         ),
                       ),
@@ -401,7 +443,7 @@ class _ParcelDetailsScreenState extends State<ParcelDetailsScreen> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(ThemeData theme) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.only(top: 60, left: 20, right: 20, bottom: 30),
@@ -478,18 +520,21 @@ class _ParcelDetailsScreenState extends State<ParcelDetailsScreen> {
             "Name of Receiver",
             _receiverNameController,
             TextInputType.name,
+            theme,
           ),
           const SizedBox(height: 10),
           _headerTextField(
             "Phone of Receiver",
             _receiverPhoneController,
             TextInputType.phone,
+            theme,
           ),
           const SizedBox(height: 10),
           _headerTextField(
             "Delivery Address",
             _receiverAddressController,
             TextInputType.streetAddress,
+            theme,
           ),
         ],
       ),
@@ -500,6 +545,7 @@ class _ParcelDetailsScreenState extends State<ParcelDetailsScreen> {
     String hint,
     TextEditingController controller,
     TextInputType keyboardType,
+    ThemeData theme,
   ) {
     return TextField(
       controller: controller,
@@ -522,7 +568,7 @@ class _ParcelDetailsScreenState extends State<ParcelDetailsScreen> {
     );
   }
 
-  Widget _buildSizeCard(String title, String weight, String imagePath) {
+  Widget _buildSizeCard(String title, String weight, String imagePath, ThemeData theme) {
     final bool isSelected = selectedSize == title;
     return GestureDetector(
       onTap: () => setState(() => selectedSize = title),
@@ -530,10 +576,10 @@ class _ParcelDetailsScreenState extends State<ParcelDetailsScreen> {
         width: MediaQuery.of(context).size.width * 0.28,
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: theme.cardColor,
           borderRadius: BorderRadius.circular(15),
           border: Border.all(
-            color: isSelected ? const Color(0XFF46890D) : Colors.grey.shade200,
+            color: isSelected ? const Color(0XFF46890D) : theme.dividerColor,
             width: isSelected ? 1.5 : 1,
           ),
           boxShadow: isSelected
@@ -571,6 +617,7 @@ class _ParcelDetailsScreenState extends State<ParcelDetailsScreen> {
               style: GoogleFonts.poppins(
                 fontWeight: FontWeight.w500,
                 fontSize: 12,
+                color: theme.textTheme.bodyMedium?.color,
               ),
             ),
             Text(
@@ -579,6 +626,7 @@ class _ParcelDetailsScreenState extends State<ParcelDetailsScreen> {
               style: GoogleFonts.roboto(
                 fontWeight: FontWeight.w400,
                 fontSize: 10,
+                color: theme.textTheme.bodySmall?.color,
               ),
             ),
           ],
@@ -587,27 +635,27 @@ class _ParcelDetailsScreenState extends State<ParcelDetailsScreen> {
     );
   }
 
-  Widget _buildTypeChip(String label) {
+  Widget _buildTypeChip(String label, ThemeData theme) {
     final bool isSelected = selectedType == label;
     return GestureDetector(
       onTap: () => setState(() => selectedType = label),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0XFF46890D) : Colors.white,
+          color: isSelected ? const Color(0XFF46890D) : theme.cardColor,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey.shade200),
-          boxShadow: [BoxShadow(color: AppColors.shadow, blurRadius: 2)],
+          border: Border.all(color: theme.dividerColor),
+          boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 2)],
         ),
         child: Text(
           label,
-          style: TextStyle(color: isSelected ? Colors.white : Colors.grey),
+          style: TextStyle(color: isSelected ? Colors.white : theme.textTheme.bodyMedium?.color?.withOpacity(0.6)),
         ),
       ),
     );
   }
 
-  Widget _buildPaymentCard(String title, String value) {
+  Widget _buildPaymentCard(String title, String value, ThemeData theme) {
     final bool isSelected = paymentMethod == value;
     return Expanded(
       child: GestureDetector(
@@ -616,12 +664,12 @@ class _ParcelDetailsScreenState extends State<ParcelDetailsScreen> {
           height: 62,
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: theme.cardColor,
             borderRadius: BorderRadius.circular(15),
             border: Border.all(
               color: isSelected
                   ? const Color(0XFF46890D)
-                  : Colors.grey.shade200,
+                  : theme.dividerColor,
               width: isSelected ? 2 : 1,
             ),
             boxShadow: isSelected
@@ -654,7 +702,7 @@ class _ParcelDetailsScreenState extends State<ParcelDetailsScreen> {
                     style: GoogleFonts.poppins(
                       fontWeight: FontWeight.w600,
                       fontSize: 12.5,
-                      color: isSelected ? Colors.black : Colors.black54,
+                      color: isSelected ? theme.textTheme.bodyLarge?.color : theme.textTheme.bodyMedium?.color?.withOpacity(0.54),
                     ),
                   ),
                 ),
@@ -666,7 +714,7 @@ class _ParcelDetailsScreenState extends State<ParcelDetailsScreen> {
     );
   }
 
-  Widget _costRow(String label, String? price, {bool isTotal = false}) {
+  Widget _costRow(String label, String? price, ThemeData theme, {bool isTotal = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
@@ -676,12 +724,12 @@ class _ParcelDetailsScreenState extends State<ParcelDetailsScreen> {
             label,
             style: GoogleFonts.poppins(
               fontSize: 12,
-              color: Colors.black,
+              color: theme.textTheme.bodyLarge?.color,
               fontWeight: isTotal ? FontWeight.w600 : FontWeight.w400,
             ),
           ),
           const SizedBox(width: 8),
-          const Expanded(
+          Expanded(
             child: Padding(
               padding: EdgeInsets.only(bottom: 4),
               child: DottedLine(
@@ -689,7 +737,7 @@ class _ParcelDetailsScreenState extends State<ParcelDetailsScreen> {
                 lineLength: double.infinity,
                 lineThickness: 1.0,
                 dashLength: 2.0,
-                dashColor: Colors.black26,
+                dashColor: theme.dividerColor,
                 dashGapLength: 2.0,
               ),
             ),
@@ -700,6 +748,7 @@ class _ParcelDetailsScreenState extends State<ParcelDetailsScreen> {
             style: GoogleFonts.poppins(
               fontWeight: FontWeight.w600,
               fontSize: 13.71,
+              color: theme.textTheme.bodyLarge?.color,
             ),
           ),
         ],
@@ -707,17 +756,17 @@ class _ParcelDetailsScreenState extends State<ParcelDetailsScreen> {
     );
   }
 
-  Widget _buildVehicleCard(VehicleTypeModel vehicle) {
+  Widget _buildVehicleCard(VehicleTypeModel vehicle, ThemeData theme) {
     final bool isSelected = selectedVehicleId == vehicle.id;
     return GestureDetector(
       onTap: () => setState(() => selectedVehicleId = vehicle.id),
       child: Container(
         height: 66,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: theme.cardColor,
           borderRadius: BorderRadius.circular(15),
           border: Border.all(
-            color: isSelected ? const Color(0XFF46890D) : Colors.grey.shade200,
+            color: isSelected ? const Color(0XFF46890D) : theme.dividerColor,
             width: isSelected ? 2 : 1,
           ),
           boxShadow: isSelected
@@ -740,7 +789,7 @@ class _ParcelDetailsScreenState extends State<ParcelDetailsScreen> {
                     : Icons.radio_button_unchecked,
                 color: isSelected
                     ? const Color(0XFF46890D)
-                    : Colors.grey.shade300,
+                    : (theme.brightness == Brightness.dark ? Colors.white24 : Colors.grey.shade300),
                 size: 16,
               ),
             ),
@@ -748,14 +797,14 @@ class _ParcelDetailsScreenState extends State<ParcelDetailsScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 10),
               child: Row(
                 children: [
-                  Text(vehicle.icon, style: const TextStyle(fontSize: 24)),
+                  _buildVehicleIcon(vehicle.icon, size: 20),
                   const SizedBox(width: 8),
                   Expanded(
                     child: BahamasTextWidget(
                       text: vehicle.name,
                       fontSize: 12.5,
                       fontWeight: FontWeight.w600,
-                      color: isSelected ? Colors.black : Colors.black54,
+                      color: isSelected ? theme.textTheme.bodyLarge?.color : theme.textTheme.bodyMedium?.color?.withOpacity(0.54),
                     ),
                   ),
                 ],
@@ -765,5 +814,19 @@ class _ParcelDetailsScreenState extends State<ParcelDetailsScreen> {
         ),
       ),
     );
+  }
+
+  Widget _buildVehicleIcon(String icon, {double size = 20}) {
+    if (icon.contains('assets/')) {
+      return Image.asset(
+        icon,
+        width: size,
+        height: size,
+        fit: BoxFit.contain,
+        errorBuilder: (_, __, ___) =>
+            Text(icon, style: TextStyle(fontSize: size)),
+      );
+    }
+    return Text(icon, style: TextStyle(fontSize: size));
   }
 }

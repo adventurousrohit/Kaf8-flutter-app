@@ -166,6 +166,8 @@ class _homeorderState extends State<homeorder> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -180,14 +182,16 @@ class _homeorderState extends State<homeorder> {
               const SizedBox(width: 10),
               Icon(
                 Icons.arrow_back_ios,
-                color: theme.iconTheme.color,
+                // color: theme.iconTheme.color,
+                color: Colors.black,
                 size: 18,
               ),
               const SizedBox(width: 4),
               Text(
                 "Back",
                 style: GoogleFonts.poppins(
-                  color: theme.textTheme.bodyLarge?.color,
+                  color: Colors.black,
+                  // color: theme.textTheme.bodyLarge?.color,
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
                 ),
@@ -233,7 +237,7 @@ class _homeorderState extends State<homeorder> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 15),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: theme.cardColor,
                       borderRadius: _suggestions.isNotEmpty
                           ? const BorderRadius.vertical(
                               top: Radius.circular(30),
@@ -241,7 +245,7 @@ class _homeorderState extends State<homeorder> {
                           : BorderRadius.circular(30),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.1),
+                          color: Colors.black.withOpacity(0.1),
                           blurRadius: 10,
                         ),
                       ],
@@ -249,8 +253,10 @@ class _homeorderState extends State<homeorder> {
                     child: TextField(
                       controller: _searchController,
                       onChanged: _onSearchChanged,
+                      style: GoogleFonts.poppins(fontSize: 14, color: theme.textTheme.bodyLarge?.color),
                       decoration: InputDecoration(
                         hintText: "Search destination...",
+                        hintStyle: GoogleFonts.poppins(color: Colors.grey[400]),
                         border: InputBorder.none,
                         icon: const Icon(Icons.search, color: Colors.green),
                         suffixIcon: _isSearching
@@ -280,13 +286,13 @@ class _homeorderState extends State<homeorder> {
                     Container(
                       constraints: const BoxConstraints(maxHeight: 200),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: theme.cardColor,
                         borderRadius: const BorderRadius.vertical(
                           bottom: Radius.circular(30),
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.1),
+                            color: Colors.black.withOpacity(0.1),
                             blurRadius: 10,
                             offset: const Offset(0, 5),
                           ),
@@ -297,12 +303,12 @@ class _homeorderState extends State<homeorder> {
                         padding: EdgeInsets.zero,
                         itemCount: _suggestions.length,
                         separatorBuilder: (context, index) =>
-                            const Divider(height: 1),
+                            Divider(height: 1, color: theme.dividerColor),
                         itemBuilder: (context, index) {
                           return ListTile(
                             title: Text(
                               _suggestions[index],
-                              style: GoogleFonts.poppins(fontSize: 13),
+                              style: GoogleFonts.poppins(fontSize: 13, color: theme.textTheme.bodyMedium?.color),
                             ),
                             onTap: () {
                               _searchController.text = _suggestions[index];
@@ -333,7 +339,7 @@ class _homeorderState extends State<homeorder> {
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
+                      color: Colors.black.withOpacity(0.1),
                       blurRadius: 10,
                       spreadRadius: 5,
                     ),
@@ -359,11 +365,11 @@ class _homeorderState extends State<homeorder> {
                       _buildLocationCard(context),
                       if (widget.selectedVehicle != null) ...[
                         const SizedBox(height: 10),
-                        _buildSelectedVehicleChip(widget.selectedVehicle!),
+                        _buildSelectedVehicleChip(widget.selectedVehicle!, theme),
                       ],
                       if (_locationPermissionDenied) ...[
                         const SizedBox(height: 10),
-                        _buildLocationPermissionCard(),
+                        _buildLocationPermissionCard(theme),
                       ],
                       const SizedBox(height: 25),
                       _buildMatchingHintCard(context),
@@ -427,7 +433,7 @@ class _homeorderState extends State<homeorder> {
         decoration: BoxDecoration(
           color: theme.cardColor,
           borderRadius: BorderRadius.circular(15),
-          boxShadow: [BoxShadow(color: AppColors.shadow, blurRadius: 4)],
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4)],
         ),
         child: Column(
           children: [
@@ -438,7 +444,7 @@ class _homeorderState extends State<homeorder> {
               "Pickup",
               _currentAddress,
             ),
-            const Divider(height: 30),
+            Divider(height: 30, color: theme.dividerColor),
             GestureDetector(
               onTap: () {
                 setState(() {
@@ -460,23 +466,25 @@ class _homeorderState extends State<homeorder> {
     );
   }
 
-  Widget _buildSelectedVehicleChip(VehicleTypeModel vehicle) {
+  Widget _buildSelectedVehicleChip(VehicleTypeModel vehicle, ThemeData theme) {
+    final isDark = theme.brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: const Color(0xFFE8F5E9),
+        color: isDark ? Colors.green.withOpacity(0.1) : const Color(0xFFE8F5E9),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(vehicle.icon, style: const TextStyle(fontSize: 16)),
+          _buildVehicleIcon(vehicle.icon, size: 16),
           const SizedBox(width: 8),
           Text(
             "Selected: ${vehicle.name}",
             style: GoogleFonts.poppins(
               fontWeight: FontWeight.w600,
               fontSize: 12,
+              color: theme.textTheme.bodyMedium?.color,
             ),
           ),
         ],
@@ -484,21 +492,58 @@ class _homeorderState extends State<homeorder> {
     );
   }
 
-  Widget _buildLocationPermissionCard() {
+  Widget _buildVehicleIcon(String icon, {double size = 22}) {
+    if (icon.contains('assets/')) {
+      return Image.asset(
+        icon,
+        width: size,
+        height: size,
+        fit: BoxFit.contain,
+        errorBuilder: (_, __, ___) =>
+            Text(icon, style: TextStyle(fontSize: size)),
+      );
+    }
+    // Fallback if it's still an emoji
+    String iconPath = '';
+    final name = icon.toLowerCase(); // sometimes the icon string itself might be a name if not handled before
+    if (icon.contains('🚲')) iconPath = 'assets/icons/ic_bicycle.png';
+    else if (icon.contains('🏍️')) iconPath = 'assets/icons/ic_motorcycle.png';
+    else if (icon.contains('🛵')) iconPath = 'assets/icons/ic_scooter.png';
+    else if (icon.contains('🚗')) iconPath = 'assets/icons/ic_car.png';
+    else if (icon.contains('🚚')) iconPath = 'assets/icons/ic_van.png';
+    else if (icon.contains('🚌')) iconPath = 'assets/icons/ic_mini_bus.png';
+    else if (icon.contains('🚛')) iconPath = 'assets/icons/ic_truck.png';
+    else if (icon.contains('🚜')) iconPath = 'assets/icons/ic_breakdown_vehicle.png';
+
+    if (iconPath.isNotEmpty) {
+      return Image.asset(
+        iconPath,
+        width: size,
+        height: size,
+        fit: BoxFit.contain,
+        errorBuilder: (_, __, ___) =>
+            Text(icon, style: TextStyle(fontSize: size)),
+      );
+    }
+
+    return Text(icon, style: TextStyle(fontSize: size));
+  }
+
+  Widget _buildLocationPermissionCard(ThemeData theme) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.orange.withValues(alpha: 0.12),
+        color: Colors.orange.withOpacity(0.12),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         children: [
           const Icon(Icons.location_off, color: Colors.orange),
           const SizedBox(width: 8),
-          const Expanded(
+          Expanded(
             child: Text(
               "Location access is needed for accurate nearby matching.",
-              style: TextStyle(fontSize: 12),
+              style: TextStyle(fontSize: 12, color: theme.textTheme.bodyMedium?.color),
             ),
           ),
           TextButton(onPressed: openAppSettings, child: const Text("Enable")),

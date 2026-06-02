@@ -99,19 +99,19 @@ class _PersonalEditingScreenState extends State<PersonalEditingScreen> {
     super.dispose();
   }
 
-  InputDecoration _inputDecoration(String hint) {
+  InputDecoration _inputDecoration(String hint, ThemeData theme) {
     return InputDecoration(
       hintText: hint,
       hintStyle: GoogleFonts.inter(color: Colors.grey[400], fontSize: 14),
       filled: true,
-      fillColor: Colors.white,
+      fillColor: theme.cardColor,
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: Colors.grey[300]!)),
+          borderSide: BorderSide(color: theme.dividerColor)),
       enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: Colors.grey[300]!)),
+          borderSide: BorderSide(color: theme.dividerColor)),
       focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide(color: Appcolor.secondaryColor, width: 1.5)),
@@ -122,31 +122,33 @@ class _PersonalEditingScreenState extends State<PersonalEditingScreen> {
   Widget build(BuildContext context) {
     final fontScale = ResponsiveUtils.fontScale(context);
     final size = MediaQuery.of(context).size;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFEAF4FB),
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Stack(
         children: [
           Positioned(top: 0, left: 0,
             child: Image.asset('assets/images/bg_top_left.png',
               width: size.width * 0.60, fit: BoxFit.contain,
-              opacity: const AlwaysStoppedAnimation(0.18))),
+              opacity: AlwaysStoppedAnimation(isDark ? 0.05 : 0.18))),
           Positioned(top: 0, right: 0,
             child: Transform(alignment: Alignment.center,
               transform: Matrix4.rotationY(3.14159),
               child: Image.asset('assets/images/bg_bottom_right.png',
                 width: size.width * 0.36, fit: BoxFit.contain,
-                opacity: const AlwaysStoppedAnimation(0.13)))),
+                opacity: AlwaysStoppedAnimation(isDark ? 0.04 : 0.13)))),
           Positioned(bottom: 0, right: 0,
             child: Image.asset('assets/images/bg_bottom_right.png',
               width: size.width * 0.55, fit: BoxFit.contain,
-              opacity: const AlwaysStoppedAnimation(0.28))),
+              opacity: AlwaysStoppedAnimation(isDark ? 0.08 : 0.28))),
 
           SafeArea(
             child: Column(
               children: [
                 Container(
-                  color: Colors.white,
+                  color: theme.appBarTheme.backgroundColor,
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   child: Row(
                     children: [
@@ -156,16 +158,17 @@ class _PersonalEditingScreenState extends State<PersonalEditingScreen> {
                           width: 36, height: 36,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            border: Border.all(color: Colors.grey[400]!, width: 1.5)),
-                          child: const Icon(Icons.arrow_back_ios_new,
-                              size: 15, color: Colors.black),
+                            border: Border.all(color: isDark ? Colors.white24 : Colors.grey[400]!, width: 1.5)),
+                          child: Icon(Icons.arrow_back_ios_new,
+                              size: 15, color: theme.iconTheme.color),
                         ),
                       ),
                       const Spacer(),
                       Text('edit_profile_title'.tr,
                         style: GoogleFonts.inter(
                             fontSize: 17 * fontScale,
-                            fontWeight: FontWeight.w600)),
+                            fontWeight: FontWeight.w600,
+                            color: theme.textTheme.titleLarge?.color)),
                       const Spacer(),
                       const SizedBox(width: 36),
                     ],
@@ -230,12 +233,12 @@ class _PersonalEditingScreenState extends State<PersonalEditingScreen> {
                           style: GoogleFonts.inter(
                               fontSize: 13 * fontScale,
                               fontWeight: FontWeight.w500,
-                              color: Colors.black87)),
+                              color: theme.textTheme.bodyLarge?.color?.withOpacity(0.87))),
                         const SizedBox(height: 6),
                         TextField(
                           controller: _nameController,
-                          style: GoogleFonts.inter(fontSize: 14 * fontScale),
-                          decoration: _inputDecoration('full_name_label'.tr),
+                          style: GoogleFonts.inter(fontSize: 14 * fontScale, color: theme.textTheme.bodyLarge?.color),
+                          decoration: _inputDecoration('full_name_label'.tr, theme),
                         ),
 
                         const SizedBox(height: 14),
@@ -245,7 +248,7 @@ class _PersonalEditingScreenState extends State<PersonalEditingScreen> {
                           style: GoogleFonts.inter(
                               fontSize: 13 * fontScale,
                               fontWeight: FontWeight.w500,
-                              color: Colors.black87)),
+                              color: theme.textTheme.bodyLarge?.color?.withOpacity(0.87))),
                         const SizedBox(height: 6),
                         TextField(
                           controller: _emailController,
@@ -253,7 +256,7 @@ class _PersonalEditingScreenState extends State<PersonalEditingScreen> {
                           style: GoogleFonts.inter(
                               fontSize: 14 * fontScale,
                               color: Colors.grey[500]),
-                          decoration: _inputDecoration('email'.tr),
+                          decoration: _inputDecoration('email'.tr, theme),
                         ),
 
                         const SizedBox(height: 14),
@@ -263,13 +266,13 @@ class _PersonalEditingScreenState extends State<PersonalEditingScreen> {
                           style: GoogleFonts.inter(
                               fontSize: 13 * fontScale,
                               fontWeight: FontWeight.w500,
-                              color: Colors.black87)),
+                              color: theme.textTheme.bodyLarge?.color?.withOpacity(0.87))),
                         const SizedBox(height: 6),
                         TextField(
                           controller: _phoneController,
                           keyboardType: TextInputType.phone,
-                          style: GoogleFonts.inter(fontSize: 14 * fontScale),
-                          decoration: _inputDecoration('phone_label'.tr),
+                          style: GoogleFonts.inter(fontSize: 14 * fontScale, color: theme.textTheme.bodyLarge?.color),
+                          decoration: _inputDecoration('phone_label'.tr, theme),
                         ),
 
                         const SizedBox(height: 30),

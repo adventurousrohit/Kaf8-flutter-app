@@ -5,6 +5,7 @@ const Map<String, String> frFr = {
   'my_profile': 'Mon profil',
   'my_address': 'Mon adresse',
   'language': 'Langue',
+  'dark_mode': 'Mode Sombre',
   'other_activity': 'Autre activité',
   'bank_account': 'Compte bancaire',
   'notification': 'Notification',

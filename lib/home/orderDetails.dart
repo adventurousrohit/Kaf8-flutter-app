@@ -8,6 +8,7 @@ import '../Controller/order_controller.dart';
 import '../Service/api_service.dart';
 import 'cencelOrder.dart';
 import 'trackingScreen.dart';
+import '../driverHome/call_screen.dart';
 
 class OrderDetailsScreen extends StatefulWidget {
   final Map<String, dynamic>? order;
@@ -77,18 +78,10 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
   }
 
   Future<void> _dialReceiver() async {
-    final phone = _receiverPhone.trim();
-    if (phone.isEmpty || phone == 'N/A') return;
-    final uri = Uri(scheme: 'tel', path: phone);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    } else {
-      Get.snackbar(
-        "Call",
-        "Unable to start phone call",
-        snackPosition: SnackPosition.BOTTOM,
-      );
-    }
+    Get.to(() => CallScreen(
+          name: _receiverName,
+          duration: 'Calling...',
+        ));
   }
 
   Future<void> _showFeedbackSheet() async {
@@ -108,10 +101,13 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: theme.appBarTheme.backgroundColor,
         elevation: 0,
         centerTitle: true,
         leadingWidth: 100,
@@ -120,16 +116,16 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
           child: Row(
             children: [
               const SizedBox(width: 10),
-              const Icon(
+              Icon(
                 Icons.arrow_back_ios,
-                color: Color(0XFF60635E),
+                color: isDark ? Colors.white70 : const Color(0XFF60635E),
                 size: 12,
               ),
               const SizedBox(width: 4),
               Text(
                 "Back",
                 style: GoogleFonts.poppins(
-                  color: Colors.black,
+                  color: theme.textTheme.bodyLarge?.color,
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
                 ),
@@ -139,7 +135,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
         ),
         title: Text(
           " Order Details ",
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 15),
+          style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 15, color: theme.textTheme.titleLarge?.color),
         ),
         actions: [
           Padding(
@@ -156,7 +152,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _buildOrderInfoCol(_orderId, "Date: $_dateStr"),
+                _buildOrderInfoCol(_orderId, "Date: $_dateStr", theme),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -165,6 +161,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                       style: GoogleFonts.poppins(
                         fontWeight: FontWeight.w400,
                         fontSize: 11.36,
+                        color: theme.textTheme.bodyMedium?.color,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -184,7 +181,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                               child: Text(
                                 _receiverPhone,
                                 style: GoogleFonts.poppins(
-                                  color: const Color(0XFF212121),
+                                  color: theme.textTheme.bodySmall?.color,
                                   fontSize: 7.35,
                                 ),
                               ),
@@ -208,7 +205,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: GoogleFonts.poppins(
-                              color: const Color(0XFF212121),
+                              color: theme.textTheme.bodySmall?.color,
                               fontSize: 7.35,
                             ),
                           ),
@@ -221,7 +218,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                           'Status : ',
                           style: GoogleFonts.poppins(
                             fontWeight: FontWeight.w500,
-                            color: const Color(0XFF212121),
+                            color: theme.textTheme.bodySmall?.color,
                             fontSize: 8,
                           ),
                         ),
@@ -237,7 +234,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
             ),
 
             const SizedBox(height: 12),
-            Divider(thickness: 2, color: const Color(0XFFEEEEEE)),
+            Divider(thickness: 2, color: theme.dividerColor),
             const SizedBox(height: 10),
 
             // Route
@@ -246,37 +243,40 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
               style: GoogleFonts.poppins(
                 fontWeight: FontWeight.w600,
                 fontSize: 13.43,
+                color: theme.textTheme.titleLarge?.color,
               ),
             ),
             const SizedBox(height: 10),
-            _routeRow(Icons.my_location, "From", _departureAddress),
+            _routeRow(Icons.my_location, "From", _departureAddress, theme),
             const SizedBox(height: 6),
-            _routeRow(Icons.location_on, "To", _receiverAddress),
+            _routeRow(Icons.location_on, "To", _receiverAddress, theme),
 
             if (_packages.isNotEmpty) ...[
               const SizedBox(height: 15),
-              Divider(thickness: 1, color: const Color(0XFFEEEEEE)),
+              Divider(thickness: 1, color: theme.dividerColor),
               Text(
                 "Items Ordered",
                 style: GoogleFonts.poppins(
                   fontWeight: FontWeight.w600,
                   fontSize: 13.43,
+                  color: theme.textTheme.titleLarge?.color,
                 ),
               ),
               const SizedBox(height: 15),
-              ..._packages.map((pkg) => _buildPackageCard(pkg)).toList(),
+              ..._packages.map((pkg) => _buildPackageCard(pkg, theme)).toList(),
             ],
 
             const SizedBox(height: 15),
-            Divider(thickness: 1, color: const Color(0XFFEEEEEE)),
-            _buildSummaryRow("Payment Method", _paymentMethod),
+            Divider(thickness: 1, color: theme.dividerColor),
+            _buildSummaryRow("Payment Method", _paymentMethod, theme),
             _buildSummaryRow(
               "Total Cost",
               "€${_deliveryCost.toStringAsFixed(2)}",
+              theme,
               isBold: true,
             ),
             if (_trackingNumber != null)
-              _buildSummaryRow("Tracking Number", _trackingNumber!),
+              _buildSummaryRow("Tracking Number", _trackingNumber!, theme),
 
             const SizedBox(height: 25),
             Text(
@@ -284,6 +284,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
               style: GoogleFonts.inter(
                 fontWeight: FontWeight.w600,
                 fontSize: 13,
+                color: theme.textTheme.titleLarge?.color,
               ),
             ),
             const SizedBox(height: 20),
@@ -292,8 +293,9 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
               title: "Order placed",
               subtitle: _dateStr.isNotEmpty ? _dateStr : "Just now",
               isActive: true,
+              theme: theme,
             ),
-            _buildVerticalDottedLine(),
+            _buildVerticalDottedLine(theme),
             _buildTrackingStep(
               icon: Icons.local_shipping_outlined,
               title: "In transit",
@@ -301,8 +303,9 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
               isActive:
                   order?['statusOrder'] == 'active' ||
                   order?['statusOrder'] == 'delivered',
+              theme: theme,
             ),
-            _buildVerticalDottedLine(),
+            _buildVerticalDottedLine(theme),
             _buildTrackingStep(
               icon: Icons.check_circle_outline,
               title: "Delivered",
@@ -310,6 +313,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                   ? "Completed"
                   : "Pending",
               isActive: order?['statusOrder'] == 'delivered',
+              theme: theme,
             ),
 
             const SizedBox(height: 20),
@@ -330,10 +334,10 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
             // Review section — show card if already submitted, button if not
             if (order?['statusOrder'] == 'delivered') ...[
               _existingFeedback != null
-                  ? _buildReviewCard(_existingFeedback!)
+                  ? _buildReviewCard(_existingFeedback!, theme)
                   : _buildButton(
                       "⭐  Leave a Review",
-                      const Color(0xFFFFF8E1),
+                      isDark ? Colors.orange.withOpacity(0.1) : const Color(0xFFFFF8E1),
                       const Color(0xFFE65100),
                       _showFeedbackSheet,
                     ),
@@ -344,8 +348,8 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
             if (order?['statusOrder'] == 'pending') ...[
               _buildButton(
                 "Cancel Order",
-                const Color(0xFFE8EBE6),
-                const Color(0XFFB6B8B6),
+                isDark ? Colors.white10 : const Color(0xFFE8EBE6),
+                isDark ? Colors.white38 : const Color(0XFFB6B8B6),
                 () =>
                     Get.to(() => CancelOrder(orderId: order?['id'] as String?)),
               ),
@@ -357,7 +361,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
     );
   }
 
-  Widget _routeRow(IconData icon, String label, String address) {
+  Widget _routeRow(IconData icon, String label, String address, ThemeData theme) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -377,7 +381,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
               ),
               Text(
                 address,
-                style: GoogleFonts.poppins(fontSize: 11, color: Colors.black87),
+                style: GoogleFonts.poppins(fontSize: 11, color: theme.textTheme.bodyMedium?.color),
               ),
             ],
           ),
@@ -386,7 +390,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
     );
   }
 
-  Widget _buildPackageCard(Map pkg) {
+  Widget _buildPackageCard(Map pkg, ThemeData theme) {
     final parcelType = pkg['parcelType'] as String? ?? 'Goods';
     final parcelSize = pkg['parcelSize'] as String? ?? 'Standard';
     final tracking = pkg['trackingNumber'] as String? ?? '';
@@ -395,9 +399,9 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(15),
-        color: Colors.white,
-        border: Border.all(color: Colors.grey.shade200),
-        boxShadow: [BoxShadow(color: AppColors.shadow, blurRadius: 3)],
+        color: theme.cardColor,
+        border: Border.all(color: theme.dividerColor),
+        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 3)],
       ),
       child: Row(
         children: [
@@ -406,9 +410,9 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
             width: 70,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Colors.grey.shade100),
-              color: Colors.white,
-              boxShadow: [BoxShadow(color: AppColors.shadow, blurRadius: 4)],
+              border: Border.all(color: theme.dividerColor),
+              color: theme.cardColor,
+              boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
             ),
             child: Image.asset(AppAssets.multibox),
           ),
@@ -422,6 +426,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                   style: GoogleFonts.poppins(
                     fontWeight: FontWeight.w600,
                     fontSize: 14,
+                    color: theme.textTheme.bodyLarge?.color,
                   ),
                 ),
                 Text(
@@ -429,6 +434,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                   style: GoogleFonts.poppins(
                     fontWeight: FontWeight.w400,
                     fontSize: 9,
+                    color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
                   ),
                 ),
                 if (tracking.isNotEmpty)
@@ -444,7 +450,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
     );
   }
 
-  Widget _buildOrderInfoCol(String title, String subtitle) {
+  Widget _buildOrderInfoCol(String title, String subtitle, ThemeData theme) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -453,6 +459,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
           style: GoogleFonts.poppins(
             fontWeight: FontWeight.w400,
             fontSize: 11.36,
+            color: theme.textTheme.bodyMedium?.color,
           ),
         ),
         const SizedBox(height: 4),
@@ -466,7 +473,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                 child: Text(
                   subtitle,
                   style: GoogleFonts.poppins(
-                    color: const Color(0XFF212121),
+                    color: theme.textTheme.bodySmall?.color,
                     fontSize: 7.35,
                   ),
                 ),
@@ -478,22 +485,22 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
     );
   }
 
-  Widget _buildSummaryRow(String label, String value, {bool isBold = false}) {
+  Widget _buildSummaryRow(String label, String value, ThemeData theme, {bool isBold = false}) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 10),
       decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: Colors.grey.shade100)),
+        border: Border(bottom: BorderSide(color: theme.dividerColor)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             label,
-            style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600),
+            style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: theme.textTheme.bodyLarge?.color),
           ),
           Text(
             value,
-            style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w500),
+            style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w500, color: theme.textTheme.bodyMedium?.color),
           ),
         ],
       ),
@@ -505,6 +512,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
     required String title,
     required String subtitle,
     bool isActive = false,
+    required ThemeData theme,
   }) {
     return Row(
       children: [
@@ -530,7 +538,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
               style: GoogleFonts.inter(
                 fontWeight: FontWeight.w400,
                 fontSize: 14,
-                color: isActive ? Colors.black : Colors.grey,
+                color: isActive ? theme.textTheme.bodyLarge?.color : Colors.grey,
               ),
             ),
           ],
@@ -539,7 +547,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
     );
   }
 
-  Widget _buildVerticalDottedLine() {
+  Widget _buildVerticalDottedLine(ThemeData theme) {
     return Padding(
       padding: const EdgeInsets.only(left: 9),
       child: Column(
@@ -548,22 +556,23 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
             margin: const EdgeInsets.symmetric(vertical: 2),
             width: 2,
             height: 5,
-            color: Colors.grey.shade300,
+            color: theme.dividerColor,
           );
         }),
       ),
     );
   }
 
-  Widget _buildReviewCard(Map<String, dynamic> feedback) {
+  Widget _buildReviewCard(Map<String, dynamic> feedback, ThemeData theme) {
     final rating = (feedback['overallRating'] as num?)?.toInt() ?? 0;
     final comment = feedback['comment']?.toString() ?? '';
+    final isDark = theme.brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF8E1),
+        color: isDark ? Colors.orange.withOpacity(0.1) : const Color(0xFFFFF8E1),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFFFE082)),
+        border: Border.all(color: isDark ? Colors.orange.withOpacity(0.3) : const Color(0xFFFFE082)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -587,7 +596,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
             const SizedBox(height: 8),
             Text(comment,
                 style: GoogleFonts.poppins(
-                    fontSize: 13, color: Colors.black87, height: 1.4)),
+                    fontSize: 13, color: theme.textTheme.bodyMedium?.color, height: 1.4)),
           ],
         ],
       ),

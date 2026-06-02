@@ -24,10 +24,12 @@ class _DriverOrdersScreenState extends State<DriverOrdersScreen> {
   @override
   void initState() {
     super.initState();
+    debugPrint("📱 DriverOrdersScreen: initState called");
     _loadTab(0);
   }
 
   void _loadTab(int index) {
+    debugPrint("📱 DriverOrdersScreen: _loadTab($index)");
     if (index == 0) {
       _orderController.fetchPendingAvailable();
     } else if (index == 1) {
@@ -39,13 +41,16 @@ class _DriverOrdersScreenState extends State<DriverOrdersScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
-            _buildAppBar(),
-            _buildTabs(),
+            _buildAppBar(theme),
+            _buildTabs(theme),
             const SizedBox(height: 12),
             Expanded(child: Obx(() {
               final bool isLoading = _tabIndex == 0
@@ -75,7 +80,7 @@ class _DriverOrdersScreenState extends State<DriverOrdersScreen> {
                       const SizedBox(height: 12),
                       Text('No orders',
                           style: GoogleFonts.inter(
-                              color: Colors.grey[500],
+                              color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
                               fontSize: 16,
                               fontWeight: FontWeight.w500)),
                       const SizedBox(height: 6),
@@ -85,7 +90,7 @@ class _DriverOrdersScreenState extends State<DriverOrdersScreen> {
                               ? 'No active orders'
                               : 'No completed orders yet',
                           style: GoogleFonts.inter(
-                              color: Colors.grey[400], fontSize: 13)),
+                              color: theme.textTheme.bodySmall?.color?.withOpacity(0.5), fontSize: 13)),
                     ],
                   ),
                 );
@@ -100,6 +105,7 @@ class _DriverOrdersScreenState extends State<DriverOrdersScreen> {
                   itemBuilder: (context, index) => _DriverOrderCard(
                     order: orders[index],
                     tabIndex: _tabIndex,
+                    theme: theme,
                     onOpenMap: () => _openMap(orders[index]),
                     onViewDetails: () => _openDetails(orders[index]),
                     onAccept: _tabIndex == 0
@@ -196,26 +202,27 @@ class _DriverOrdersScreenState extends State<DriverOrdersScreen> {
     Get.to(() => OrderDetailsScreen(order: order));
   }
 
-  Widget _buildAppBar() {
+  Widget _buildAppBar(ThemeData theme) {
+    final isDark = theme.brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new, size: 20, color: Colors.black87),
+            icon: Icon(Icons.arrow_back_ios_new, size: 20, color: theme.iconTheme.color),
             onPressed: () => Navigator.pop(context),
           ),
           const SizedBox(width: 14),
           Text('Orders',
               style: GoogleFonts.inter(
-                  fontSize: 20, fontWeight: FontWeight.w700)),
+                  fontSize: 20, fontWeight: FontWeight.w700, color: theme.textTheme.titleLarge?.color)),
           const Spacer(),
           GestureDetector(
             onTap: () => Get.to(() => const DriverNotificationScreen()),
             child: Stack(
               children: [
-                const Icon(Icons.notifications_none,
-                    size: 26, color: Colors.black87),
+                Icon(Icons.notifications_none,
+                    size: 26, color: isDark ? Colors.white70 : Colors.black87),
                 Positioned(
                   right: 0, top: 0,
                   child: Container(
@@ -241,13 +248,13 @@ class _DriverOrdersScreenState extends State<DriverOrdersScreen> {
     );
   }
 
-  Widget _buildTabs() {
+  Widget _buildTabs(ThemeData theme) {
     const tabs = ['New', 'Active', 'History'];
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-          color: Colors.white, borderRadius: BorderRadius.circular(30)),
+          color: theme.cardColor, borderRadius: BorderRadius.circular(30)),
       child: Row(
         children: List.generate(3, (i) {
           final active = _tabIndex == i;
@@ -268,7 +275,7 @@ class _DriverOrdersScreenState extends State<DriverOrdersScreen> {
                     style: GoogleFonts.inter(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: active ? Colors.white : Colors.grey[500])),
+                        color: active ? Colors.white : theme.textTheme.bodyMedium?.color?.withOpacity(0.5))),
               ),
             ),
           );
@@ -281,6 +288,7 @@ class _DriverOrdersScreenState extends State<DriverOrdersScreen> {
 class _DriverOrderCard extends StatelessWidget {
   final Map<String, dynamic> order;
   final int tabIndex;
+  final ThemeData theme;
   final VoidCallback? onOpenMap;
   final VoidCallback? onViewDetails;
   final VoidCallback? onAccept;
@@ -289,6 +297,7 @@ class _DriverOrderCard extends StatelessWidget {
   const _DriverOrderCard({
     required this.order,
     required this.tabIndex,
+    required this.theme,
     this.onOpenMap,
     this.onViewDetails,
     this.onAccept,
@@ -327,17 +336,18 @@ class _DriverOrderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = theme.brightness == Brightness.dark;
     return GestureDetector(
       onTap: onViewDetails,
       child: Container(
       margin: const EdgeInsets.only(bottom: 14),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
+              color: Colors.black.withOpacity(0.05),
               blurRadius: 10,
               offset: const Offset(0, 3))
         ],
@@ -350,7 +360,7 @@ class _DriverOrderCard extends StatelessWidget {
               Container(
                 width: 60, height: 60,
                 decoration: BoxDecoration(
-                    color: Colors.grey[100],
+                    color: isDark ? Colors.white10 : Colors.grey[100],
                     borderRadius: BorderRadius.circular(12)),
                 child: const Center(
                     child: Text('📦', style: TextStyle(fontSize: 28))),
@@ -364,13 +374,13 @@ class _DriverOrderCard extends StatelessWidget {
                       children: [
                         Text(_parcelType,
                             style: GoogleFonts.inter(
-                                fontSize: 15, fontWeight: FontWeight.w700)),
+                                fontSize: 15, fontWeight: FontWeight.w700, color: theme.textTheme.bodyLarge?.color)),
                         const Spacer(),
                         Container(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 8, vertical: 3),
                           decoration: BoxDecoration(
-                            color: _statusColor.withValues(alpha: 0.1),
+                            color: _statusColor.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
@@ -395,7 +405,7 @@ class _DriverOrderCard extends StatelessWidget {
                             style: GoogleFonts.inter(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w800,
-                                color: Colors.black)),
+                                color: theme.textTheme.bodyLarge?.color)),
                       ],
                     ),
                   ],
@@ -405,7 +415,7 @@ class _DriverOrderCard extends StatelessWidget {
           ),
 
           const SizedBox(height: 10),
-          const Divider(height: 1),
+          Divider(height: 1, color: theme.dividerColor),
           const SizedBox(height: 10),
 
           // From / To
@@ -415,7 +425,7 @@ class _DriverOrderCard extends StatelessWidget {
                 children: [
                   const Icon(Icons.my_location, size: 12, color: Colors.green),
                   Container(
-                      height: 16, width: 1, color: Colors.grey.shade300),
+                      height: 16, width: 1, color: theme.dividerColor),
                   const Icon(Icons.location_on, size: 12, color: Colors.red),
                 ],
               ),
@@ -428,13 +438,13 @@ class _DriverOrderCard extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.inter(
-                            fontSize: 11, color: Colors.grey[600])),
+                            fontSize: 11, color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6))),
                     const SizedBox(height: 8),
                     Text(order['receiverAddress'] as String? ?? 'N/A',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.inter(
-                            fontSize: 11, color: Colors.grey[600])),
+                            fontSize: 11, color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6))),
                   ],
                 ),
               ),
@@ -449,13 +459,13 @@ class _DriverOrderCard extends StatelessWidget {
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: onOpenMap,
-                  icon: const Icon(Icons.map_outlined,
-                      size: 16, color: Colors.black87),
+                  icon: Icon(Icons.map_outlined,
+                      size: 16, color: theme.iconTheme.color),
                   label: Text('Open Map',
                       style: GoogleFonts.inter(
-                          fontSize: 13, color: Colors.black87)),
+                          fontSize: 13, color: theme.textTheme.bodyMedium?.color)),
                   style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: Colors.grey.shade300),
+                    side: BorderSide(color: theme.dividerColor),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12)),
                     padding: const EdgeInsets.symmetric(vertical: 12),
@@ -504,7 +514,7 @@ class _DriverOrderCard extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: onViewDetails,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.grey.shade700,
+                      backgroundColor: isDark ? Colors.white10 : Colors.grey.shade700,
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12)),
                       padding: const EdgeInsets.symmetric(vertical: 12),

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import 'api_client.dart';
@@ -15,14 +16,20 @@ final class ServiceProviderApiService {
   final ApiClient _client;
 
   // --- Transporter (self / fleet) ---
-  Future<http.Response> createTransporterProfile(Object body) =>
-      _client.post(ApiEndpoints.transporterCreate, body: body);
+  Future<http.Response> createTransporterProfile(Object body) {
+    debugPrint("📡 ServiceProviderApiService: createTransporterProfile");
+    return _client.post(ApiEndpoints.transporterCreate, body: body);
+  }
 
-  Future<http.Response> listTransporters({Map<String, String>? query}) =>
-      _client.get(ApiEndpoints.transporterAll, query: query);
+  Future<http.Response> listTransporters({Map<String, String>? query}) {
+    debugPrint("📡 ServiceProviderApiService: listTransporters query=$query");
+    return _client.get(ApiEndpoints.transporterAll, query: query);
+  }
 
-  Future<http.Response> getTransporterProfile(String id) =>
-      _client.get(ApiEndpoints.transporterProfile(id));
+  Future<http.Response> getTransporterProfile(String id) {
+    debugPrint("📡 ServiceProviderApiService: getTransporterProfile id=$id");
+    return _client.get(ApiEndpoints.transporterProfile(id));
+  }
 
   Future<http.Response> updateTransporter(String id, Object body) =>
       _client.put(ApiEndpoints.transporterUpdate(id), body: body);

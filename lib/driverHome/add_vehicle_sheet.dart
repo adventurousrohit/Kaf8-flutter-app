@@ -91,16 +91,23 @@ class _AddVehicleSheetState extends State<AddVehicleSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
+    final theme = Theme.of(context);
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.scaffoldBackgroundColor,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      child: _step == 0 ? _buildTypeStep() : _buildDetailsStep(),
+      child: SingleChildScrollView(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: _step == 0 ? _buildTypeStep(theme) : _buildDetailsStep(theme),
+      ),
     );
   }
 
   // ── Step 0: vehicle type selection ─────────────────────────────────────────
-  Widget _buildTypeStep() {
+  Widget _buildTypeStep(ThemeData theme) {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
       child: Column(
@@ -111,7 +118,7 @@ class _AddVehicleSheetState extends State<AddVehicleSheet> {
             child: Container(
               width: 40, height: 4,
               decoration: BoxDecoration(
-                color: Colors.grey[300],
+                color: theme.dividerColor,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -119,7 +126,7 @@ class _AddVehicleSheetState extends State<AddVehicleSheet> {
           const SizedBox(height: 20),
           Text('Add a Vehicle',
               style: GoogleFonts.inter(
-                  fontSize: 18, fontWeight: FontWeight.w700)),
+                  fontSize: 18, fontWeight: FontWeight.w700, color: theme.textTheme.titleLarge?.color)),
           const SizedBox(height: 4),
           Text('Select the type of vehicle you want to add',
               style: GoogleFonts.inter(fontSize: 13, color: Colors.grey[500])),
@@ -142,9 +149,9 @@ class _AddVehicleSheetState extends State<AddVehicleSheet> {
                 }),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: theme.cardColor,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.grey.shade200),
+                    border: Border.all(color: theme.dividerColor),
                     boxShadow: [BoxShadow(
                         color: Colors.black.withValues(alpha: 0.05),
                         blurRadius: 6,
@@ -159,7 +166,7 @@ class _AddVehicleSheetState extends State<AddVehicleSheet> {
                           style: GoogleFonts.inter(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
-                              color: Colors.black87)),
+                              color: theme.textTheme.bodyLarge?.color?.withOpacity(0.87))),
                     ],
                   ),
                 ),
@@ -172,7 +179,7 @@ class _AddVehicleSheetState extends State<AddVehicleSheet> {
   }
 
   // ── Step 1: details form ────────────────────────────────────────────────────
-  Widget _buildDetailsStep() {
+  Widget _buildDetailsStep(ThemeData theme) {
     final typeLabel = _kTypes.firstWhere(
       (t) => t[0] == _selectedType,
       orElse: () => ['', '', _selectedType ?? ''],
@@ -181,6 +188,8 @@ class _AddVehicleSheetState extends State<AddVehicleSheet> {
       (t) => t[0] == _selectedType,
       orElse: () => ['', '🚗', ''],
     )[1];
+
+    final isDark = theme.brightness == Brightness.dark;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
@@ -192,7 +201,7 @@ class _AddVehicleSheetState extends State<AddVehicleSheet> {
             child: Container(
               width: 40, height: 4,
               decoration: BoxDecoration(
-                  color: Colors.grey[300],
+                  color: theme.dividerColor,
                   borderRadius: BorderRadius.circular(2)),
             ),
           ),
@@ -200,28 +209,28 @@ class _AddVehicleSheetState extends State<AddVehicleSheet> {
           Row(children: [
             GestureDetector(
               onTap: () => setState(() => _step = 0),
-              child: const Icon(Icons.arrow_back_ios_new, size: 18),
+              child: Icon(Icons.arrow_back_ios_new, size: 18, color: theme.iconTheme.color),
             ),
             const SizedBox(width: 10),
             Text('$typeEmoji  $typeLabel Details',
                 style: GoogleFonts.inter(
-                    fontSize: 17, fontWeight: FontWeight.w700)),
+                    fontSize: 17, fontWeight: FontWeight.w700, color: theme.textTheme.titleLarge?.color)),
           ]),
           const SizedBox(height: 20),
 
-          _label('Brand *'),
+          _label('Brand *', theme),
           const SizedBox(height: 6),
-          _field(_brandCtrl, 'e.g. Toyota'),
+          _field(_brandCtrl, 'e.g. Toyota', theme),
           const SizedBox(height: 14),
 
-          _label('Model (optional)'),
+          _label('Model (optional)', theme),
           const SizedBox(height: 6),
-          _field(_modelCtrl, 'e.g. Corolla 2021'),
+          _field(_modelCtrl, 'e.g. Corolla 2021', theme),
           const SizedBox(height: 14),
 
-          _label('License Plate *'),
+          _label('License Plate *', theme),
           const SizedBox(height: 6),
-          _field(_plateCtrl, 'e.g. AB-123-CD'),
+          _field(_plateCtrl, 'e.g. AB-123-CD', theme),
           const SizedBox(height: 20),
 
           // Proof upload (optional)
@@ -230,20 +239,20 @@ class _AddVehicleSheetState extends State<AddVehicleSheet> {
             child: Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: theme.cardColor,
                 border: Border.all(
                     color: _proofFile != null
                         ? Colors.green
-                        : Colors.grey.shade300),
+                        : theme.dividerColor),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(children: [
                 Container(
                   width: 44, height: 44,
                   decoration: BoxDecoration(
-                      color: Colors.grey[100],
+                      color: isDark ? Colors.white10 : Colors.grey[100],
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: Colors.grey.shade300)),
+                      border: Border.all(color: theme.dividerColor)),
                   child: _proofFile != null
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(10),
@@ -263,7 +272,7 @@ class _AddVehicleSheetState extends State<AddVehicleSheet> {
                         style: GoogleFonts.inter(
                             fontSize: 13,
                             fontWeight: FontWeight.w500,
-                            color: Colors.black87),
+                            color: theme.textTheme.bodyLarge?.color?.withOpacity(0.87)),
                         overflow: TextOverflow.ellipsis,
                       ),
                       Text('JPEG · PNG',
@@ -285,7 +294,7 @@ class _AddVehicleSheetState extends State<AddVehicleSheet> {
               onPressed: _canSave && !_isSaving ? _save : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
-                disabledBackgroundColor: Colors.grey.shade300,
+                disabledBackgroundColor: isDark ? Colors.white10 : Colors.grey.shade300,
                 padding: const EdgeInsets.symmetric(vertical: 15),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14)),
@@ -296,8 +305,8 @@ class _AddVehicleSheetState extends State<AddVehicleSheet> {
                       width: 20, height: 20,
                       child: CircularProgressIndicator(
                           strokeWidth: 2, color: Colors.white))
-                  : Text('Add Vehicle',
-                      style: GoogleFonts.inter(
+                  : const Text('Add Vehicle',
+                      style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
                           color: Colors.white)),
@@ -308,26 +317,26 @@ class _AddVehicleSheetState extends State<AddVehicleSheet> {
     );
   }
 
-  Widget _label(String text) => Text(text,
+  Widget _label(String text, ThemeData theme) => Text(text,
       style: GoogleFonts.inter(
-          fontSize: 13, fontWeight: FontWeight.w500, color: Colors.black87));
+          fontSize: 13, fontWeight: FontWeight.w500, color: theme.textTheme.bodyLarge?.color?.withOpacity(0.87)));
 
-  Widget _field(TextEditingController ctrl, String hint) => TextField(
+  Widget _field(TextEditingController ctrl, String hint, ThemeData theme) => TextField(
         controller: ctrl,
-        style: GoogleFonts.inter(fontSize: 14),
+        style: GoogleFonts.inter(fontSize: 14, color: theme.textTheme.bodyLarge?.color),
         decoration: InputDecoration(
           hintText: hint,
           hintStyle: GoogleFonts.inter(color: Colors.grey[400], fontSize: 14),
           filled: true,
-          fillColor: Colors.white,
+          fillColor: theme.cardColor,
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey.shade300)),
+              borderSide: BorderSide(color: theme.dividerColor)),
           border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey.shade300)),
+              borderSide: BorderSide(color: theme.dividerColor)),
           focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(color: Colors.green, width: 1.5)),

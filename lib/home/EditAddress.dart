@@ -12,10 +12,13 @@ class EditAddressScreens extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final SwitchController switchController = Get.put(SwitchController());
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: theme.appBarTheme.backgroundColor,
         elevation: 0,
         centerTitle: true,
         leadingWidth: 100,
@@ -24,12 +27,12 @@ class EditAddressScreens extends StatelessWidget {
           child: Row(
             children: [
               const SizedBox(width: 10),
-              const Icon(Icons.arrow_back_ios, color: Colors.black, size: 18),
+              Icon(Icons.arrow_back_ios, color: theme.iconTheme.color, size: 18),
               const SizedBox(width: 4),
               Text(
                 "Back",
                 style: GoogleFonts.poppins(
-                  color: Colors.black,
+                  color: theme.textTheme.bodyLarge?.color,
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
                 ),
@@ -39,11 +42,11 @@ class EditAddressScreens extends StatelessWidget {
         ),
         title: Text(
           " Edit Address ",
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 17),
+          style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 17, color: theme.textTheme.titleLarge?.color),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.more_vert, color: Colors.black),
+            icon: Icon(Icons.more_vert, color: theme.iconTheme.color),
             onPressed: () {},
           ),
         ],
@@ -58,7 +61,7 @@ class EditAddressScreens extends StatelessWidget {
                 margin: const EdgeInsets.only(bottom: 10),
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0XFFF9FAF8),
+                  color: theme.cardColor,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
@@ -70,6 +73,7 @@ class EditAddressScreens extends StatelessWidget {
                         style: GoogleFonts.poppins(
                           fontSize: 15,
                           fontWeight: FontWeight.w500,
+                          color: theme.textTheme.bodyLarge?.color,
                         ),
                       ),
                     ),
@@ -86,45 +90,45 @@ class EditAddressScreens extends StatelessWidget {
                   ],
                 ),
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: Divider(thickness: 1, color: Color(0XFFE8EBE6)),
+                child: Divider(thickness: 1, color: theme.dividerColor),
               ),
-              SizedBox(height: 12),
+              const SizedBox(height: 12),
               DeliveryTextFormField(
                 hintText: "Home",
                 hintStyle: GoogleFonts.poppins(
-                  color: Color(0XFF363A33),
+                  color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
                   fontWeight: FontWeight.w500,
                   fontSize: 15,
                 ),
               ),
-              SizedBox(height: 12),
+              const SizedBox(height: 12),
               DeliveryTextFormField(
                 hintText: "Buzz apartment 4B",
                 hintStyle: GoogleFonts.poppins(
-                  color: Color(0XFF363A33),
+                  color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
                   fontWeight: FontWeight.w500,
                   fontSize: 15,
                 ),
               ),
-              SizedBox(height: 12),
+              const SizedBox(height: 12),
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child:
-                Divider(thickness: 1, color: Color(0XFFE8EBE6)),
+                Divider(thickness: 1, color: theme.dividerColor),
               ),
-              SizedBox(height: 12),
+              const SizedBox(height: 12),
               DeliveryTextFormField(
                 hintText: "Daniel Jones",
                 hintStyle: GoogleFonts.poppins(
-                  color: Color(0XFF363A33),
+                  color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
                   fontWeight: FontWeight.w500,
                   fontSize: 15,
                 ),
               ),
-              SizedBox(height: 12),
+              const SizedBox(height: 12),
               Row(
                 children: [
                   Expanded(
@@ -132,19 +136,19 @@ class EditAddressScreens extends StatelessWidget {
                     child: DeliveryTextFormField(
                       hintText: "405",
                       hintStyle: GoogleFonts.poppins(
-                        color: Color(0XFF363A33),
+                        color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
                         fontSize: 15,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),
-                  SizedBox(width: 12,),
+                  const SizedBox(width: 12,),
                   Expanded(
                     flex: 5,
                     child: DeliveryTextFormField(
                       hintText: "555-0128",
                       hintStyle: GoogleFonts.poppins(
-                        color: Color(0XFF363A33),
+                        color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
                         fontSize: 15,
                         fontWeight: FontWeight.w500,
                       ),
@@ -152,16 +156,16 @@ class EditAddressScreens extends StatelessWidget {
                   ),
                 ],
               ),
-              SizedBox(height: 12),
+              const SizedBox(height: 12),
               DeliveryTextFormField(
                 hintText: "123 Main St, Apt 4B",
                 hintStyle: GoogleFonts.poppins(
-                  color: Color(0XFF363A33),
+                  color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
                   fontWeight: FontWeight.w500,
                   fontSize: 15,
                 ),
               ),
-              SizedBox(height: 12),
+              const SizedBox(height: 12),
               Row(
                 children: [
                   Expanded(
@@ -169,19 +173,19 @@ class EditAddressScreens extends StatelessWidget {
                     child: DeliveryTextFormField(
                       hintText: "New York",
                       hintStyle: GoogleFonts.poppins(
-                        color: Color(0XFF363A33),
+                        color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
                         fontSize: 15,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),
-                  SizedBox(width: 12,),
+                  const SizedBox(width: 12,),
                   Expanded(
                     flex: 5,
                     child: DeliveryTextFormField(
                       hintText: "California",
                       hintStyle: GoogleFonts.poppins(
-                        color: Color(0XFF363A33),
+                        color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
                         fontSize: 15,
                         fontWeight: FontWeight.w500,
                       ),
@@ -189,7 +193,7 @@ class EditAddressScreens extends StatelessWidget {
                   ),
                 ],
               ),
-              SizedBox(height: 12),
+              const SizedBox(height: 12),
               Row(
                 children: [
                   Expanded(
@@ -197,19 +201,19 @@ class EditAddressScreens extends StatelessWidget {
                     child: DeliveryTextFormField(
                       hintText: "10001",
                       hintStyle: GoogleFonts.poppins(
-                        color: Color(0XFF363A33),
+                        color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
                         fontSize: 15,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),
-                  SizedBox(width: 12,),
+                  const SizedBox(width: 12,),
                   Expanded(
                     flex: 5,
                     child: DeliveryTextFormField(
                       hintText: "United States",
                       hintStyle: GoogleFonts.poppins(
-                        color: Color(0XFF363A33),
+                        color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
                         fontSize: 15,
                         fontWeight: FontWeight.w500,
                       ),
@@ -217,14 +221,14 @@ class EditAddressScreens extends StatelessWidget {
                   ),
                 ],
               ),
-              SizedBox(height: 153),
+              const SizedBox(height: 153),
               SizedBox(
                 width: double.infinity,
                 height: 52,
                 child: ElevatedButton(
                   onPressed: () {},
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0XFFE8EBE6),
+                    backgroundColor: isDark ? Colors.white10 : const Color(0XFFE8EBE6),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(6),
                     ),
@@ -234,7 +238,7 @@ class EditAddressScreens extends StatelessWidget {
                     style: GoogleFonts.poppins(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
-                      color: Color(0XFFB6B8B6),
+                      color: isDark ? Colors.white38 : const Color(0XFFB6B8B6),
                     ),
                   ),
                 ),

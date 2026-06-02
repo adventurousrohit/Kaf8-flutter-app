@@ -84,15 +84,21 @@ class _MapScreenState extends State<MapScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
           'Active Delivery',
-          style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+          style: GoogleFonts.inter(fontWeight: FontWeight.w700, color: theme.textTheme.titleLarge?.color),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: theme.appBarTheme.backgroundColor,
         elevation: 0,
-        foregroundColor: Colors.black,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios_new, size: 20, color: theme.iconTheme.color),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       body: Stack(
         children: [
@@ -115,7 +121,7 @@ class _MapScreenState extends State<MapScreen> {
               padding:
                   const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: theme.cardColor,
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
@@ -136,7 +142,7 @@ class _MapScreenState extends State<MapScreen> {
                   Text(
                     '$_status · €${_cost.toStringAsFixed(2)}',
                     style: GoogleFonts.inter(
-                        fontSize: 13, fontWeight: FontWeight.w600),
+                        fontSize: 13, fontWeight: FontWeight.w600, color: theme.textTheme.bodyLarge?.color),
                   ),
                 ],
               ),
@@ -149,7 +155,7 @@ class _MapScreenState extends State<MapScreen> {
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: theme.cardColor,
                     borderRadius: BorderRadius.circular(12)),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -157,7 +163,7 @@ class _MapScreenState extends State<MapScreen> {
                     const CircularProgressIndicator(color: Colors.green),
                     const SizedBox(height: 12),
                     Text('Getting your location…',
-                        style: GoogleFonts.inter(fontSize: 13)),
+                        style: GoogleFonts.inter(fontSize: 13, color: theme.textTheme.bodyMedium?.color)),
                   ],
                 ),
               ),
@@ -168,10 +174,10 @@ class _MapScreenState extends State<MapScreen> {
             bottom: 0, left: 0, right: 0,
             child: Container(
               padding: const EdgeInsets.fromLTRB(20, 18, 20, 28),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
-                boxShadow: [
+              decoration: BoxDecoration(
+                color: theme.cardColor,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
+                boxShadow: const [
                   BoxShadow(color: Colors.black26, blurRadius: 16)
                 ],
               ),
@@ -184,20 +190,20 @@ class _MapScreenState extends State<MapScreen> {
                     child: Container(
                       width: 36, height: 4,
                       decoration: BoxDecoration(
-                          color: Colors.grey[300],
+                          color: theme.dividerColor,
                           borderRadius: BorderRadius.circular(4)),
                     ),
                   ),
                   const SizedBox(height: 14),
 
                   _addressRow(Icons.my_location, 'Pickup', _from,
-                      Colors.green),
+                      Colors.green, theme),
                   const SizedBox(height: 10),
                   _addressRow(Icons.location_on, 'Dropoff', _to,
-                      Colors.red),
+                      Colors.red, theme),
 
                   if (_receiver.isNotEmpty) ...[
-                    const Divider(height: 20),
+                    Divider(height: 20, color: theme.dividerColor),
                     Row(
                       children: [
                         const Icon(Icons.person_outline,
@@ -207,7 +213,8 @@ class _MapScreenState extends State<MapScreen> {
                           child: Text(_receiver,
                               style: GoogleFonts.inter(
                                   fontSize: 13,
-                                  fontWeight: FontWeight.w600)),
+                                  fontWeight: FontWeight.w600,
+                                  color: theme.textTheme.bodyLarge?.color)),
                         ),
                         Text(_phone,
                             style: GoogleFonts.inter(
@@ -225,7 +232,7 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   Widget _addressRow(
-      IconData icon, String label, String address, Color color) {
+      IconData icon, String label, String address, Color color, ThemeData theme) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -237,11 +244,11 @@ class _MapScreenState extends State<MapScreen> {
             children: [
               Text(label,
                   style: GoogleFonts.inter(
-                      fontSize: 11, color: Colors.grey[500])),
+                      fontSize: 11, color: theme.textTheme.bodySmall?.color?.withOpacity(0.5))),
               const SizedBox(height: 2),
               Text(address,
                   style: GoogleFonts.inter(
-                      fontSize: 13, fontWeight: FontWeight.w500),
+                      fontSize: 13, fontWeight: FontWeight.w500, color: theme.textTheme.bodyLarge?.color),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis),
             ],

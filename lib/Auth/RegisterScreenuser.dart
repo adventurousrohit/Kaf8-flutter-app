@@ -140,22 +140,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
     bool hasError = false,
   }) {
     final fontScale = ResponsiveUtils.fontScale(context);
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return InputDecoration(
       hintText: hint,
       hintStyle: GoogleFonts.inter(
           color: Colors.grey[400], fontSize: 14 * fontScale),
       filled: true,
-      fillColor: Colors.white,
+      fillColor: theme.cardColor,
       contentPadding:
       const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: Colors.grey[300]!),
+        borderSide: BorderSide(color: isDark ? Colors.white10 : Colors.grey[300]!),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide:
-        BorderSide(color: hasError ? Colors.red : Colors.grey[300]!),
+        BorderSide(color: hasError ? Colors.red : (isDark ? Colors.white10 : Colors.grey[300]!)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -174,6 +177,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final scale     = ResponsiveUtils.componentScale(context);
     final fontScale = ResponsiveUtils.fontScale(context);
     final size      = MediaQuery.of(context).size;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     final bool isEnabled =
         nameController.text.isNotEmpty &&
@@ -183,7 +188,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             confirmPasswordController.text.isNotEmpty;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFE8F4F8),
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Stack(
         children: [
           // ── Top-left geometric background ────────────────────────────
@@ -195,7 +200,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               width: size.width * 0.67,
               fit: BoxFit.contain,
               alignment: Alignment.topLeft,
-              opacity: const AlwaysStoppedAnimation(0.2),
+              opacity: AlwaysStoppedAnimation(isDark ? 0.05 : 0.2),
             ),
           ),
 
@@ -208,7 +213,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               width: size.width * 0.45,
               fit: BoxFit.contain,
               alignment: Alignment.bottomRight,
-              opacity: const AlwaysStoppedAnimation(0.4),
+              opacity: AlwaysStoppedAnimation(isDark ? 0.08 : 0.4),
             ),
           ),
 
@@ -235,11 +240,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               border: Border.all(
-                                  color: Colors.grey[400]!, width: 1.5),
-                              color: Colors.white.withOpacity(0.6),
+                                  color: isDark ? Colors.white24 : Colors.grey[400]!, width: 1.5),
+                              color: theme.cardColor.withOpacity(0.6),
                             ),
-                            child: const Icon(Icons.arrow_back_ios_new,
-                                size: 16, color: Colors.black),
+                            child: Icon(Icons.arrow_back_ios_new,
+                                size: 16, color: theme.iconTheme.color),
                           ),
                         ),
                       ),
@@ -249,7 +254,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           border: Border.all(
                               color: Appcolor.secondaryColor, width: 2),
                           borderRadius: BorderRadius.circular(12),
-                          color: Colors.white.withOpacity(0.3),
+                          color: theme.cardColor.withOpacity(0.3),
                         ),
                         padding: const EdgeInsets.all(6),
                         child: Image.asset(
@@ -271,7 +276,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           style: GoogleFonts.inter(
                             fontSize: 26 * fontScale,
                             fontWeight: FontWeight.w700,
-                            color: Colors.black,
+                            color: theme.textTheme.titleLarge?.color,
                           ),
                         ),
                         const SizedBox(height: 6),
@@ -280,7 +285,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           textAlign: TextAlign.center,
                           style: GoogleFonts.inter(
                             fontSize: 14 * fontScale,
-                            color: Colors.grey[600],
+                            color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
                           ),
                         ),
                       ],
@@ -290,18 +295,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   SizedBox(height: 24 * scale),
 
                   // ── Full name ─────────────────────────────────────────
-                  _label("Full name", fontScale),
+                  _label("Full name", fontScale, theme),
                   const SizedBox(height: 8),
                   TextField(
                     controller: nameController,
-                    style: GoogleFonts.inter(fontSize: 14 * fontScale),
+                    style: GoogleFonts.inter(fontSize: 14 * fontScale, color: theme.textTheme.bodyLarge?.color),
                     decoration: _fieldDecoration(hint: "Enter full name"),
                   ),
 
                   SizedBox(height: 14 * scale),
 
                   // ── Phone number ──────────────────────────────────────
-                  _label("Phone number", fontScale),
+                  _label("Phone number", fontScale, theme),
                   const SizedBox(height: 8),
                   TextField(
                     controller: phoneController,
@@ -309,7 +314,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     inputFormatters: [
                       FilteringTextInputFormatter.digitsOnly
                     ],
-                    style: GoogleFonts.inter(fontSize: 14 * fontScale),
+                    style: GoogleFonts.inter(fontSize: 14 * fontScale, color: theme.textTheme.bodyLarge?.color),
                     decoration: _fieldDecoration(
                       hint: "Mobile number",
                       prefixIcon: GestureDetector(
@@ -339,7 +344,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 style: GoogleFonts.inter(
                                   fontSize: 14 * fontScale,
                                   fontWeight: FontWeight.w500,
-                                  color: Colors.black,
+                                  color: theme.textTheme.bodyLarge?.color,
                                 ),
                               ),
                               const SizedBox(width: 2),
@@ -349,7 +354,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 margin: const EdgeInsets.only(left: 8),
                                 width: 1,
                                 height: 22,
-                                color: Colors.grey[300],
+                                color: theme.dividerColor,
                               ),
                             ],
                           ),
@@ -361,24 +366,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   SizedBox(height: 14 * scale),
 
                   // ── Email ─────────────────────────────────────────────
-                  _label("Email", fontScale),
+                  _label("Email", fontScale, theme),
                   const SizedBox(height: 8),
                   TextField(
                     controller: emailController,
                     keyboardType: TextInputType.emailAddress,
-                    style: GoogleFonts.inter(fontSize: 14 * fontScale),
+                    style: GoogleFonts.inter(fontSize: 14 * fontScale, color: theme.textTheme.bodyLarge?.color),
                     decoration: _fieldDecoration(hint: "Enter email"),
                   ),
 
                   SizedBox(height: 14 * scale),
 
                   // ── Password ──────────────────────────────────────────
-                  _label("Password", fontScale),
+                  _label("Password", fontScale, theme),
                   const SizedBox(height: 8),
                   TextField(
                     controller: passwordController,
                     obscureText: !isPasswordVisible,
-                    style: GoogleFonts.inter(fontSize: 14 * fontScale),
+                    style: GoogleFonts.inter(fontSize: 14 * fontScale, color: theme.textTheme.bodyLarge?.color),
                     decoration: _fieldDecoration(
                       hint: "Enter password",
                       hasError: isPasswordWrong,
@@ -399,12 +404,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   SizedBox(height: 14 * scale),
 
                   // ── Confirm Password ──────────────────────────────────
-                  _label("Confirm Password", fontScale),
+                  _label("Confirm Password", fontScale, theme),
                   const SizedBox(height: 8),
                   TextField(
                     controller: confirmPasswordController,
                     obscureText: !isConfirmPasswordVisible,
-                    style: GoogleFonts.inter(fontSize: 14 * fontScale),
+                    style: GoogleFonts.inter(fontSize: 14 * fontScale, color: theme.textTheme.bodyLarge?.color),
                     decoration: _fieldDecoration(
                       hint: "Re-enter password",
                       hasError: isPasswordWrong,
@@ -443,14 +448,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       "By clicking Create account, you agree to the system's ",
                       style: GoogleFonts.inter(
                           fontSize: 13 * fontScale,
-                          color: Colors.grey[600],
+                          color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
                           fontWeight: FontWeight.w400),
                       children: [
                         TextSpan(
                           text: "Terms and policies",
                           style: GoogleFonts.inter(
                             fontSize: 13 * fontScale,
-                            color: Colors.black,
+                            color: theme.textTheme.bodyLarge?.color,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -479,7 +484,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         text: TextSpan(
                           text: "Already have an account? ",
                           style: GoogleFonts.inter(
-                            color: const Color(0xFF60655C),
+                            color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
                             fontSize: 14 * fontScale,
                           ),
                           children: [
@@ -507,12 +512,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  Widget _label(String text, double fontScale) => Text(
+  Widget _label(String text, double fontScale, ThemeData theme) => Text(
     text,
     style: GoogleFonts.inter(
       fontSize: 14 * fontScale,
       fontWeight: FontWeight.w500,
-      color: Colors.black,
+      color: theme.textTheme.bodyLarge?.color,
     ),
   );
 }

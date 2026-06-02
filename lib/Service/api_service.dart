@@ -8,7 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ApiService {
   static const String _apiHost = String.fromEnvironment(
     "API_BASE_URL",
-    defaultValue: "http://localhost:8000",
+    defaultValue: "http://8.231.67.123:5000",
   );
   static const String baseUrl = "$_apiHost/api";
 
@@ -165,16 +165,21 @@ class ApiService {
     required String email,
   }) async {
     final url = Uri.parse("$baseUrl/auth/forgot-password");
+    debugPrint("🚀 API REQUEST [FORGOT PASSWORD]: $url");
+    debugPrint("📦 BODY: {\"email\": \"$email\"}");
     try {
       final response = await http.post(
         url,
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({"email": email}),
       );
+      debugPrint("✅ API RESPONSE [FORGOT PASSWORD]: ${response.statusCode}");
+      debugPrint("📄 DATA: ${response.body}");
       final data = jsonDecode(response.body) as Map<String, dynamic>;
       if (response.statusCode == 200) data['success'] = true;
       return data;
     } catch (e) {
+      debugPrint("❌ API ERROR [FORGOT PASSWORD]: $e");
       return {"success": false, "message": e.toString()};
     }
   }
@@ -185,16 +190,20 @@ class ApiService {
     required String code,
   }) async {
     final url = Uri.parse("$baseUrl/auth/verify-reset-code");
+    debugPrint("🚀 API REQUEST [VERIFY RESET CODE]: $url");
     try {
       final response = await http.post(
         url,
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({"email": email, "code": code}),
       );
+      debugPrint("✅ API RESPONSE [VERIFY RESET CODE]: ${response.statusCode}");
+      debugPrint("📄 DATA: ${response.body}");
       final data = jsonDecode(response.body) as Map<String, dynamic>;
       if (response.statusCode == 200) data['success'] = true;
       return data;
     } catch (e) {
+      debugPrint("❌ API ERROR [VERIFY RESET CODE]: $e");
       return {"success": false, "message": e.toString()};
     }
   }
@@ -206,6 +215,7 @@ class ApiService {
     required String newPassword,
   }) async {
     final url = Uri.parse("$baseUrl/auth/reset-password");
+    debugPrint("🚀 API REQUEST [RESET PASSWORD]: $url");
     try {
       final response = await http.post(
         url,
@@ -216,10 +226,13 @@ class ApiService {
           "newPassword": newPassword,
         }),
       );
+      debugPrint("✅ API RESPONSE [RESET PASSWORD]: ${response.statusCode}");
+      debugPrint("📄 DATA: ${response.body}");
       final data = jsonDecode(response.body) as Map<String, dynamic>;
       if (response.statusCode == 200) data['success'] = true;
       return data;
     } catch (e) {
+      debugPrint("❌ API ERROR [RESET PASSWORD]: $e");
       return {"success": false, "message": e.toString()};
     }
   }
@@ -246,9 +259,11 @@ class ApiService {
   static Future<Map<String, dynamic>> uploadAvatar(String filePath) async {
     try {
       final token = await getAccessToken();
+      final url = Uri.parse("$baseUrl/users/avatar");
+      debugPrint("🚀 API REQUEST [PATCH MULTIPART]: $url");
       final request = http.MultipartRequest(
         'PATCH',
-        Uri.parse("$baseUrl/users/avatar"),
+        url,
       );
       request.headers['Authorization'] = 'Bearer $token';
       request.files.add(
@@ -260,8 +275,11 @@ class ApiService {
       );
       final streamed = await request.send();
       final response = await http.Response.fromStream(streamed);
+      debugPrint("✅ API RESPONSE [PATCH MULTIPART] [$url]: ${response.statusCode}");
+      debugPrint("📄 DATA: ${response.body}");
       return _normalizeResponse(response);
     } catch (e) {
+      debugPrint("❌ API ERROR [UPLOAD AVATAR]: $e");
       return {"success": false, "message": e.toString()};
     }
   }
@@ -286,6 +304,7 @@ class ApiService {
       );
 
       debugPrint("✅ API RESPONSE [REFRESH TOKEN]: ${response.statusCode}");
+      debugPrint("📄 DATA: ${response.body}");
 
       final data = jsonDecode(response.body);
 
@@ -330,17 +349,20 @@ class ApiService {
   static Future<Map<String, dynamic>> getMyOrders({String? status}) async {
     var url = "$baseUrl/order/my-orders";
     if (status != null) url += "?status=$status";
+    debugPrint("📡 ApiService: Calling getMyOrders with status=$status");
     try {
       final response = await authenticatedRequest('GET', Uri.parse(url));
       final data = jsonDecode(response.body) as Map<String, dynamic>;
       return data;
     } catch (e) {
+      debugPrint("❌ ApiService ERROR [getMyOrders]: $e");
       return {"success": false, "message": e.toString()};
     }
   }
 
   /// ✅ Get pending orders available to pick up (transporter)
   static Future<Map<String, dynamic>> getPendingAvailableOrders() async {
+    debugPrint("📡 ApiService: Calling getPendingAvailableOrders");
     try {
       final response = await authenticatedRequest(
         'GET',
@@ -349,6 +371,7 @@ class ApiService {
       final data = jsonDecode(response.body) as Map<String, dynamic>;
       return data;
     } catch (e) {
+      debugPrint("❌ ApiService ERROR [getPendingAvailableOrders]: $e");
       return {"success": false, "message": e.toString()};
     }
   }
@@ -824,9 +847,11 @@ class ApiService {
   ) async {
     try {
       final token = await getAccessToken();
+      final url = Uri.parse("$baseUrl/vehicle/$vehicleId/ownership-proof");
+      debugPrint("🚀 API REQUEST [POST MULTIPART]: $url");
       final request = http.MultipartRequest(
         'POST',
-        Uri.parse("$baseUrl/vehicle/$vehicleId/ownership-proof"),
+        url,
       );
       request.headers['Authorization'] = 'Bearer $token';
       request.files.add(
@@ -838,8 +863,11 @@ class ApiService {
       );
       final streamed = await request.send();
       final response = await http.Response.fromStream(streamed);
+      debugPrint("✅ API RESPONSE [POST MULTIPART] [$url]: ${response.statusCode}");
+      debugPrint("📄 DATA: ${response.body}");
       return _normalizeResponse(response);
     } catch (e) {
+      debugPrint("❌ API ERROR [UPLOAD VEHICLE PROOF]: $e");
       return {"success": false, "message": e.toString()};
     }
   }
@@ -866,21 +894,34 @@ class ApiService {
     Map<String, String>? headers,
     Object? body,
   }) async {
+    print("📡 authenticatedRequest: Preparing $method to $url");
     var token = await getAccessToken();
     headers ??= {};
     headers["Authorization"] = "Bearer $token";
     headers["Content-Type"] = "application/json";
 
+    print("🚀 API REQUEST [$method]: $url");
+    if (body != null) print("📦 BODY: $body");
+
     http.Response response;
     response = await _doRequest(method, url, headers: headers, body: body);
 
+    print("✅ API RESPONSE [$method] [$url]: ${response.statusCode}");
+    print("📄 DATA: ${response.body}");
+
     if (response.statusCode == 401) {
+      debugPrint("⚠️ 401 Unauthorized - Attempting token refresh...");
       final success = await refreshTokens();
       if (success) {
+        debugPrint("♻️ Token refresh success - Retrying original request");
         token = await getAccessToken();
         headers["Authorization"] = "Bearer $token";
-        return await _doRequest(method, url, headers: headers, body: body);
+        response = await _doRequest(method, url, headers: headers, body: body);
+        debugPrint("✅ API RESPONSE (RETRY) [$method] [$url]: ${response.statusCode}");
+        debugPrint("📄 DATA: ${response.body}");
+        return response;
       } else {
+        debugPrint("❌ Token refresh failed - Logging out");
         await logout();
         Get.offAllNamed('/login');
       }

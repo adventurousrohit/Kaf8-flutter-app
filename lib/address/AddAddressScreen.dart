@@ -67,13 +67,13 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
   }
 
   // ── Shared input decoration ─────────────────────────────────────────────
-  InputDecoration _inputDeco(String hint) {
+  InputDecoration _inputDeco(String hint, ThemeData theme) {
     return InputDecoration(
       hintText: hint,
       hintStyle: GoogleFonts.inter(
           color: Colors.grey[400], fontSize: 14),
       filled: true,
-      fillColor: const Color(0xFFF5F5F5),
+      fillColor: theme.brightness == Brightness.dark ? Colors.white10 : const Color(0xFFF5F5F5),
       contentPadding:
           const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       border: OutlineInputBorder(
@@ -92,15 +92,17 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
   @override
   Widget build(BuildContext context) {
     final fontScale = ResponsiveUtils.fontScale(context);
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
             // ── Header ──────────────────────────────────────────────
             Container(
-              color: Colors.white,
+              color: theme.appBarTheme.backgroundColor,
               padding:
                   const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Row(
@@ -114,10 +116,10 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
-                            color: Colors.grey[800]!, width: 1.8),
+                            color: isDark ? Colors.white24 : Colors.grey[800]!, width: 1.8),
                       ),
-                      child: const Icon(Icons.arrow_back_ios_new,
-                          size: 15, color: Colors.black),
+                      child: Icon(Icons.arrow_back_ios_new,
+                          size: 15, color: theme.iconTheme.color),
                     ),
                   ),
                   const Spacer(),
@@ -126,7 +128,7 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
                     style: GoogleFonts.inter(
                       fontSize: 17 * fontScale,
                       fontWeight: FontWeight.w600,
-                      color: Colors.black,
+                      color: theme.textTheme.titleLarge?.color,
                     ),
                   ),
                   const Spacer(),
@@ -136,7 +138,7 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
             ),
 
             // thin divider under header
-            Divider(height: 1, thickness: 0.8, color: Colors.grey[200]),
+            Divider(height: 1, thickness: 0.8, color: theme.dividerColor),
 
             // ── Form ─────────────────────────────────────────────────
             Expanded(
@@ -146,25 +148,26 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Label
-                    _fieldLabel("Label (e.g. Home, Work)", fontScale),
+                    _fieldLabel("Label (e.g. Home, Work)", fontScale, theme),
                     const SizedBox(height: 8),
                     TextField(
                       controller: _labelController,
                       onChanged: (_) => setState(() {}),
-                      style: GoogleFonts.inter(fontSize: 14 * fontScale),
-                      decoration: _inputDeco("Home, Office..."),
+                      style: GoogleFonts.inter(fontSize: 14 * fontScale, color: theme.textTheme.bodyLarge?.color),
+                      decoration: _inputDeco("Home, Office...", theme),
                     ),
 
                     const SizedBox(height: 18),
 
                     // City dropdown
-                    _fieldLabel("City", fontScale),
+                    _fieldLabel("City", fontScale, theme),
                     const SizedBox(height: 8),
                     _dropdownField(
                       hint: "Select city",
                       value: _selectedCity,
                       items: _cities,
                       fontScale: fontScale,
+                      theme: theme,
                       onChanged: (val) =>
                           setState(() => _selectedCity = val),
                     ),
@@ -172,13 +175,14 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
                     const SizedBox(height: 18),
 
                     // Region dropdown
-                    _fieldLabel("Region (optional)", fontScale),
+                    _fieldLabel("Region (optional)", fontScale, theme),
                     const SizedBox(height: 8),
                     _dropdownField(
                       hint: "Select region",
                       value: _selectedRegion,
                       items: _regions,
                       fontScale: fontScale,
+                      theme: theme,
                       onChanged: (val) =>
                           setState(() => _selectedRegion = val),
                     ),
@@ -186,14 +190,14 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
                     const SizedBox(height: 18),
 
                     // Detail Address (multiline)
-                    _fieldLabel("Detail Address", fontScale),
+                    _fieldLabel("Detail Address", fontScale, theme),
                     const SizedBox(height: 8),
                     TextField(
                       controller: _detailAddressController,
                       maxLines: 4,
                       onChanged: (_) => setState(() {}),
-                      style: GoogleFonts.inter(fontSize: 14 * fontScale),
-                      decoration: _inputDeco("Enter detail address"),
+                      style: GoogleFonts.inter(fontSize: 14 * fontScale, color: theme.textTheme.bodyLarge?.color),
+                      decoration: _inputDeco("Enter detail address", theme),
                     ),
 
                     const SizedBox(height: 36),
@@ -206,7 +210,7 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: _isEnabled
                               ? Colors.green
-                              : Colors.grey[200],
+                              : (isDark ? Colors.white10 : Colors.grey[200]),
                           elevation: 0,
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(30)),
@@ -239,13 +243,13 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
   }
 
   // ── Field label ──────────────────────────────────────────────────────────
-  Widget _fieldLabel(String text, double fontScale) {
+  Widget _fieldLabel(String text, double fontScale, ThemeData theme) {
     return Text(
       text,
       style: GoogleFonts.inter(
         fontSize: 14 * fontScale,
         fontWeight: FontWeight.w500,
-        color: Colors.black87,
+        color: theme.textTheme.bodyLarge?.color?.withOpacity(0.87),
       ),
     );
   }
@@ -256,18 +260,20 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
     required String? value,
     required List<String> items,
     required double fontScale,
+    required ThemeData theme,
     required ValueChanged<String?> onChanged,
   }) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
-        color: const Color(0xFFF5F5F5),
+        color: theme.brightness == Brightness.dark ? Colors.white10 : const Color(0xFFF5F5F5),
         borderRadius: BorderRadius.circular(12),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           isExpanded: true,
           value: value,
+          dropdownColor: theme.cardColor,
           hint: Text(
             hint,
             style: GoogleFonts.inter(
@@ -276,7 +282,7 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
           icon: Icon(Icons.keyboard_arrow_down,
               color: Colors.grey[600], size: 22),
           style: GoogleFonts.inter(
-              fontSize: 14 * fontScale, color: Colors.black87),
+              fontSize: 14 * fontScale, color: theme.textTheme.bodyLarge?.color),
           items: items
               .map((item) => DropdownMenuItem(
                     value: item,

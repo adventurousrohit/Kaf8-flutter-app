@@ -80,39 +80,41 @@ class _FavoriteListState extends State<FavoriteList> {
   Widget build(BuildContext context) {
     final fontScale = ResponsiveUtils.fontScale(context);
     final size      = MediaQuery.of(context).size;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFEAF4FB),
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Stack(
         children: [
           // ── Background shapes ──────────────────────────────────────
           Positioned(top: 0, left: 0,
               child: Image.asset('assets/images/bg_top_left.png',
                   width: size.width * 0.62, fit: BoxFit.contain,
-                  opacity: const AlwaysStoppedAnimation(0.20))),
+                  opacity: AlwaysStoppedAnimation(isDark ? 0.05 : 0.20))),
           Positioned(top: 0, right: 0,
               child: Transform(alignment: Alignment.center,
                   transform: Matrix4.rotationY(3.14159),
                   child: Image.asset('assets/images/bg_bottom_right.png',
                       width: size.width * 0.36, fit: BoxFit.contain,
-                      opacity: const AlwaysStoppedAnimation(0.13)))),
+                      opacity: AlwaysStoppedAnimation(isDark ? 0.04 : 0.13)))),
           Positioned(bottom: 0, right: 0,
               child: Image.asset('assets/images/bg_bottom_right.png',
                   width: size.width * 0.55, fit: BoxFit.contain,
-                  opacity: const AlwaysStoppedAnimation(0.30))),
+                  opacity: AlwaysStoppedAnimation(isDark ? 0.08 : 0.30))),
           Positioned(bottom: 0, left: 0,
               child: Transform(alignment: Alignment.center,
                   transform: Matrix4.rotationY(3.14159),
                   child: Image.asset('assets/images/bg_bottom_right.png',
                       width: size.width * 0.32, fit: BoxFit.contain,
-                      opacity: const AlwaysStoppedAnimation(0.14)))),
+                      opacity: AlwaysStoppedAnimation(isDark ? 0.03 : 0.14)))),
 
           SafeArea(
             child: Column(
               children: [
                 // ── Header ──────────────────────────────────────────
                 Container(
-                  color: Colors.white,
+                  color: theme.appBarTheme.backgroundColor,
                   padding: const EdgeInsets.symmetric(
                       horizontal: 16, vertical: 12),
                   child: Row(
@@ -124,9 +126,9 @@ class _FavoriteListState extends State<FavoriteList> {
                           decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               border: Border.all(
-                                  color: Colors.grey[800]!, width: 1.8)),
-                          child: const Icon(Icons.arrow_back_ios_new,
-                              size: 15, color: Colors.black),
+                                  color: isDark ? Colors.white24 : Colors.grey[800]!, width: 1.8)),
+                          child: Icon(Icons.arrow_back_ios_new,
+                              size: 15, color: theme.iconTheme.color),
                         ),
                       ),
                       const Spacer(),
@@ -134,7 +136,7 @@ class _FavoriteListState extends State<FavoriteList> {
                           style: GoogleFonts.inter(
                               fontSize: 17 * fontScale,
                               fontWeight: FontWeight.w600,
-                              color: Colors.black)),
+                              color: theme.textTheme.titleLarge?.color)),
                       const Spacer(),
                       const SizedBox(width: 36),
                     ],
@@ -155,7 +157,7 @@ class _FavoriteListState extends State<FavoriteList> {
                                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 30),
                                 itemCount: _favorites.length,
                                 itemBuilder: (_, i) =>
-                                    _buildCard(i, fontScale),
+                                    _buildCard(i, fontScale, theme),
                               ),
                             ),
                 ),
@@ -187,7 +189,7 @@ class _FavoriteListState extends State<FavoriteList> {
     );
   }
 
-  Widget _buildCard(int index, double fontScale) {
+  Widget _buildCard(int index, double fontScale, ThemeData theme) {
     final fav  = _favorites[index];
     final name   = _name(fav);
     final avatar = _avatar(fav);
@@ -210,9 +212,9 @@ class _FavoriteListState extends State<FavoriteList> {
         margin: const EdgeInsets.only(bottom: 14),
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: theme.cardColor,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey.shade200, width: 1),
+          border: Border.all(color: theme.dividerColor, width: 1),
           boxShadow: [BoxShadow(
               color: Colors.black.withOpacity(0.05),
               blurRadius: 8, offset: const Offset(0, 2))],
@@ -228,7 +230,7 @@ class _FavoriteListState extends State<FavoriteList> {
                     style: GoogleFonts.inter(
                         fontSize: 11 * fontScale,
                         fontWeight: FontWeight.w600,
-                        color: Colors.black87)),
+                        color: theme.textTheme.bodyMedium?.color?.withOpacity(0.87))),
                 GestureDetector(
                   onTap: () => _removeFavorite(index),
                   child: Container(
@@ -261,7 +263,7 @@ class _FavoriteListState extends State<FavoriteList> {
                           style: GoogleFonts.inter(
                               fontSize: 15 * fontScale,
                               fontWeight: FontWeight.w700,
-                              color: Colors.black)),
+                              color: theme.textTheme.bodyLarge?.color)),
                       const SizedBox(height: 4),
                       if (rating != '—')
                         Row(children: [
@@ -270,7 +272,8 @@ class _FavoriteListState extends State<FavoriteList> {
                           Text(rating,
                               style: GoogleFonts.inter(
                                   fontSize: 11 * fontScale,
-                                  fontWeight: FontWeight.w600)),
+                                  fontWeight: FontWeight.w600,
+                                  color: theme.textTheme.bodySmall?.color)),
                         ]),
                     ],
                   ),

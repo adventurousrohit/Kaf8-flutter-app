@@ -92,20 +92,22 @@ class _PaymentCheckoutScreenState extends State<PaymentCheckoutScreen> {
   Widget build(BuildContext context) {
     final amount = double.tryParse(
         widget.order['deliveryCost']?.toString() ?? '0') ?? 0;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFEAF4FB),
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: theme.appBarTheme.backgroundColor,
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, size: 16, color: Colors.black),
+          icon: Icon(Icons.arrow_back_ios, size: 16, color: theme.iconTheme.color),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text('Payment',
             style: GoogleFonts.inter(
-                fontSize: 17, fontWeight: FontWeight.w700)),
+                fontSize: 17, fontWeight: FontWeight.w700, color: theme.textTheme.titleLarge?.color)),
       ),
       body: Padding(
         padding: const EdgeInsets.all(24),
@@ -117,7 +119,7 @@ class _PaymentCheckoutScreenState extends State<PaymentCheckoutScreen> {
               width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: theme.cardColor,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
@@ -133,19 +135,19 @@ class _PaymentCheckoutScreenState extends State<PaymentCheckoutScreen> {
                       style: GoogleFonts.inter(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: Colors.grey[600])),
+                          color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6))),
                   const SizedBox(height: 12),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text('Delivery cost',
                           style: GoogleFonts.inter(
-                              fontSize: 15, color: Colors.black87)),
+                              fontSize: 15, color: theme.textTheme.bodyLarge?.color?.withOpacity(0.87))),
                       Text('€${amount.toStringAsFixed(2)}',
                           style: GoogleFonts.inter(
                               fontSize: 15,
                               fontWeight: FontWeight.w700,
-                              color: Colors.black)),
+                              color: theme.textTheme.bodyLarge?.color)),
                     ],
                   ),
                   const SizedBox(height: 6),
@@ -154,7 +156,7 @@ class _PaymentCheckoutScreenState extends State<PaymentCheckoutScreen> {
                     children: [
                       Text('To',
                           style: GoogleFonts.inter(
-                              fontSize: 13, color: Colors.grey[500])),
+                              fontSize: 13, color: theme.textTheme.bodySmall?.color?.withOpacity(0.5))),
                       Expanded(
                         child: Text(
                           widget.order['receiverAddress'] as String? ?? '',
@@ -162,7 +164,7 @@ class _PaymentCheckoutScreenState extends State<PaymentCheckoutScreen> {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.inter(
-                              fontSize: 13, color: Colors.grey[600]),
+                              fontSize: 13, color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6)),
                         ),
                       ),
                     ],
@@ -208,7 +210,7 @@ class _PaymentCheckoutScreenState extends State<PaymentCheckoutScreen> {
               Center(
                 child: Text('Secured by Stripe',
                     style: GoogleFonts.inter(
-                        fontSize: 12, color: Colors.grey[500])),
+                        fontSize: 12, color: theme.textTheme.bodySmall?.color?.withOpacity(0.5))),
               ),
             ],
 

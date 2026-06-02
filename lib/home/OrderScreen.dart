@@ -28,6 +28,7 @@ class _OrdersScreenState extends State<OrdersScreen>
   @override
   void initState() {
     super.initState();
+    debugPrint("📱 OrderScreen: initState called");
     _tabController = TabController(length: 3, vsync: this);
 
     // Update the pill indicator whenever the tab changes (tap OR swipe)
@@ -43,6 +44,7 @@ class _OrdersScreenState extends State<OrdersScreen>
   }
 
   void _loadTab(int index) {
+    debugPrint("📱 OrderScreen: _loadTab($index)");
     if (index == 0) _ctrl.fetchPending();
     if (index == 1) _ctrl.fetchActive();
     if (index == 2) _ctrl.fetchHistory();
@@ -58,16 +60,18 @@ class _OrdersScreenState extends State<OrdersScreen>
   Widget build(BuildContext context) {
     final fontScale = ResponsiveUtils.fontScale(context);
     final size = MediaQuery.of(context).size;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFEAF4FB),
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Stack(
         children: [
           Positioned(
             top: 0, left: 0,
             child: Image.asset('assets/images/bg_top_left.png',
                 width: size.width * 0.60, fit: BoxFit.contain,
-                opacity: const AlwaysStoppedAnimation(0.18)),
+                opacity: AlwaysStoppedAnimation(isDark ? 0.05 : 0.18)),
           ),
           Positioned(
             top: 0, right: 0,
@@ -76,21 +80,21 @@ class _OrdersScreenState extends State<OrdersScreen>
               transform: Matrix4.rotationY(3.14159),
               child: Image.asset('assets/images/bg_bottom_right.png',
                   width: size.width * 0.38, fit: BoxFit.contain,
-                  opacity: const AlwaysStoppedAnimation(0.15)),
+                  opacity: AlwaysStoppedAnimation(isDark ? 0.04 : 0.15)),
             ),
           ),
           Positioned(
             bottom: 0, right: 0,
             child: Image.asset('assets/images/bg_bottom_right.png',
                 width: size.width * 0.60, fit: BoxFit.contain,
-                opacity: const AlwaysStoppedAnimation(0.35)),
+                opacity: AlwaysStoppedAnimation(isDark ? 0.08 : 0.35)),
           ),
           SafeArea(
             child: Column(
               children: [
                 // Header
                 Container(
-                  color: Colors.white,
+                  color: theme.appBarTheme.backgroundColor,
                   padding: const EdgeInsets.symmetric(
                       horizontal: 16, vertical: 14),
                   child: Row(
@@ -101,14 +105,14 @@ class _OrdersScreenState extends State<OrdersScreen>
                           style: GoogleFonts.inter(
                               fontSize: 18 * fontScale,
                               fontWeight: FontWeight.w600,
-                              color: Colors.black)),
+                              color: theme.textTheme.titleLarge?.color)),
                       const Spacer(),
                       Stack(
                         children: [
                           GestureDetector(
                             onTap: () => Get.to(() => NotificationPage()),
-                            child: const Icon(Icons.notifications_none,
-                                size: 26, color: Colors.black87),
+                            child: Icon(Icons.notifications_none,
+                                size: 26, color: isDark ? Colors.white70 : Colors.black87),
                           ),
                           Positioned(
                             right: 0, top: 0,
@@ -143,20 +147,20 @@ class _OrdersScreenState extends State<OrdersScreen>
                     height: 46,
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: theme.cardColor,
                       borderRadius: BorderRadius.circular(30),
                       boxShadow: [
                         BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.06),
+                            color: Colors.black.withOpacity(0.06),
                             blurRadius: 8,
                             offset: const Offset(0, 2))
                       ],
                     ),
                     child: Row(
                       children: [
-                        _tabPill("New",     0, fontScale),
-                        _tabPill("Active",  1, fontScale),
-                        _tabPill("History", 2, fontScale),
+                        _tabPill("New",     0, fontScale, theme),
+                        _tabPill("Active",  1, fontScale, theme),
+                        _tabPill("History", 2, fontScale, theme),
                       ],
                     ),
                   ),
@@ -174,6 +178,7 @@ class _OrdersScreenState extends State<OrdersScreen>
                         onRefresh: _ctrl.fetchPending,
                         emptyLabel: "No pending orders",
                         fontScale: fontScale,
+                        theme: theme,
                       ),
                       _OrderList(
                         ordersRx: _ctrl.activeOrders,
@@ -181,6 +186,7 @@ class _OrdersScreenState extends State<OrdersScreen>
                         onRefresh: _ctrl.fetchActive,
                         emptyLabel: "No active orders",
                         fontScale: fontScale,
+                        theme: theme,
                       ),
                       _OrderList(
                         ordersRx: _ctrl.historyOrders,
@@ -188,6 +194,7 @@ class _OrdersScreenState extends State<OrdersScreen>
                         onRefresh: _ctrl.fetchHistory,
                         emptyLabel: "No completed orders yet",
                         fontScale: fontScale,
+                        theme: theme,
                       ),
                     ],
                   ),
@@ -200,7 +207,7 @@ class _OrdersScreenState extends State<OrdersScreen>
     );
   }
 
-  Widget _tabPill(String label, int index, double fontScale) {
+  Widget _tabPill(String label, int index, double fontScale, ThemeData theme) {
     final bool active = _selectedTab == index;
     return Expanded(
       child: GestureDetector(
@@ -220,7 +227,7 @@ class _OrdersScreenState extends State<OrdersScreen>
               style: GoogleFonts.inter(
                   fontSize: 14 * fontScale,
                   fontWeight: FontWeight.w600,
-                  color: active ? Colors.white : Colors.grey[600])),
+                  color: active ? Colors.white : theme.textTheme.bodyMedium?.color?.withOpacity(0.6))),
         ),
       ),
     );
@@ -235,6 +242,7 @@ class _OrderList extends StatelessWidget {
   final Future<void> Function() onRefresh;
   final String emptyLabel;
   final double fontScale;
+  final ThemeData theme;
 
   const _OrderList({
     required this.ordersRx,
@@ -242,6 +250,7 @@ class _OrderList extends StatelessWidget {
     required this.onRefresh,
     required this.emptyLabel,
     required this.fontScale,
+    required this.theme,
   });
 
   @override
@@ -282,7 +291,7 @@ class _OrderList extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
           itemCount: orders.length,
           itemBuilder: (_, i) =>
-              _OrderCard(order: orders[i], fontScale: fontScale),
+              _OrderCard(order: orders[i], fontScale: fontScale, theme: theme),
         ),
       );
     });
@@ -294,7 +303,8 @@ class _OrderList extends StatelessWidget {
 class _OrderCard extends StatelessWidget {
   final Map<String, dynamic> order;
   final double fontScale;
-  const _OrderCard({required this.order, required this.fontScale});
+  final ThemeData theme;
+  const _OrderCard({required this.order, required this.fontScale, required this.theme});
 
   String get _shortId =>
       (() {
@@ -334,7 +344,7 @@ class _OrderCard extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 14),
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: theme.cardColor,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
@@ -352,7 +362,7 @@ class _OrderCard extends StatelessWidget {
                 Container(
                   width: 70, height: 70,
                   decoration: BoxDecoration(
-                      color: const Color(0xFFB2EBE8),
+                      color: const Color(0xFFB2EBE8).withOpacity(theme.brightness == Brightness.dark ? 0.2 : 1.0),
                       borderRadius: BorderRadius.circular(12)),
                   child: const Center(
                       child: Text('📦', style: TextStyle(fontSize: 32))),
@@ -366,7 +376,7 @@ class _OrderCard extends StatelessWidget {
                           style: GoogleFonts.inter(
                               fontSize: 16 * fontScale,
                               fontWeight: FontWeight.w700,
-                              color: Colors.black)),
+                              color: theme.textTheme.bodyLarge?.color)),
                       const SizedBox(height: 2),
                       Text(_shortId,
                           style: GoogleFonts.inter(
@@ -412,7 +422,7 @@ class _OrderCard extends StatelessWidget {
                         style: GoogleFonts.inter(
                             fontSize: 18 * fontScale,
                             fontWeight: FontWeight.w800,
-                            color: Colors.black)),
+                            color: theme.textTheme.bodyLarge?.color)),
                   ],
                 ),
               ],

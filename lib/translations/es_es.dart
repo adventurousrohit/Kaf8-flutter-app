@@ -5,6 +5,7 @@ const Map<String, String> esEs = {
   'my_profile': 'Mi perfil',
   'my_address': 'Mi dirección',
   'language': 'Idioma',
+  'dark_mode': 'Modo Oscuro',
   'other_activity': 'Otra actividad',
   'bank_account': 'Cuenta bancaria',
   'notification': 'Notificación',

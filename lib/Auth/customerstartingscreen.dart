@@ -27,13 +27,15 @@ class _GetStartedScreenState extends State<GetStartedScreen> {
     final padding = ResponsiveUtils.paddingScale(context) * 20;
     final fontScale = ResponsiveUtils.fontScale(context);
     final size = MediaQuery.of(context).size;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     final isDriver = widget.role == 'driver';
 
     return Scaffold(
-      backgroundColor: const Color(0xFFE8F4F8), // light blue base
+      backgroundColor: theme.scaffoldBackgroundColor, // dynamic background
       body: _isLoading
-          ? const Center(
+          ? Center(
         child: CircularProgressIndicator(
           color: Appcolor.secondaryColor,
         ),
@@ -49,7 +51,7 @@ class _GetStartedScreenState extends State<GetStartedScreen> {
               width: size.width * 0.67,
               fit: BoxFit.contain,
               alignment: Alignment.topLeft,
-              opacity: const AlwaysStoppedAnimation(0.2),
+              opacity: AlwaysStoppedAnimation(isDark ? 0.05 : 0.2),
             ),
           ),
 
@@ -62,7 +64,7 @@ class _GetStartedScreenState extends State<GetStartedScreen> {
               width: size.width * 0.45,
               fit: BoxFit.contain,
               alignment: Alignment.bottomRight,
-              opacity: const AlwaysStoppedAnimation(0.4),
+              opacity: AlwaysStoppedAnimation(isDark ? 0.08 : 0.4),
             ),
           ),
 
@@ -103,7 +105,7 @@ class _GetStartedScreenState extends State<GetStartedScreen> {
                     textAlign: TextAlign.center,
                     style: GoogleFonts.inter(
                       fontSize: 14 * fontScale,
-                      color: Colors.black,
+                      color: theme.textTheme.bodyMedium?.color,
                       // decoration: TextDecoration.underline,
                       decorationColor: Colors.grey[700],
                     ),
@@ -139,8 +141,8 @@ class _GetStartedScreenState extends State<GetStartedScreen> {
                   // ── Divider "or" ──────────────────────────────────
                   Row(
                     children: [
-                      const Expanded(
-                        child: Divider(thickness: 1, color: Colors.grey),
+                      Expanded(
+                        child: Divider(thickness: 1, color: theme.dividerColor),
                       ),
                       Padding(
                         padding:
@@ -148,13 +150,13 @@ class _GetStartedScreenState extends State<GetStartedScreen> {
                         child: Text(
                           "or",
                           style: TextStyle(
-                            color: Colors.grey[600],
+                            color: theme.textTheme.bodySmall?.color,
                             fontSize: 14 * fontScale,
                           ),
                         ),
                       ),
-                      const Expanded(
-                        child: Divider(thickness: 1, color: Colors.grey),
+                      Expanded(
+                        child: Divider(thickness: 1, color: theme.dividerColor),
                       ),
                     ],
                   ),
@@ -189,7 +191,7 @@ class _GetStartedScreenState extends State<GetStartedScreen> {
                         style: GoogleFonts.inter(
                           fontSize: 14 * fontScale,
                           fontWeight: FontWeight.w400,
-                          color: const Color(0xFF60655C),
+                          color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
                         ),
                       ),
                       GestureDetector(

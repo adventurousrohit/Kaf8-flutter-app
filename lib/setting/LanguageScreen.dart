@@ -60,6 +60,8 @@ class _LanguageScreenState extends State<LanguageScreen> {
   Widget build(BuildContext context) {
     final fontScale = ResponsiveUtils.fontScale(context);
     final size = MediaQuery.of(context).size;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     // Split into current + others
     final currentLang = _languages[_selectedIndex];
@@ -70,46 +72,47 @@ class _LanguageScreenState extends State<LanguageScreen> {
         .toList();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFEAF4FB),
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Stack(
         children: [
           Positioned(top: 0, left: 0,
               child: Image.asset('assets/images/bg_top_left.png',
                   width: size.width * 0.60, fit: BoxFit.contain,
-                  opacity: const AlwaysStoppedAnimation(0.18))),
+                  opacity: AlwaysStoppedAnimation(isDark ? 0.05 : 0.18))),
           Positioned(top: 0, right: 0,
               child: Transform(alignment: Alignment.center,
                   transform: Matrix4.rotationY(3.14159),
                   child: Image.asset('assets/images/bg_bottom_right.png',
                       width: size.width * 0.36, fit: BoxFit.contain,
-                      opacity: const AlwaysStoppedAnimation(0.12)))),
+                      opacity: AlwaysStoppedAnimation(isDark ? 0.04 : 0.12)))),
           Positioned(bottom: 0, right: 0,
               child: Image.asset('assets/images/bg_bottom_right.png',
                   width: size.width * 0.50, fit: BoxFit.contain,
-                  opacity: const AlwaysStoppedAnimation(0.22))),
+                  opacity: AlwaysStoppedAnimation(isDark ? 0.08 : 0.22))),
 
           SafeArea(
             child: Column(
               children: [
                 // Header
                 Container(
-                  color: Colors.white,
+                  color: theme.appBarTheme.backgroundColor,
                   padding: const EdgeInsets.symmetric(
                       horizontal: 16, vertical: 12),
                   child: Row(
                     children: [
-                      _circleBack(context),
+                      _circleBack(context, theme),
                       const Spacer(),
                       Text('language_title'.tr,
                           style: GoogleFonts.inter(
                               fontSize: 17 * fontScale,
-                              fontWeight: FontWeight.w600)),
+                              fontWeight: FontWeight.w600,
+                              color: theme.textTheme.titleLarge?.color)),
                       const Spacer(),
                       const SizedBox(width: 36),
                     ],
                   ),
                 ),
-                const Divider(height: 1, thickness: 0.8),
+                Divider(height: 1, thickness: 0.8, color: theme.dividerColor),
 
                 Expanded(
                   child: SingleChildScrollView(
@@ -124,12 +127,12 @@ class _LanguageScreenState extends State<LanguageScreen> {
                             style: GoogleFonts.inter(
                                 fontSize: 15 * fontScale,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.black)),
+                                color: theme.textTheme.bodyLarge?.color)),
                         const SizedBox(height: 12),
 
                         Container(
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: theme.cardColor,
                             borderRadius: BorderRadius.circular(14),
                             boxShadow: [BoxShadow(
                                 color: Colors.black.withOpacity(0.04),
@@ -140,6 +143,7 @@ class _LanguageScreenState extends State<LanguageScreen> {
                             isSelected: true,
                             fontScale: fontScale,
                             onTap: null,
+                            theme: theme,
                           ),
                         ),
 
@@ -150,12 +154,12 @@ class _LanguageScreenState extends State<LanguageScreen> {
                             style: GoogleFonts.inter(
                                 fontSize: 15 * fontScale,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.black)),
+                                color: theme.textTheme.bodyLarge?.color)),
                         const SizedBox(height: 12),
 
                         Container(
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: theme.cardColor,
                             borderRadius: BorderRadius.circular(14),
                             boxShadow: [BoxShadow(
                                 color: Colors.black.withOpacity(0.04),
@@ -172,10 +176,11 @@ class _LanguageScreenState extends State<LanguageScreen> {
                                     isSelected: false,
                                     fontScale: fontScale,
                                     onTap: () => setState(() => _selectedIndex = e.key),
+                                    theme: theme,
                                   ),
                                   if (listIdx < otherLangs.length - 1)
-                                    const Divider(height: 1, thickness: 0.7,
-                                        indent: 16, endIndent: 16),
+                                    Divider(height: 1, thickness: 0.7,
+                                        indent: 16, endIndent: 16, color: theme.dividerColor),
                                 ],
                               );
                             }).toList(),
@@ -215,15 +220,15 @@ class _LanguageScreenState extends State<LanguageScreen> {
     );
   }
 
-  Widget _circleBack(BuildContext context) {
+  Widget _circleBack(BuildContext context, ThemeData theme) {
     return GestureDetector(
       onTap: () => Navigator.pop(context),
       child: Container(
         width: 36, height: 36,
         decoration: BoxDecoration(
             shape: BoxShape.circle,
-            border: Border.all(color: Colors.grey[800]!, width: 1.8)),
-        child: const Icon(Icons.arrow_back_ios_new, size: 15, color: Colors.black),
+            border: Border.all(color: theme.brightness == Brightness.dark ? Colors.white24 : Colors.grey[800]!, width: 1.8)),
+        child: Icon(Icons.arrow_back_ios_new, size: 15, color: theme.iconTheme.color),
       ),
     );
   }
@@ -233,6 +238,7 @@ class _LanguageScreenState extends State<LanguageScreen> {
     required bool isSelected,
     required double fontScale,
     required VoidCallback? onTap,
+    required ThemeData theme,
   }) {
     return InkWell(
       onTap: onTap,
@@ -248,7 +254,7 @@ class _LanguageScreenState extends State<LanguageScreen> {
               child: Text(lang['name'] as String,
                   style: GoogleFonts.inter(
                       fontSize: 15 * fontScale,
-                      color: isSelected ? Colors.black : Colors.grey[600],
+                      color: isSelected ? theme.textTheme.bodyLarge?.color : theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
                       fontWeight: isSelected
                           ? FontWeight.w600 : FontWeight.w400)),
             ),
@@ -263,7 +269,7 @@ class _LanguageScreenState extends State<LanguageScreen> {
                     decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
-                            color: Colors.grey[400]!, width: 1.5))),
+                            color: theme.brightness == Brightness.dark ? Colors.white24 : Colors.grey[400]!, width: 1.5))),
           ],
         ),
       ),
