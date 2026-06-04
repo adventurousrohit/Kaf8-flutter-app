@@ -58,6 +58,7 @@ class _PaymentCheckoutScreenState extends State<PaymentCheckoutScreen> {
           paymentIntentClientSecret: clientSecret,
           merchantDisplayName: 'KAF8 Delivery',
           style: ThemeMode.light,
+          returnURL: 'kaf8://payment-complete',
         ),
       );
       setState(() => _status = _Status.ready);

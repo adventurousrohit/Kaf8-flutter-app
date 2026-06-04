@@ -83,7 +83,8 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // TODO: replace with your pk_test_... key from https://dashboard.stripe.com/test/apikeys
-  Stripe.publishableKey = 'pk_test_REPLACE_WITH_YOUR_PUBLISHABLE_KEY';
+  Stripe.publishableKey = 'pk_test_51TcdEnBwPJsOQ66WZ9My5LDpGn4Lu3q0gtFzAS4KUhkVry78NeJG9Nvv4kTqvA3nceqEnAGltdHQrFIKcV47DTkC00lYTrqsda';
+  await Stripe.instance.applySettings();
 
   // Firebase — graceful: won't crash if google-services.json / GoogleService-Info.plist
   // are missing yet. Add those files and FCM will activate automatically.
