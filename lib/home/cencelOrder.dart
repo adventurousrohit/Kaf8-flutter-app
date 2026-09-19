@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../Utils/responsiveUtils.dart';
+import '../Service/api_service.dart';
 
 class CancelOrder extends StatefulWidget {
-  const CancelOrder({super.key});
+  final String? orderId;
+  const CancelOrder({super.key, this.orderId});
 
   @override
   State<CancelOrder> createState() => _CancelOrderState();
@@ -12,18 +15,17 @@ class CancelOrder extends StatefulWidget {
 class _CancelOrderState extends State<CancelOrder> {
   final TextEditingController _otherController = TextEditingController();
 
-  // Checkbox states
   final List<String> _reasons = [
     'Late delivery',
-    'Can not contact to the driver',
-    'Driver denied to come to pickup',
+    'Cannot contact the driver',
     'Driver denied to come to pickup',
     'Displayed wrong address',
     'Unfavorable price',
-    'I want to order another restaurant',
+    'I changed my mind',
     'I just want to cancel the order',
   ];
   final Set<String> _selected = {};
+  bool _isLoading = false;
   bool _showSuccess = false;
 
   @override
@@ -32,13 +34,41 @@ class _CancelOrderState extends State<CancelOrder> {
     super.dispose();
   }
 
-  void _onSend() {
-    if (_selected.isEmpty) {
+  Future<void> _onSend() async {
+    if (_selected.isEmpty && _otherController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text("Please select at least one reason"),
           backgroundColor: Colors.red));
       return;
     }
+
+    final reasonParts = [
+      ..._selected,
+      if (_otherController.text.trim().isNotEmpty)
+        _otherController.text.trim(),
+    ];
+    final cancelReason = reasonParts.join('; ');
+
+    if (widget.orderId != null) {
+      setState(() => _isLoading = true);
+      final result = await ApiService.updateOrderStatus(
+        widget.orderId!,
+        'canceled',
+        cancelReason: cancelReason,
+      );
+      setState(() => _isLoading = false);
+
+      if (result['success'] != true) {
+        Get.snackbar(
+          'Error',
+          result['message'] ?? 'Failed to cancel order',
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+        return;
+      }
+    }
+
     setState(() => _showSuccess = true);
   }
 
@@ -46,34 +76,33 @@ class _CancelOrderState extends State<CancelOrder> {
   Widget build(BuildContext context) {
     final fontScale = ResponsiveUtils.fontScale(context);
     final size      = MediaQuery.of(context).size;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFEAF4FB),
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Stack(
         children: [
-          // ── Background shapes ──────────────────────────────────────
           Positioned(top: 0, left: 0,
               child: Image.asset('assets/images/bg_top_left.png',
                   width: size.width * 0.62, fit: BoxFit.contain,
-                  opacity: const AlwaysStoppedAnimation(0.20))),
+                  opacity: AlwaysStoppedAnimation(isDark ? 0.05 : 0.20))),
           Positioned(top: 0, right: 0,
               child: Transform(alignment: Alignment.center,
                   transform: Matrix4.rotationY(3.14159),
                   child: Image.asset('assets/images/bg_bottom_right.png',
                       width: size.width * 0.36, fit: BoxFit.contain,
-                      opacity: const AlwaysStoppedAnimation(0.13)))),
+                      opacity: AlwaysStoppedAnimation(isDark ? 0.04 : 0.13)))),
           Positioned(bottom: 0, right: 0,
               child: Image.asset('assets/images/bg_bottom_right.png',
                   width: size.width * 0.50, fit: BoxFit.contain,
-                  opacity: const AlwaysStoppedAnimation(0.22))),
+                  opacity: AlwaysStoppedAnimation(isDark ? 0.08 : 0.22))),
 
-          // ── Main content ───────────────────────────────────────────
           SafeArea(
             child: Column(
               children: [
-                // ── Header ──────────────────────────────────────────
                 Container(
-                  color: Colors.white,
+                  color: theme.appBarTheme.backgroundColor,
                   padding: const EdgeInsets.symmetric(
                       horizontal: 16, vertical: 12),
                   child: Row(
@@ -85,9 +114,9 @@ class _CancelOrderState extends State<CancelOrder> {
                           decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               border: Border.all(
-                                  color: Colors.grey[800]!, width: 1.8)),
-                          child: const Icon(Icons.arrow_back_ios_new,
-                              size: 15, color: Colors.black),
+                                  color: isDark ? Colors.white24 : Colors.grey[800]!, width: 1.8)),
+                          child: Icon(Icons.arrow_back_ios_new,
+                              size: 15, color: theme.iconTheme.color),
                         ),
                       ),
                       const Spacer(),
@@ -95,32 +124,29 @@ class _CancelOrderState extends State<CancelOrder> {
                           style: GoogleFonts.inter(
                               fontSize: 17 * fontScale,
                               fontWeight: FontWeight.w600,
-                              color: Colors.black)),
+                              color: theme.textTheme.titleLarge?.color)),
                       const Spacer(),
                       const SizedBox(width: 36),
                     ],
                   ),
                 ),
 
-                // ── Body ─────────────────────────────────────────────
                 Expanded(
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Section title
                         Text("Please select reasons",
                             style: GoogleFonts.inter(
                                 fontSize: 16 * fontScale,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.black)),
+                                color: theme.textTheme.bodyLarge?.color)),
                         const SizedBox(height: 14),
 
-                        // ── Checkbox list ────────────────────────────
                         Container(
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: theme.cardColor,
                             borderRadius: BorderRadius.circular(14),
                             boxShadow: [BoxShadow(
                                 color: Colors.black.withOpacity(0.04),
@@ -130,16 +156,15 @@ class _CancelOrderState extends State<CancelOrder> {
                           child: Column(
                             children: List.generate(_reasons.length, (i) {
                               final r = _reasons[i];
-                              final checked = _selected.contains(r + i.toString());
+                              final checked = _selected.contains(r);
                               return Column(
                                 children: [
                                   InkWell(
                                     onTap: () {
-                                      final key = r + i.toString();
                                       setState(() {
                                         checked
-                                            ? _selected.remove(key)
-                                            : _selected.add(key);
+                                            ? _selected.remove(r)
+                                            : _selected.add(r);
                                       });
                                     },
                                     borderRadius: BorderRadius.circular(14),
@@ -148,19 +173,18 @@ class _CancelOrderState extends State<CancelOrder> {
                                           horizontal: 16, vertical: 14),
                                       child: Row(
                                         children: [
-                                          // Custom checkbox
                                           Container(
                                             width: 22, height: 22,
                                             decoration: BoxDecoration(
                                               color: checked
                                                   ? Colors.green
-                                                  : Colors.white,
+                                                  : theme.cardColor,
                                               borderRadius:
                                               BorderRadius.circular(5),
                                               border: Border.all(
                                                   color: checked
                                                       ? Colors.green
-                                                      : Colors.grey[350]!,
+                                                      : (isDark ? Colors.white24 : Colors.grey[350]!),
                                                   width: 1.5),
                                             ),
                                             child: checked
@@ -174,17 +198,18 @@ class _CancelOrderState extends State<CancelOrder> {
                                             child: Text(r,
                                                 style: GoogleFonts.inter(
                                                     fontSize: 14 * fontScale,
-                                                    color: Colors.black87)),
+                                                    color: theme.textTheme.bodyLarge?.color?.withOpacity(0.87))),
                                           ),
                                         ],
                                       ),
                                     ),
                                   ),
                                   if (i < _reasons.length - 1)
-                                    const Divider(height: 1,
+                                    Divider(height: 1,
                                         thickness: 0.7,
                                         indent: 16,
-                                        endIndent: 16),
+                                        endIndent: 16,
+                                        color: theme.dividerColor),
                                 ],
                               );
                             }),
@@ -193,34 +218,33 @@ class _CancelOrderState extends State<CancelOrder> {
 
                         const SizedBox(height: 20),
 
-                        // ── Other section ────────────────────────────
                         Text("Other",
                             style: GoogleFonts.inter(
                                 fontSize: 15 * fontScale,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.black)),
+                                color: theme.textTheme.bodyLarge?.color)),
                         const SizedBox(height: 10),
                         TextField(
                           controller: _otherController,
                           maxLines: 4,
                           style: GoogleFonts.inter(
-                              fontSize: 13 * fontScale),
+                              fontSize: 13 * fontScale, color: theme.textTheme.bodyLarge?.color),
                           decoration: InputDecoration(
-                            hintText: "Do you have any message to the restaurant",
+                            hintText: "Do you have any message for the driver?",
                             hintStyle: GoogleFonts.inter(
                                 color: Colors.grey[400],
                                 fontSize: 13 * fontScale),
                             filled: true,
-                            fillColor: Colors.white,
+                            fillColor: theme.cardColor,
                             contentPadding: const EdgeInsets.all(14),
                             border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: BorderSide(
-                                    color: Colors.grey[200]!)),
+                                    color: theme.dividerColor)),
                             enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: BorderSide(
-                                    color: Colors.grey[200]!)),
+                                    color: theme.dividerColor)),
                             focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: const BorderSide(
@@ -230,7 +254,6 @@ class _CancelOrderState extends State<CancelOrder> {
 
                         const SizedBox(height: 30),
 
-                        // ── Send button ──────────────────────────────
                         SizedBox(
                           width: double.infinity,
                           height: 52,
@@ -241,12 +264,17 @@ class _CancelOrderState extends State<CancelOrder> {
                               shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(30)),
                             ),
-                            onPressed: _onSend,
-                            child: Text("Send",
-                                style: GoogleFonts.inter(
-                                    fontSize: 16 * fontScale,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white)),
+                            onPressed: _isLoading ? null : _onSend,
+                            child: _isLoading
+                                ? const SizedBox(
+                                    width: 22, height: 22,
+                                    child: CircularProgressIndicator(
+                                        color: Colors.white, strokeWidth: 2.5))
+                                : Text("Send",
+                                    style: GoogleFonts.inter(
+                                        fontSize: 16 * fontScale,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.white)),
                           ),
                         ),
                         const SizedBox(height: 20),
@@ -258,16 +286,18 @@ class _CancelOrderState extends State<CancelOrder> {
             ),
           ),
 
-          // ── Success overlay dialog ─────────────────────────────────
           if (_showSuccess)
             Container(
               color: Colors.black.withOpacity(0.45),
               child: Center(
                 child: _SuccessCard(
                   fontScale: fontScale,
+                  theme: theme,
                   onBack: () {
                     setState(() => _showSuccess = false);
-                    Navigator.pop(context);
+                    Navigator.of(context)
+                      ..pop() // pop CancelOrder
+                      ..pop(); // pop OrderDetails
                   },
                 ),
               ),
@@ -278,17 +308,15 @@ class _CancelOrderState extends State<CancelOrder> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SUCCESS CARD  (shown as overlay after Send)
-// ─────────────────────────────────────────────────────────────────────────────
-
 class _SuccessCard extends StatelessWidget {
   final double fontScale;
   final VoidCallback onBack;
+  final ThemeData theme;
 
   const _SuccessCard({
     required this.fontScale,
     required this.onBack,
+    required this.theme,
   });
 
   @override
@@ -296,40 +324,38 @@ class _SuccessCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFF2979FF), width: 2),
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withOpacity(0.12),
+              blurRadius: 24,
+              offset: const Offset(0, 8)),
+        ],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // ── Dashed inner border area ─────────────────────────────
           Container(
             margin: const EdgeInsets.all(12),
             padding: const EdgeInsets.symmetric(
                 vertical: 24, horizontal: 16),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: const Color(0xFF2979FF),
-                width: 1.5,
-                // Dart doesn't support native dashed borders on Container,
-                // so we use a CustomPaint wrapper below
-              ),
+              color: theme.brightness == Brightness.dark ? Colors.white10 : const Color(0xFFF5F7FA),
             ),
             child: Column(
               children: [
-                // Crying emoji
                 const Text("😭",
                     style: TextStyle(fontSize: 56)),
                 const SizedBox(height: 16),
                 Text(
-                  "We are sorry that your order had\nbeen canceled",
+                  "We are sorry that your order has\nbeen canceled",
                   textAlign: TextAlign.center,
                   style: GoogleFonts.inter(
                     fontSize: 16 * fontScale,
                     fontWeight: FontWeight.w700,
-                    color: Colors.black,
+                    color: theme.textTheme.bodyLarge?.color,
                     height: 1.4,
                   ),
                 ),
@@ -339,7 +365,7 @@ class _SuccessCard extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: GoogleFonts.inter(
                     fontSize: 12 * fontScale,
-                    color: Colors.grey[500],
+                    color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
                     height: 1.5,
                   ),
                 ),
@@ -347,7 +373,6 @@ class _SuccessCard extends StatelessWidget {
             ),
           ),
 
-          // ── Back to homepage button ──────────────────────────────
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 0, 12, 14),
             child: SizedBox(

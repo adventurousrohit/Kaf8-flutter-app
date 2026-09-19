@@ -30,33 +30,38 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: Stack(
           children: [
             Column(
               children: [
-                _buildAppBar(),
+                _buildAppBar(theme),
                 Expanded(
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.all(20),
                     child: Column(
                       children: [
-                        _buildCardPlaceholder(),
+                        _buildCardPlaceholder(theme),
                         const SizedBox(height: 30),
-                        _buildOrDivider(),
+                        _buildOrDivider(theme),
                         const SizedBox(height: 20),
                         _buildMethodTile(
                           index: 0,
                           label: 'Paypal',
                           logo: _PaypalLogo(),
+                          theme: theme,
                         ),
                         const SizedBox(height: 14),
                         _buildMethodTile(
                           index: 1,
                           label: 'Stripe',
                           logo: _StripeLogo(),
+                          theme: theme,
                         ),
                         const SizedBox(height: 36),
                         _buildContinueButton(),
@@ -68,26 +73,27 @@ class _PaymentScreenState extends State<PaymentScreen> {
             ),
 
             // Card entry bottom sheet
-            if (_showCardSheet) _buildCardSheet(context),
+            if (_showCardSheet) _buildCardSheet(context, theme),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildAppBar() {
+  Widget _buildAppBar(ThemeData theme) {
+    final isDark = theme.brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
       child: Row(
         children: [
-          const Icon(Icons.menu, size: 24, color: Colors.black87),
+          Icon(Icons.menu, size: 24, color: theme.iconTheme.color),
           const SizedBox(width: 14),
           Text('Bank Account',
               style: GoogleFonts.inter(
-                  fontSize: 20, fontWeight: FontWeight.w700)),
+                  fontSize: 20, fontWeight: FontWeight.w700, color: theme.textTheme.titleLarge?.color)),
           const Spacer(),
-          const Icon(Icons.notifications_none,
-              size: 26, color: Colors.black87),
+          Icon(Icons.notifications_none,
+              size: 26, color: isDark ? Colors.white70 : Colors.black87),
           const SizedBox(width: 10),
           const CircleAvatar(
             radius: 17,
@@ -99,12 +105,13 @@ class _PaymentScreenState extends State<PaymentScreen> {
     );
   }
 
-  Widget _buildCardPlaceholder() {
+  Widget _buildCardPlaceholder(ThemeData theme) {
+    final isDark = theme.brightness == Brightness.dark;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 32),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -118,11 +125,11 @@ class _PaymentScreenState extends State<PaymentScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _cardIcon(Icons.credit_card),
+              _cardIcon(Icons.credit_card, theme),
               const SizedBox(width: 20),
-              _cardIcon(Icons.contactless),
+              _cardIcon(Icons.contactless, theme),
               const SizedBox(width: 20),
-              _cardIcon(Icons.card_membership),
+              _cardIcon(Icons.card_membership, theme),
             ],
           ),
           const SizedBox(height: 20),
@@ -134,46 +141,47 @@ class _PaymentScreenState extends State<PaymentScreen> {
     );
   }
 
-  Widget _cardIcon(IconData icon) {
+  Widget _cardIcon(IconData icon, ThemeData theme) {
+    final isDark = theme.brightness == Brightness.dark;
     return Container(
       width: 64,
       height: 44,
       decoration: BoxDecoration(
-        color: Colors.grey[100],
+        color: isDark ? Colors.white.withOpacity(0.05) : Colors.grey[100],
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: theme.dividerColor),
       ),
       child: Icon(icon, color: Colors.grey[400], size: 28),
     );
   }
 
-  Widget _buildOrDivider() {
+  Widget _buildOrDivider(ThemeData theme) {
     return Row(
       children: [
-        Expanded(child: Divider(color: Colors.grey[300])),
+        Expanded(child: Divider(color: theme.dividerColor)),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text('or',
               style:
                   GoogleFonts.inter(fontSize: 14, color: Colors.grey[500])),
         ),
-        Expanded(child: Divider(color: Colors.grey[300])),
+        Expanded(child: Divider(color: theme.dividerColor)),
       ],
     );
   }
 
   Widget _buildMethodTile(
-      {required int index, required String label, required Widget logo}) {
+      {required int index, required String label, required Widget logo, required ThemeData theme}) {
     final selected = _selectedMethod == index;
     return GestureDetector(
       onTap: () => setState(() => _selectedMethod = index),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: theme.cardColor,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: selected ? Colors.green : Colors.grey.shade200,
+            color: selected ? Colors.green : theme.dividerColor,
             width: 1.5,
           ),
           boxShadow: [
@@ -210,7 +218,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
             const SizedBox(width: 14),
             Text(label,
                 style: GoogleFonts.inter(
-                    fontSize: 15, fontWeight: FontWeight.w600)),
+                    fontSize: 15, fontWeight: FontWeight.w600, color: theme.textTheme.bodyLarge?.color)),
             const Spacer(),
             logo,
           ],
@@ -240,7 +248,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
     );
   }
 
-  Widget _buildCardSheet(BuildContext context) {
+  Widget _buildCardSheet(BuildContext context, ThemeData theme) {
+    final isDark = theme.brightness == Brightness.dark;
     return Positioned(
       bottom: 0,
       left: 0,
@@ -254,10 +263,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
             top: 24,
             bottom: MediaQuery.of(context).viewInsets.bottom + 24,
           ),
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-            boxShadow: [
+          decoration: BoxDecoration(
+            color: theme.cardColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+            boxShadow: const [
               BoxShadow(color: Colors.black26, blurRadius: 24),
             ],
           ),
@@ -271,7 +280,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: Colors.grey[300],
+                    color: theme.dividerColor,
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
@@ -279,13 +288,13 @@ class _PaymentScreenState extends State<PaymentScreen> {
               const SizedBox(height: 18),
               Text('New Payment',
                   style: GoogleFonts.inter(
-                      fontSize: 16, fontWeight: FontWeight.w700)),
+                      fontSize: 16, fontWeight: FontWeight.w700, color: theme.textTheme.titleLarge?.color)),
               const SizedBox(height: 4),
               Text('Card details',
                   style: GoogleFonts.inter(
                       fontSize: 13, color: Colors.grey[500])),
               const SizedBox(height: 12),
-              _inputField('Enter card details', _cardController),
+              _inputField('Enter card details', _cardController, theme),
               const SizedBox(height: 12),
               Row(
                 children: [
@@ -297,7 +306,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                             style: GoogleFonts.inter(
                                 fontSize: 12, color: Colors.grey[500])),
                         const SizedBox(height: 6),
-                        _inputField('DD/MM', _expController),
+                        _inputField('DD/MM', _expController, theme),
                       ],
                     ),
                   ),
@@ -310,7 +319,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                             style: GoogleFonts.inter(
                                 fontSize: 12, color: Colors.grey[500])),
                         const SizedBox(height: 6),
-                        _inputField('Enter CVV', _cvvController),
+                        _inputField('Enter CVV', _cvvController, theme),
                       ],
                     ),
                   ),
@@ -342,15 +351,17 @@ class _PaymentScreenState extends State<PaymentScreen> {
     );
   }
 
-  Widget _inputField(String hint, TextEditingController controller) {
+  Widget _inputField(String hint, TextEditingController controller, ThemeData theme) {
+    final isDark = theme.brightness == Brightness.dark;
     return TextField(
       controller: controller,
+      style: GoogleFonts.inter(color: theme.textTheme.bodyLarge?.color),
       decoration: InputDecoration(
         hintText: hint,
         hintStyle:
             GoogleFonts.inter(fontSize: 13, color: Colors.grey[400]),
         filled: true,
-        fillColor: const Color(0xFFF5F7FA),
+        fillColor: isDark ? Colors.white.withOpacity(0.05) : const Color(0xFFF5F7FA),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         border: OutlineInputBorder(

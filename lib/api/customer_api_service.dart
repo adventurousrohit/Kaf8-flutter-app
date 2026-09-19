@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import 'api_client.dart';
@@ -13,24 +14,31 @@ final class CustomerApiService {
   final ApiClient _client;
 
   // --- User profile ---
-  Future<http.Response> getMyProfile() =>
-      _client.get(ApiEndpoints.userProfile);
+  Future<http.Response> getMyProfile() {
+    debugPrint("📡 CustomerApiService: getMyProfile");
+    return _client.get(ApiEndpoints.userProfile);
+  }
 
   // --- Orders (bookings) ---
-  Future<http.Response> listOrders({Map<String, String>? query}) =>
-      _client.get(ApiEndpoints.orderList, query: query);
+  Future<http.Response> listOrders({Map<String, String>? query}) {
+    debugPrint("📡 CustomerApiService: listOrders query=$query");
+    return _client.get(ApiEndpoints.orderList, query: query);
+  }
 
   Future<http.Response> listOrdersByStatus(
     String status, {
     Map<String, String>? query,
-  }) =>
-      _client.get(ApiEndpoints.ordersByStatus(status), query: query);
+  }) {
+    debugPrint("📡 CustomerApiService: listOrdersByStatus status=$status query=$query");
+    return _client.get(ApiEndpoints.ordersByStatus(status), query: query);
+  }
 
   /// Multipart: text fields + file field name `photos` (up to 5) per backend.
   Future<http.Response> createOrder({
     required Map<String, String> fields,
     List<http.MultipartFile> photos = const [],
   }) {
+    debugPrint("📡 CustomerApiService: createOrder fields=$fields");
     return _client.postMultipart(
       ApiEndpoints.orderCreate,
       fields: fields,

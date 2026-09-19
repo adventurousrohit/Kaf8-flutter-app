@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../Controller/user_profile_controller.dart';
+import '../Utils/avatar_widget.dart';
 import '../Utils/responsiveUtils.dart';
 
 class PersonalInformationScreen extends StatelessWidget {
@@ -7,42 +10,36 @@ class PersonalInformationScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final profileCtrl = Get.find<UserProfileController>();
     final fontScale = ResponsiveUtils.fontScale(context);
     final size = MediaQuery.of(context).size;
-
-    final List<Map<String, String>> fields = [
-      {'label': 'Name',          'value': 'Dang Dinh Bao'},
-      {'label': 'Email',         'value': 'dangdinhbao0318@gmail.com'},
-      {'label': 'Date of birth', 'value': '07/03/2003'},
-      {'label': 'Gender',        'value': 'Male'},
-    ];
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFEAF4FB),
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Stack(
         children: [
-          // Background shapes
           Positioned(top: 0, left: 0,
             child: Image.asset('assets/images/bg_top_left.png',
               width: size.width * 0.60, fit: BoxFit.contain,
-              opacity: const AlwaysStoppedAnimation(0.18))),
+              opacity: AlwaysStoppedAnimation(isDark ? 0.05 : 0.18))),
           Positioned(top: 0, right: 0,
             child: Transform(alignment: Alignment.center,
               transform: Matrix4.rotationY(3.14159),
               child: Image.asset('assets/images/bg_bottom_right.png',
                 width: size.width * 0.36, fit: BoxFit.contain,
-                opacity: const AlwaysStoppedAnimation(0.13)))),
+                opacity: AlwaysStoppedAnimation(isDark ? 0.04 : 0.13)))),
           Positioned(bottom: 0, right: 0,
             child: Image.asset('assets/images/bg_bottom_right.png',
               width: size.width * 0.55, fit: BoxFit.contain,
-              opacity: const AlwaysStoppedAnimation(0.28))),
+              opacity: AlwaysStoppedAnimation(isDark ? 0.08 : 0.28))),
 
           SafeArea(
             child: Column(
               children: [
-                // Header
                 Container(
-                  color: Colors.white,
+                  color: theme.appBarTheme.backgroundColor,
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   child: Row(
                     children: [
@@ -52,17 +49,17 @@ class PersonalInformationScreen extends StatelessWidget {
                           width: 36, height: 36,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            border: Border.all(color: Colors.grey[400]!, width: 1.5),
-                            color: Colors.white.withOpacity(0.6)),
-                          child: const Icon(Icons.arrow_back_ios_new,
-                              size: 15, color: Colors.black),
+                            border: Border.all(color: isDark ? Colors.white24 : Colors.grey[400]!, width: 1.5)),
+                          child: Icon(Icons.arrow_back_ios_new,
+                              size: 15, color: theme.iconTheme.color),
                         ),
                       ),
                       const Spacer(),
-                      Text("Personal Information",
+                      Text('personal_info_title'.tr,
                         style: GoogleFonts.inter(
                             fontSize: 17 * fontScale,
-                            fontWeight: FontWeight.w600)),
+                            fontWeight: FontWeight.w600,
+                            color: theme.textTheme.titleLarge?.color)),
                       const Spacer(),
                       const SizedBox(width: 36),
                     ],
@@ -70,58 +67,86 @@ class PersonalInformationScreen extends StatelessWidget {
                 ),
 
                 Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(20),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [BoxShadow(
-                          color: Colors.black.withOpacity(0.04),
-                          blurRadius: 8, offset: const Offset(0, 2))],
-                      ),
+                  child: Obx(() {
+                    if (profileCtrl.isLoading.value && profileCtrl.profile.value == null) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    final p = profileCtrl.profile.value ?? {};
+                    final displayName = profileCtrl.displayName;
+
+                    final fields = [
+                      {'label': 'full_name'.tr, 'value': displayName.isNotEmpty ? displayName : '—'},
+                      {'label': 'email'.tr,     'value': p['email']  ?? '—'},
+                      {'label': 'phone'.tr,     'value': p['phone']  ?? '—'},
+                      {'label': 'role'.tr,      'value': p['role']   ?? '—'},
+                    ];
+
+                    return SingleChildScrollView(
+                      padding: const EdgeInsets.all(20),
                       child: Column(
-                        children: List.generate(fields.length, (i) {
-                          return Column(
-                            children: [
-                              InkWell(
-                                onTap: () {},
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 14),
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(fields[i]['label']!,
-                                              style: GoogleFonts.inter(
-                                                  fontSize: 12 * fontScale,
-                                                  color: Colors.grey[500])),
-                                            const SizedBox(height: 4),
-                                            Text(fields[i]['value']!,
-                                              style: GoogleFonts.inter(
-                                                  fontSize: 15 * fontScale,
-                                                  color: Colors.black87)),
-                                          ],
-                                        ),
+                        children: [
+                          const SizedBox(height: 8),
+
+                          // ── Avatar ────────────────────────────────
+                          AvatarWidget(
+                            avatarUrl: profileCtrl.avatarUrl,
+                            name: displayName,
+                            radius: 46,
+                          ),
+
+                          const SizedBox(height: 20),
+
+                          // ── Info card ─────────────────────────────
+                          Container(
+                            decoration: BoxDecoration(
+                              color: theme.cardColor,
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [BoxShadow(
+                                color: Colors.black.withOpacity(0.04),
+                                blurRadius: 8, offset: const Offset(0, 2))],
+                            ),
+                            child: Column(
+                              children: List.generate(fields.length, (i) {
+                                return Column(
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 16, vertical: 14),
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(fields[i]['label']!,
+                                                  style: GoogleFonts.inter(
+                                                      fontSize: 12 * fontScale,
+                                                      color: Colors.grey[500])),
+                                                const SizedBox(height: 4),
+                                                Text(
+                                                  fields[i]['value']?.toString() ?? '—',
+                                                  style: GoogleFonts.inter(
+                                                      fontSize: 15 * fontScale,
+                                                      color: theme.textTheme.bodyLarge?.color?.withOpacity(0.87))),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      const Icon(Icons.chevron_right,
-                                          color: Colors.grey, size: 20),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              if (i < fields.length - 1)
-                                const Divider(height: 1, thickness: 0.8,
-                                    indent: 16, endIndent: 16),
-                            ],
-                          );
-                        }),
+                                    ),
+                                    if (i < fields.length - 1)
+                                      Divider(height: 1, thickness: 0.8,
+                                          indent: 16, endIndent: 16, color: theme.dividerColor),
+                                  ],
+                                );
+                              }),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  ),
+                    );
+                  }),
                 ),
               ],
             ),

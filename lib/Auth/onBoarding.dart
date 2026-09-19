@@ -14,8 +14,11 @@ class OnBoardings extends StatelessWidget {
   Widget build(BuildContext context) {
 
     final controller = Get.put(OnBoardingController());
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: AppColors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -47,7 +50,7 @@ class OnBoardings extends StatelessWidget {
                               textAlign: TextAlign.center,
                               fontSize: 24,
                               fontWeight: FontWeight.w700,
-                              color: AppColors.blackBlue,
+                              color: theme.textTheme.titleLarge?.color,
                             ),
                           ),
                           const SizedBox(height: 15),
@@ -58,7 +61,7 @@ class OnBoardings extends StatelessWidget {
                               textAlign: TextAlign.center,
                               fontSize: 14,
                               fontWeight: FontWeight.w400,
-                              color: Colors.black,
+                              color: theme.textTheme.bodyMedium?.color,
                               height: 1.5,
                             ),
                           ),
@@ -84,8 +87,8 @@ class OnBoardings extends StatelessWidget {
                           width: controller.currentPage == index ? 6 : 7,
                           decoration: BoxDecoration(
                             color: controller.currentPage == index
-                                ? Color(0XFF00C853)
-                                : Colors.grey.shade300,
+                                ? const Color(0XFF00C853)
+                                : (isDark ? Colors.white24 : Colors.grey.shade300),
                             borderRadius: BorderRadius.circular(5),
                           ),
                         ),
@@ -99,17 +102,17 @@ class OnBoardings extends StatelessWidget {
                           Expanded(
                             child: BahamasButton(
                               height: 52,
-                              buttonColor: Color(0XFFECF1E8),
-                              onTap: () => Get.to(RoleSelectionScreen()),
+                              buttonColor: isDark ? Colors.white10 : const Color(0XFFECF1E8),
+                              onTap: () => Get.to(const RoleSelectionScreen()),
                               buttonText: "Skip",
-                              radius: BorderRadius.circular(12), textColor: Color(0XFF00C853),
+                              radius: BorderRadius.circular(12), textColor: const Color(0XFF00C853),
                             ),
                           ),
                           const SizedBox(width: 10),
                           Expanded(
                             flex: 2,
                             child: BahamasButton(
-                              buttonColor: Color(0XFF00C853),
+                              buttonColor: const Color(0XFF00C853),
                               height: 52,
                               radius: BorderRadius.circular(12),
                               onTap: () => controller.onNextClicked(),

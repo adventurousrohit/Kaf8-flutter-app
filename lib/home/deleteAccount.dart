@@ -41,9 +41,12 @@ class _DeleteaccountState extends State<Deleteaccount> {
     final scale = ResponsiveUtils.componentScale(context);
     final padding = ResponsiveUtils.paddingScale(context) * 16;
     final fontScale = ResponsiveUtils.fontScale(context);
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
 
     return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -54,7 +57,7 @@ class _DeleteaccountState extends State<Deleteaccount> {
                 children: [
                   IconButton(
                     onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.arrow_back),
+                    icon: Icon(Icons.arrow_back, color: theme.iconTheme.color),
                   ),
                   const Spacer(),
                   Image.asset(
@@ -70,6 +73,7 @@ class _DeleteaccountState extends State<Deleteaccount> {
                 style: GoogleFonts.inter(
                   fontSize: 32,
                   fontWeight: FontWeight.w700,
+                  color: theme.textTheme.titleLarge?.color,
                 ),
               ),
               const SizedBox(height: 10),
@@ -79,6 +83,7 @@ class _DeleteaccountState extends State<Deleteaccount> {
                 style: GoogleFonts.inter(
                   fontSize: 15,
                   fontWeight: FontWeight.w400,
+                  color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
                 ),
               ),
 
@@ -87,28 +92,30 @@ class _DeleteaccountState extends State<Deleteaccount> {
               // const SizedBox(height: 5),
               TextField(
                 controller: emailController, // ✅ attach
+                style: GoogleFonts.inter(color: theme.textTheme.bodyLarge?.color),
                 decoration: InputDecoration(
                   hintText: "Enter \"CONFIRM\"",
+                  hintStyle: GoogleFonts.inter(color: Colors.grey[400]),
                   filled: true,
-                  fillColor: Colors.white,
-                  contentPadding: EdgeInsets.all(8),
+                  fillColor: theme.cardColor,
+                  contentPadding: const EdgeInsets.all(8),
 
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide(
-                          color: Appcolor.greyColors,
+                          color: theme.dividerColor,
                           width: 0
                       )                  ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide(
-                      color: Appcolor.greyColor,
+                      color: theme.dividerColor,
                       width: 1,
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(
+                      borderSide: const BorderSide(
                         color: Appcolor.secondaryColor,
                       )
                   ),

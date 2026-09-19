@@ -12,7 +12,11 @@ class TrackingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Stack(
         children: [
 
@@ -20,11 +24,11 @@ class TrackingScreen extends StatelessWidget {
           Container(
             width: double.infinity,
             height: double.infinity,
-            color: Colors.grey.shade300,
+            color: isDark ? Colors.black26 : Colors.grey.shade300,
             child: Center(
               child: Text(
                 "MAP VIEW",
-                style: TextStyle(fontSize: 20, color: Colors.grey),
+                style: TextStyle(fontSize: 20, color: isDark ? Colors.white24 : Colors.grey),
               ),
             ),
           ),
@@ -38,33 +42,34 @@ class TrackingScreen extends StatelessWidget {
 
                   GestureDetector(
                     onTap: () => Get.to(() => const MyProfileScreen()),
-                    child: CircleAvatar(
+                    child: const CircleAvatar(
                       backgroundImage: NetworkImage(
                           "https://randomuser.me/api/portraits/men/32.jpg"),
                     ),
                   ),
 
-                  Spacer(),
+                  const Spacer(),
 
                   Text(
                     "Map",
                     style: TextStyle(
                         fontSize: 18,
-                        fontWeight: FontWeight.w600),
+                        fontWeight: FontWeight.w600,
+                        color: theme.textTheme.titleLarge?.color),
                   ),
 
-                  Spacer(),
+                  const Spacer(),
 
-                  Icon(Icons.notifications_none),
-                  SizedBox(width: 10),
-                  Icon(Icons.menu),
+                  Icon(Icons.notifications_none, color: theme.iconTheme.color),
+                  const SizedBox(width: 10),
+                  Icon(Icons.menu, color: theme.iconTheme.color),
                 ],
               ),
             ),
           ),
 
           /// 📍 PICKUP POINT
-          Positioned(
+          const Positioned(
             top: 200,
             left: 140,
             child: Icon(Icons.location_on,
@@ -72,7 +77,7 @@ class TrackingScreen extends StatelessWidget {
           ),
 
           /// 🚴 DELIVERY POINT
-          Positioned(
+          const Positioned(
             bottom: 260,
             right: 60,
             child: CircleAvatar(
@@ -86,12 +91,12 @@ class TrackingScreen extends StatelessWidget {
             bottom: 300,
             right: 50,
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: theme.cardColor,
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: Text("30 mins"),
+              child: Text("30 mins", style: TextStyle(color: theme.textTheme.bodyMedium?.color)),
             ),
           ),
 
@@ -101,10 +106,10 @@ class TrackingScreen extends StatelessWidget {
             child: Align(
               alignment: Alignment.bottomCenter,
               child: Container(
-                padding: EdgeInsets.all(15),
+                padding: const EdgeInsets.all(15),
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.all(Radius.circular(20)
+                  color: theme.cardColor,
+                  borderRadius: const BorderRadius.all(Radius.circular(20)
                   ),
                   boxShadow: [
                     BoxShadow(
@@ -120,65 +125,65 @@ class TrackingScreen extends StatelessWidget {
                     /// DRIVER INFO
                     Row(
                       children: [
-                        CircleAvatar(
+                        const CircleAvatar(
                           radius: 25,
                           backgroundImage: NetworkImage(
                               "https://randomuser.me/api/portraits/men/32.jpg"),
                         ),
 
-                        SizedBox(width: 10),
+                        const SizedBox(width: 10),
 
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text("Cliff Rogers",
-                                style: TextStyle(fontWeight: FontWeight.w600,fontSize: 15)),
-                            Text("Delivery guy",
-                                style: TextStyle(fontWeight: FontWeight.w400,fontSize: 12,color: Colors.grey)),
-                          ],
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text("Cliff Rogers",
+                                  style: TextStyle(fontWeight: FontWeight.w600,fontSize: 15, color: theme.textTheme.bodyLarge?.color)),
+                              Text("Delivery guy",
+                                  style: TextStyle(fontWeight: FontWeight.w400,fontSize: 12,color: theme.textTheme.bodySmall?.color)),
+                            ],
+                          ),
                         ),
-
-                        Spacer(),
 
                         /// CHAT BTN
                         InkWell(
                           onTap: (){
-                            Get.to(MessageScreen());
+                            Get.to(const MessageScreen());
 
                           },
                           child: Container(
-                            padding: EdgeInsets.all(8),
+                            padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadius.all(Radius.circular(15)),
-                              color: Colors.grey.shade200,
+                              borderRadius: const BorderRadius.all(Radius.circular(15)),
+                              color: isDark ? Colors.white10 : Colors.grey.shade200,
                               shape: BoxShape.rectangle,
                             ),
-                            child: Icon(Icons.chat_bubble_outline),
+                            child: Icon(Icons.chat_bubble_outline, color: theme.iconTheme.color),
                           ),
                         ),
 
-                        SizedBox(width: 10),
+                        const SizedBox(width: 10),
 
                         /// CALL BTN
                         InkWell(
                           onTap: (){
-                            Get.to(CallScreen());
+                            Get.to(const CallScreen());
 
                           },
                           child: Container(
-                            padding: EdgeInsets.all(8),
+                            padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadius.all(Radius.circular(15)),
-                              color: Colors.grey.shade200,
+                              borderRadius: const BorderRadius.all(Radius.circular(15)),
+                              color: isDark ? Colors.white10 : Colors.grey.shade200,
                               shape: BoxShape.rectangle,
                             ),
-                            child: Icon(Icons.call),
+                            child: Icon(Icons.call, color: theme.iconTheme.color),
                           ),
                         ),
                       ],
                     ),
 
-                    SizedBox(height: 15),
+                    const SizedBox(height: 15),
 
                     /// INFO ROWS
                     Row(
@@ -186,48 +191,48 @@ class TrackingScreen extends StatelessWidget {
                       children: [
                         Row(
                           children: [
-                            Icon(Icons.access_time, size: 18,color: Colors.grey),
-                            SizedBox(width: 5),
+                            const Icon(Icons.access_time, size: 18,color: Colors.grey),
+                            const SizedBox(width: 5),
                             Text("Estimated time",
-                                style: TextStyle(fontWeight: FontWeight.w400,fontSize: 14,color: Colors.grey)),
+                                style: TextStyle(fontWeight: FontWeight.w400,fontSize: 14,color: theme.textTheme.bodySmall?.color)),
 
 
                           ],
                         ),
-                        Text("30mins"),
+                        Text("30mins", style: TextStyle(color: theme.textTheme.bodyMedium?.color)),
                       ],
                     ),
 
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
 
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Row(
                           children: [
-                            Icon(Icons.location_on, size: 18,color: Colors.grey),
-                            SizedBox(width: 5),
+                            const Icon(Icons.location_on, size: 18,color: Colors.grey),
+                            const SizedBox(width: 5),
                             Text("Deliver to",
-                                style: TextStyle(fontWeight: FontWeight.w400,fontSize: 14,color: Colors.grey)),
+                                style: TextStyle(fontWeight: FontWeight.w400,fontSize: 14,color: theme.textTheme.bodySmall?.color)),
 
                           ],
                         ),
-                        Text("Home"),
+                        Text("Home", style: TextStyle(color: theme.textTheme.bodyMedium?.color)),
                       ],
                     ),
 
-                    SizedBox(height: 15),
-                    Divider(color: Colors.black,),
+                    const SizedBox(height: 15),
+                    Divider(color: theme.dividerColor,),
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: InkWell(
                   onTap: (){
-                    Get.to(StatisticsScreen());
+                    Get.to(const StatisticsScreen());
 
                   },
                   child: Text("More details",
                           style: TextStyle(
-                              fontWeight: FontWeight.w700,fontSize: 15)),
+                              fontWeight: FontWeight.w700,fontSize: 15, color: theme.textTheme.bodyLarge?.color)),
                 ),
               ),
 

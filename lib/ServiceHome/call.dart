@@ -31,8 +31,11 @@ class _CallScreenState extends State<CallScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
+    return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -47,16 +50,16 @@ class _CallScreenState extends State<CallScreen>
                     child: Row(
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.arrow_back_ios_new,size: 15,),
+                          icon: Icon(Icons.arrow_back_ios_new,size: 15, color: theme.iconTheme.color),
                           onPressed: () => Navigator.pop(context),
                         ),
-                        SizedBox(width: 0,),
+                        const SizedBox(width: 0,),
                         Text(
                           "Back",
                           style: GoogleFonts.inter(
                             fontSize: 15 ,
                             fontWeight: FontWeight.w700,
-                            color: Colors.black,
+                            color: theme.textTheme.bodyLarge?.color,
                           ),
                         ),
 
@@ -66,9 +69,9 @@ class _CallScreenState extends State<CallScreen>
 
                   const Spacer(),
 
-                  const Text("Call",
+                  Text("Call",
                       style:
-                      TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                      TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: theme.textTheme.titleLarge?.color)),
 
                   const Spacer(),
 
@@ -97,7 +100,7 @@ class _CallScreenState extends State<CallScreen>
                     _buildRing(80, _controller.value, 0.4),
 
                     /// PROFILE IMAGE
-                    CircleAvatar(
+                    const CircleAvatar(
                       radius: 60,
                       backgroundImage: NetworkImage(
                           "https://randomuser.me/api/portraits/men/32.jpg"),
@@ -110,10 +113,10 @@ class _CallScreenState extends State<CallScreen>
             const SizedBox(height: 30),
 
             /// NAME
-            const Text(
+            Text(
               "Cliff Rogers",
               style: TextStyle(
-                  fontSize: 24, fontWeight: FontWeight.bold),
+                  fontSize: 24, fontWeight: FontWeight.bold, color: theme.textTheme.bodyLarge?.color),
             ),
 
             const SizedBox(height: 8),
@@ -132,10 +135,10 @@ class _CallScreenState extends State<CallScreen>
               children: [
 
                 /// VOLUME
-                _circleButton(Icons.volume_up),
+                _circleButton(Icons.volume_up, theme),
 
                 /// MIC
-                _circleButton(Icons.mic),
+                _circleButton(Icons.mic, theme),
 
                 /// END CALL
                 GestureDetector(
@@ -173,14 +176,14 @@ class _CallScreenState extends State<CallScreen>
   }
 
   /// 🔘 COMMON BUTTON
-  Widget _circleButton(IconData icon) {
+  Widget _circleButton(IconData icon, ThemeData theme) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.grey.shade200,
+        color: theme.brightness == Brightness.dark ? Colors.white10 : Colors.grey.shade200,
         shape: BoxShape.circle,
       ),
-      child: Icon(icon),
+      child: Icon(icon, color: theme.iconTheme.color),
     );
   }
 }

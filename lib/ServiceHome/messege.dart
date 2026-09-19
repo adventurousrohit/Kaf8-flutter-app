@@ -7,8 +7,11 @@ class MessageScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F6FA),
+      backgroundColor: theme.scaffoldBackgroundColor,
 
       body: SafeArea(
         child: Column(
@@ -29,17 +32,17 @@ class MessageScreen extends StatelessWidget {
 
                   const Spacer(),
 
-                  const Text(
+                  Text(
                     "Message",
                     style:
-                    TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                    TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: theme.textTheme.titleLarge?.color),
                   ),
 
                   const Spacer(),
 
-                  const Icon(Icons.notifications_none),
+                  Icon(Icons.notifications_none, color: theme.iconTheme.color),
                   const SizedBox(width: 10),
-                  const Icon(Icons.menu),
+                  Icon(Icons.menu, color: theme.iconTheme.color),
                 ],
               ),
             ),
@@ -55,6 +58,7 @@ class MessageScreen extends StatelessWidget {
                   /// LEFT MESSAGE
                   _leftMessage(
                     "Lorem Ipsum is simply dummy text of the printing",
+                    theme,
                   ),
 
                   const SizedBox(height: 10),
@@ -65,19 +69,19 @@ class MessageScreen extends StatelessWidget {
                   const SizedBox(height: 10),
 
                   /// LEFT SMALL
-                  _leftMessage("Lorem Ipsum"),
+                  _leftMessage("Lorem Ipsum", theme),
 
                   const SizedBox(height: 10),
 
                   /// LEFT BIG + TIME
                   _leftMessageWithTime(
-                      "Lorem Ipsum is simply dummy text of the printing"),
+                      "Lorem Ipsum is simply dummy text of the printing", theme),
                 ],
               ),
             ),
 
             /// ✍️ INPUT BAR
-            _inputBar(),
+            _inputBar(theme),
           ],
         ),
       ),
@@ -85,7 +89,7 @@ class MessageScreen extends StatelessWidget {
   }
 
   /// 🔹 LEFT MESSAGE
-  Widget _leftMessage(String text) {
+  Widget _leftMessage(String text, ThemeData theme) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -99,10 +103,10 @@ class MessageScreen extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           constraints: const BoxConstraints(maxWidth: 250),
           decoration: BoxDecoration(
-            color: Colors.grey.shade300,
+            color: theme.cardColor,
             borderRadius: BorderRadius.circular(20),
           ),
-          child: Text(text),
+          child: Text(text, style: TextStyle(color: theme.textTheme.bodyMedium?.color)),
         ),
       ],
     );
@@ -135,11 +139,11 @@ class MessageScreen extends StatelessWidget {
   }
 
   /// 🔹 LEFT WITH TIME
-  Widget _leftMessageWithTime(String text) {
+  Widget _leftMessageWithTime(String text, ThemeData theme) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _leftMessage(text),
+        _leftMessage(text, theme),
         const SizedBox(height: 4),
         Row(
           children: const [
@@ -155,10 +159,10 @@ class MessageScreen extends StatelessWidget {
   }
 
   /// 🔹 INPUT BAR
-  Widget _inputBar() {
+  Widget _inputBar(ThemeData theme) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      color: Colors.white,
+      color: theme.cardColor,
       child: Row(
         children: [
 
@@ -173,10 +177,12 @@ class MessageScreen extends StatelessWidget {
           const SizedBox(width: 10),
 
           /// ✍️ TEXT FIELD
-          const Expanded(
+          Expanded(
             child: TextField(
+              style: TextStyle(color: theme.textTheme.bodyLarge?.color),
               decoration: InputDecoration(
                 hintText: "Enter message...",
+                hintStyle: TextStyle(color: Colors.grey[400]),
                 border: InputBorder.none,
               ),
             ),

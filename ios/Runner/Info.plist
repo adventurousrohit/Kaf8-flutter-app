@@ -66,5 +66,15 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>KAF8 uses your location to show nearby carriers and set your pickup address.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>KAF8 uses your location to track deliveries in real time.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>KAF8 uses the camera to upload your profile photo and vehicle documents.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>KAF8 accesses your photo library to upload profile and document images.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>KAF8 may use the microphone for voice features.</string>
 </dict>
 </plist>

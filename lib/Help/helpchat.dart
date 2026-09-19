@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../Utils/appColor.dart';
+import 'package:kaf8/driverHome/call_screen.dart';
 import '../Utils/responsiveUtils.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -128,20 +130,22 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
   Widget build(BuildContext context) {
     final fontScale = ResponsiveUtils.fontScale(context);
     final size      = MediaQuery.of(context).size;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Stack(
         children: [
           // Background shapes
           Positioned(top: 0, left: 0,
               child: Image.asset('assets/images/bg_top_left.png',
                   width: size.width * 0.55, fit: BoxFit.contain,
-                  opacity: const AlwaysStoppedAnimation(0.10))),
+                  opacity: AlwaysStoppedAnimation(isDark ? 0.05 : 0.10))),
           Positioned(bottom: 0, right: 0,
               child: Image.asset('assets/images/bg_bottom_right.png',
                   width: size.width * 0.45, fit: BoxFit.contain,
-                  opacity: const AlwaysStoppedAnimation(0.18))),
+                  opacity: AlwaysStoppedAnimation(isDark ? 0.08 : 0.18))),
 
           SafeArea(
             child: Column(
@@ -152,7 +156,7 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
                       horizontal: 16, vertical: 12),
                   child: Row(
                     children: [
-                      _circleBack(context),
+                      _circleBack(context, theme),
                       const Spacer(),
                       Text("Help Chat",
                           style: GoogleFonts.inter(
@@ -177,7 +181,7 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
                             style: GoogleFonts.inter(
                                 fontSize: 16 * fontScale,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.black)),
+                                color: theme.textTheme.bodyLarge?.color)),
                         const SizedBox(height: 16),
 
                         // ── Top-level categories ──────────────────────
@@ -194,6 +198,7 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
                                 checked: catChecked,
                                 fontScale: fontScale,
                                 bold: false,
+                                theme: theme,
                                 onTap: () => _onCategoryTap(i),
                               ),
 
@@ -213,6 +218,7 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
                                         checked: subChecked,
                                         fontScale: fontScale,
                                         bold: false,
+                                        theme: theme,
                                         onTap: () => _onSubTap(sub),
                                       );
                                     }).toList(),
@@ -226,13 +232,13 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
                                       style: GoogleFonts.inter(
                                           fontSize: 15 * fontScale,
                                           fontWeight: FontWeight.w600,
-                                          color: Colors.black)),
+                                          color: theme.textTheme.bodyLarge?.color)),
                                   const SizedBox(height: 8),
                                   TextField(
                                     controller: _commentController,
                                     maxLines: 4,
                                     style: GoogleFonts.inter(
-                                        fontSize: 13 * fontScale),
+                                        fontSize: 13 * fontScale, color: theme.textTheme.bodyLarge?.color),
                                     decoration: InputDecoration(
                                       hintText:
                                       "please write your comment here",
@@ -241,19 +247,19 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
                                           fontSize: 13 * fontScale),
                                       filled: true,
                                       fillColor:
-                                      const Color(0xFFF8F8F8),
+                                      theme.cardColor,
                                       contentPadding:
                                       const EdgeInsets.all(12),
                                       border: OutlineInputBorder(
                                           borderRadius:
                                           BorderRadius.circular(10),
                                           borderSide: BorderSide(
-                                              color: Colors.grey[200]!)),
+                                              color: theme.dividerColor)),
                                       enabledBorder: OutlineInputBorder(
                                           borderRadius:
                                           BorderRadius.circular(10),
                                           borderSide: BorderSide(
-                                              color: Colors.grey[200]!)),
+                                              color: theme.dividerColor)),
                                       focusedBorder: OutlineInputBorder(
                                           borderRadius:
                                           BorderRadius.circular(10),
@@ -265,21 +271,27 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
                                   const SizedBox(height: 16),
 
                                   // "Still Need A Call? Call Now"
-                                  RichText(
-                                    text: TextSpan(
-                                      text: "Still Need A Call? ",
-                                      style: GoogleFonts.inter(
-                                          fontSize: 13 * fontScale,
-                                          color: Colors.green),
-                                      children: [
-                                        TextSpan(
-                                          text: "Call Now",
-                                          style: GoogleFonts.inter(
-                                              fontSize: 13 * fontScale,
-                                              fontWeight: FontWeight.w700,
-                                              color: Colors.green),
-                                        ),
-                                      ],
+                                  GestureDetector(
+                                    onTap: () => Get.to(() => const CallScreen(
+                                          name: 'Customer Support',
+                                          duration: 'Connecting...',
+                                        )),
+                                    child: RichText(
+                                      text: TextSpan(
+                                        text: "Still Need A Call? ",
+                                        style: GoogleFonts.inter(
+                                            fontSize: 13 * fontScale,
+                                            color: Colors.green),
+                                        children: [
+                                          TextSpan(
+                                            text: "Call Now",
+                                            style: GoogleFonts.inter(
+                                                fontSize: 13 * fontScale,
+                                                fontWeight: FontWeight.w700,
+                                                color: Colors.green),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -333,6 +345,7 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
     required bool checked,
     required double fontScale,
     required bool bold,
+    required ThemeData theme,
     required VoidCallback onTap,
   }) {
     return InkWell(
@@ -346,10 +359,10 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
             Container(
               width: 20, height: 20,
               decoration: BoxDecoration(
-                color: checked ? Colors.green : Colors.white,
+                color: checked ? Colors.green : theme.cardColor,
                 borderRadius: BorderRadius.circular(4),
                 border: Border.all(
-                  color: checked ? Colors.green : Colors.grey[350]!,
+                  color: checked ? Colors.green : (theme.brightness == Brightness.dark ? Colors.white24 : Colors.grey[350]!),
                   width: 1.5,
                 ),
               ),
@@ -364,7 +377,7 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
                       fontSize: 14 * fontScale,
                       fontWeight:
                       bold ? FontWeight.w600 : FontWeight.w400,
-                      color: Colors.black87)),
+                      color: theme.textTheme.bodyLarge?.color?.withOpacity(0.87))),
             ),
           ],
         ),
@@ -373,14 +386,14 @@ class _HelpChatScreenState extends State<HelpChatScreen> {
   }
 }
 
-Widget _circleBack(BuildContext context) => GestureDetector(
+Widget _circleBack(BuildContext context, ThemeData theme) => GestureDetector(
   onTap: () => Navigator.pop(context),
   child: Container(
     width: 36, height: 36,
     decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(color: Colors.grey[800]!, width: 1.8)),
-    child: const Icon(Icons.arrow_back_ios_new,
-        size: 15, color: Colors.black),
+        border: Border.all(color: theme.brightness == Brightness.dark ? Colors.white24 : Colors.grey[800]!, width: 1.8)),
+    child: Icon(Icons.arrow_back_ios_new,
+        size: 15, color: theme.iconTheme.color),
   ),
 );

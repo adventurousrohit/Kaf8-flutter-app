@@ -2,21 +2,39 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class CallScreen extends StatelessWidget {
-  const CallScreen({super.key});
+  final String? name;
+  final String? avatarUrl;
+  final String? duration;
+
+  const CallScreen({
+    super.key,
+    this.name,
+    this.avatarUrl,
+    this.duration,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    final displayName = name ?? 'Rao Zulqurnain';
+    final displayAvatar = avatarUrl ?? 'https://randomuser.me/api/portraits/men/33.jpg';
+    final displayDuration = duration ?? '02:25';
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
-            _buildAppBar(context),
+            _buildAppBar(context, theme),
             Expanded(
               child: Container(
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [Color(0xFFEAF4FB), Colors.white],
+                    colors: isDark
+                        ? [theme.scaffoldBackgroundColor, theme.scaffoldBackgroundColor]
+                        : [const Color(0xFFEAF4FB), Colors.white],
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                   ),
@@ -40,25 +58,24 @@ class CallScreen extends StatelessWidget {
                                 spreadRadius: 10)
                           ],
                         ),
-                        child: const CircleAvatar(
+                        child: CircleAvatar(
                           radius: 70,
-                          backgroundImage: NetworkImage(
-                              'https://randomuser.me/api/portraits/men/33.jpg'),
+                          backgroundImage: NetworkImage(displayAvatar),
                         ),
                       ),
                       const SizedBox(height: 28),
 
                       // ── Name ──────────────────────────────────────────
                       Text(
-                        'Rao Zulqurnain',
+                        displayName,
                         style: GoogleFonts.inter(
-                            fontSize: 24, fontWeight: FontWeight.w800),
+                            fontSize: 24, fontWeight: FontWeight.w800, color: theme.textTheme.bodyLarge?.color),
                       ),
                       const SizedBox(height: 8),
 
                       // ── Duration ─────────────────────────────────────
                       Text(
-                        '02:25',
+                        displayDuration,
                         style: GoogleFonts.inter(
                             fontSize: 16, color: Colors.grey[500]),
                       ),
@@ -71,14 +88,14 @@ class CallScreen extends StatelessWidget {
                         children: [
                           _callBtn(
                               icon: Icons.volume_up_outlined,
-                              color: Colors.grey[200]!,
-                              iconColor: Colors.black87,
+                              color: isDark ? Colors.white10 : Colors.grey[200]!,
+                              iconColor: theme.iconTheme.color!,
                               onTap: () {}),
                           const SizedBox(width: 24),
                           _callBtn(
                               icon: Icons.mic_none_outlined,
-                              color: Colors.grey[200]!,
-                              iconColor: Colors.black87,
+                              color: isDark ? Colors.white10 : Colors.grey[200]!,
+                              iconColor: theme.iconTheme.color!,
                               onTap: () {}),
                           const SizedBox(width: 24),
                           _callBtn(
@@ -100,20 +117,20 @@ class CallScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildAppBar(BuildContext context) {
+  Widget _buildAppBar(BuildContext context, ThemeData theme) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
       child: Row(
         children: [
           GestureDetector(
             onTap: () => Navigator.of(context).pop(),
-            child: const Icon(Icons.arrow_back_ios_new,
-                size: 20, color: Colors.black87),
+            child: Icon(Icons.arrow_back_ios_new,
+                size: 20, color: theme.iconTheme.color),
           ),
           const SizedBox(width: 10),
           Text('Call',
               style: GoogleFonts.inter(
-                  fontSize: 20, fontWeight: FontWeight.w700)),
+                  fontSize: 20, fontWeight: FontWeight.w700, color: theme.textTheme.titleLarge?.color)),
         ],
       ),
     );

@@ -3,6 +3,7 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_instance/src/extension_instance.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
 import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
+import 'package:get/get_utils/src/extensions/internacionalization.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kaf8/Auth/customerstartingscreen.dart';
 import 'package:kaf8/Service/api_service.dart';
@@ -24,10 +25,13 @@ class SettingScreens extends StatelessWidget {
     final LanguageController langController = Get.put(LanguageController());
     final SwitchController switchController = Get.put(SwitchController());
     final themeController = Get.find<ThemeController>();
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: theme.appBarTheme.backgroundColor,
         elevation: 0,
         centerTitle: true,
         leadingWidth: 100,
@@ -36,12 +40,12 @@ class SettingScreens extends StatelessWidget {
           child: Row(
             children: [
               const SizedBox(width: 10),
-              const Icon(Icons.arrow_back_ios, color: Colors.black, size: 18),
+              Icon(Icons.arrow_back_ios, color: theme.iconTheme.color, size: 18),
               const SizedBox(width: 4),
               Text(
                 "Back",
                 style: GoogleFonts.poppins(
-                  color: Colors.black,
+                  color: theme.textTheme.bodyLarge?.color,
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
                 ),
@@ -51,7 +55,7 @@ class SettingScreens extends StatelessWidget {
         ),
         title: Text(
           "Setting",
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 17),
+          style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 17, color: theme.textTheme.titleLarge?.color),
         ),
       ),
       body: Padding(
@@ -63,13 +67,13 @@ class SettingScreens extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text("General",style: GoogleFonts.poppins(fontSize: 12,
-                  fontWeight: FontWeight.w600,color: Color(0XFF70756B)),
+                  fontWeight: FontWeight.w600,color: isDark ? Colors.white70 : const Color(0XFF70756B)),
               ),
-              SizedBox(height: 9,),
+              const SizedBox(height: 9,),
               MenuItemWidget(imagePath:  AppAssets.switchAccount, title: "Switch Account",
                   onTap:()=> print("switch Account")
               ),
-              SizedBox(height: 9,),
+              const SizedBox(height: 9,),
               Obx(() => LanguageMenuItemWidget(
                 imagePath: AppAssets.language,
                 title: "Language",
@@ -79,62 +83,39 @@ class SettingScreens extends StatelessWidget {
 
                 },
               )),
-              SizedBox(height: 10,),
-              Obx(() => Container(
-                margin: const EdgeInsets.only(bottom: 10),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: const Color(0XFFF9FAF8),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.dark_mode, size: 20),
-                    const SizedBox(width: 15),
-
-                    const Expanded(
-                      child: Text(
-                        "Dark mode",
-                        style: TextStyle(fontSize: 15),
-                      ),
-                    ),
-
-                    Switch(
-                      value: themeController.themeMode.value == ThemeMode.dark, // ✅ bind
-                      onChanged: (val) {
-                        themeController.toggleTheme(); // ✅ toggle
-                      },
-                      activeColor: Colors.white,
-                    ),
-                  ],
-                ),
+               const SizedBox(height: 10,),
+              Obx(() => MenuSwitchWidget(
+                icon: Icons.dark_mode,
+                title: "dark_mode".tr,
+                value: themeController.themeMode.value == ThemeMode.dark,
+                onChanged: (val) => themeController.toggleTheme(),
               )),
-              SizedBox(height: 10,),
+              const SizedBox(height: 10,),
               Text("Others",style: GoogleFonts.poppins(fontSize: 12,
-                  fontWeight: FontWeight.w600,color: Color(0XFF70756B)),
+                  fontWeight: FontWeight.w600,color: isDark ? Colors.white70 : const Color(0XFF70756B)),
               ),
-              SizedBox(height: 9,),
+              const SizedBox(height: 9,),
               MenuItemWidget(imagePath:  AppAssets.privacy, title: "Privacy Policy",
                   onTap:()=> print("policy")
               ),
-              SizedBox(height: 9,),
+              const SizedBox(height: 9,),
               MenuItemWidget(imagePath:  AppAssets.support, title: "Customer Support",
                   onTap:()=> print("support")
               ),
-              SizedBox(height: 9,),
+              const SizedBox(height: 9,),
               MenuItemWidget(imagePath:  AppAssets.terms, title: "Terms & Conditions",
                   onTap:()=> print("terms")
               ),
-              SizedBox(height: 10,),
+              const SizedBox(height: 10,),
               Text("Danger Actions",style: GoogleFonts.poppins(fontSize: 12,
-                  fontWeight: FontWeight.w600,color: Color(0XFF70756B)),
+                  fontWeight: FontWeight.w600,color: isDark ? Colors.white70 : const Color(0XFF70756B)),
               ),
-              SizedBox(height: 9,),
+              const SizedBox(height: 9,),
               MenuItemWidget(imagePath:  AppAssets.delete, title: "Delete Account",
-                onTap: () => Get.to(Deleteaccount()),
+                onTap: () => Get.to(const Deleteaccount()),
 
     ),
-              SizedBox(height: 9,),
+              const SizedBox(height: 9,),
               MenuItemWidget(imagePath:  AppAssets.logouts, title: "Log out",
                   onTap: () {
                     showDialog(
@@ -145,6 +126,7 @@ class SettingScreens extends StatelessWidget {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(20),
                           ),
+                          backgroundColor: theme.cardColor,
                           child: Padding(
                             padding: const EdgeInsets.all(20),
                             child: Column(
@@ -153,22 +135,23 @@ class SettingScreens extends StatelessWidget {
                               children: [
 
                                 /// TITLE
-                                const Text(
+                                Text(
                                   "Are you sure?",
                                   style: TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.w700,
+                                    color: theme.textTheme.titleLarge?.color,
                                   ),
                                 ),
 
                                 const SizedBox(height: 8),
 
                                 /// SUBTITLE
-                                const Text(
+                                Text(
                                   "Are you sure, you want to log out from this account?",
                                   style: TextStyle(
                                     fontSize: 14,
-                                    color: Colors.grey,
+                                    color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
                                   ),
                                 ),
 
@@ -188,13 +171,14 @@ class SettingScreens extends StatelessWidget {
                                           height: 45,
                                           alignment: Alignment.center,
                                           decoration: BoxDecoration(
-                                            color: Colors.grey.shade200,
+                                            color: isDark ? Colors.white10 : Colors.grey.shade200,
                                             borderRadius: BorderRadius.circular(10),
                                           ),
-                                          child: const Text(
+                                          child: Text(
                                             "Cancel",
                                             style: TextStyle(
                                               fontWeight: FontWeight.w600,
+                                              color: theme.textTheme.bodyLarge?.color,
                                             ),
                                           ),
                                         ),

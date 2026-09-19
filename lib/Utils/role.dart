@@ -24,29 +24,24 @@ class RoleCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final scale = ResponsiveUtils.componentScale(context);
     final fontScale = ResponsiveUtils.fontScale(context);
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFFFFF),
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(23),
-        border: Border.all(color: Colors.grey.shade300, width: 1.18),
-        // border: Border.all(color: const Color(0xFFE4F3FF), width: 1.18),
-        // boxShadow: [
-        //   BoxShadow(
-        //     color: const Color(0x40C5E6FF),
-        //     spreadRadius: 5.34,
-        //     blurRadius: 17.2,
-        //     offset: const Offset(5.34, 5.34),
-        //   ),
-        // ],
+        border: Border.all(
+            color: isSelected ? theme.primaryColor : theme.dividerColor,
+            width: 1.18),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey.shade300, width: 1.02),
+              border: Border.all(color: theme.dividerColor, width: 1.02),
               borderRadius: BorderRadius.circular(50),
             ),
             child: Image.asset(
@@ -65,7 +60,7 @@ class RoleCard extends StatelessWidget {
                   style: GoogleFonts.inter(
                     fontSize: 18 * fontScale,
                     fontWeight: FontWeight.w500,
-                    color: Colors.black,
+                    color: theme.textTheme.titleLarge?.color,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -74,7 +69,7 @@ class RoleCard extends StatelessWidget {
                   style: GoogleFonts.inter(
                     fontSize: 14 * fontScale,
                     fontWeight: FontWeight.w400,
-                    color: const Color(0xFF2E2E2C),
+                    color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
                   ),
                 ),
               ],
@@ -86,14 +81,14 @@ class RoleCard extends StatelessWidget {
             height: 24,
             child: CircleAvatar(
               backgroundColor: isSelected
-                  ? Appcolor.primaryColor
-                  : const Color(0xFFE6F0FA),
+                  ? theme.primaryColor
+                  : theme.dividerColor.withOpacity(0.1),
               child: Icon(
                 isSelected
                     ? Icons.radio_button_checked
                     : Icons.radio_button_unchecked,
                 size: 16,
-                color: isSelected ? Colors.white : Appcolor.primaryColor,
+                color: isSelected ? Colors.white : theme.primaryColor,
               ),
             ),
           ),

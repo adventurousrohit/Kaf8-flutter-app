@@ -14,10 +14,13 @@ class EditCardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final SwitchController switchController = Get.put(SwitchController());
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: theme.appBarTheme.backgroundColor,
         elevation: 0,
         centerTitle: true,
         leadingWidth: 100,
@@ -26,12 +29,12 @@ class EditCardScreen extends StatelessWidget {
           child: Row(
             children: [
               const SizedBox(width: 10),
-              const Icon(Icons.arrow_back_ios, color: Colors.black, size: 18),
+              Icon(Icons.arrow_back_ios, color: theme.iconTheme.color, size: 18),
               const SizedBox(width: 4),
               Text(
                 "Back",
                 style: GoogleFonts.poppins(
-                  color: Colors.black,
+                  color: theme.textTheme.bodyLarge?.color,
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
                 ),
@@ -39,10 +42,10 @@ class EditCardScreen extends StatelessWidget {
             ],
           ),
         ),
-        title: Text("Edit a card ",style: GoogleFonts.poppins(fontWeight: FontWeight.bold,fontSize: 17),),
+        title: Text("Edit a card ",style: GoogleFonts.poppins(fontWeight: FontWeight.bold,fontSize: 17, color: theme.textTheme.titleLarge?.color),),
         actions: [
           IconButton(
-            icon: const Icon(Icons.more_vert, color: Colors.black),
+            icon: Icon(Icons.more_vert, color: theme.iconTheme.color),
             onPressed: () {},
           ),        ],
       ),
@@ -55,7 +58,7 @@ class EditCardScreen extends StatelessWidget {
               margin: const EdgeInsets.only(bottom: 10),
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: const Color(0XFFF9FAF8),
+                color: theme.cardColor,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
@@ -67,6 +70,7 @@ class EditCardScreen extends StatelessWidget {
                       style: GoogleFonts.poppins(
                         fontSize: 15,
                         fontWeight: FontWeight.w500,
+                        color: theme.textTheme.bodyLarge?.color,
                       ),
                     ),
                   ),
@@ -83,28 +87,28 @@ class EditCardScreen extends StatelessWidget {
                 ],
               ),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: Divider(thickness: 1, color: Color(0XFFE8EBE6)),
+              child: Divider(thickness: 1, color: theme.dividerColor),
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             DeliveryTextFormField(hintText: "Daniel Jones",hintStyle:GoogleFonts.poppins(
-                color: Color(0XFF363A33),
+                color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
                 fontSize: 13),),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             DeliveryTextFormField(hintText: "1234 5678 9012 3456",hintStyle:GoogleFonts.poppins(
-                color: Color(0XFF363A33),
+                color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
                 fontSize: 13)),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             DeliveryTextFormField(hintText: "07 / 26",hintStyle:GoogleFonts.poppins(
-                color: Color(0XFF363A33),
+                color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
                 fontSize: 13)),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             DeliveryTextFormField(hintText: "123",hintStyle:GoogleFonts.poppins(
-                color: Color(0XFF363A33),
+                color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
                 fontSize: 13)),
-            SizedBox(height: 153),
+            const SizedBox(height: 153),
             SizedBox(
               width: double.infinity,
               height: 52,

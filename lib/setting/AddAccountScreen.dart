@@ -26,15 +26,15 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
     super.dispose();
   }
 
-  InputDecoration _fieldDeco(String hint) => InputDecoration(
+  InputDecoration _fieldDeco(String hint, ThemeData theme) => InputDecoration(
     hintText: hint,
     hintStyle: GoogleFonts.inter(color: Colors.grey[400], fontSize: 14),
     filled: true,
-    fillColor: Colors.white,
+    fillColor: theme.cardColor,
     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
     enabledBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(10),
-      borderSide: BorderSide(color: Colors.grey[300]!)),
+      borderSide: BorderSide(color: theme.dividerColor)),
     focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(10),
       borderSide: BorderSide(color: Appcolor.secondaryColor, width: 1.5)),
@@ -49,9 +49,11 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
   @override
   Widget build(BuildContext context) {
     final fontScale = ResponsiveUtils.fontScale(context);
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -67,8 +69,8 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                       width: 32, height: 32,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        border: Border.all(color: Colors.grey[400]!, width: 1.5)),
-                      child: const Icon(Icons.close, size: 16, color: Colors.black),
+                        border: Border.all(color: isDark ? Colors.white24 : Colors.grey[400]!, width: 1.5)),
+                      child: Icon(Icons.close, size: 16, color: theme.iconTheme.color),
                     ),
                   ),
                 ],
@@ -86,12 +88,12 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                       style: GoogleFonts.inter(
                         fontSize: 20 * fontScale,
                         fontWeight: FontWeight.w700,
-                        color: Colors.black)),
+                        color: theme.textTheme.titleLarge?.color)),
                     const SizedBox(height: 6),
                     Text(
                       "Your payment details are stored securely.\nBy adding a card, you won't be charged yet.",
                       style: GoogleFonts.inter(
-                        fontSize: 12 * fontScale, color: Colors.grey[500])),
+                        fontSize: 12 * fontScale, color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6))),
 
                     const SizedBox(height: 24),
 
@@ -101,7 +103,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                       height: 52,
                       child: OutlinedButton(
                         style: OutlinedButton.styleFrom(
-                          side: BorderSide(color: Colors.grey[400]!, width: 1.5),
+                          side: BorderSide(color: isDark ? Colors.white24 : Colors.grey[400]!, width: 1.5),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(30)),
                         ),
@@ -110,7 +112,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                           style: GoogleFonts.inter(
                             fontSize: 15 * fontScale,
                             fontWeight: FontWeight.w500,
-                            color: Colors.black87)),
+                            color: theme.textTheme.bodyLarge?.color?.withOpacity(0.87))),
                       ),
                     ),
 
@@ -121,7 +123,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                       style: GoogleFonts.inter(
                         fontSize: 13 * fontScale,
                         fontWeight: FontWeight.w600,
-                        color: Colors.black)),
+                        color: theme.textTheme.bodyLarge?.color)),
                     const SizedBox(height: 8),
                     TextField(
                       controller: _cardNumberController,
@@ -132,8 +134,8 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                       ],
                       onChanged: (_) => setState(() {}),
                       style: GoogleFonts.inter(fontSize: 16 * fontScale,
-                        letterSpacing: 2, color: Colors.grey[400]),
-                      decoration: _fieldDeco("0000 0000 0000 0000"),
+                        letterSpacing: 2, color: theme.textTheme.bodyLarge?.color),
+                      decoration: _fieldDeco("0000 0000 0000 0000", theme),
                     ),
 
                     const SizedBox(height: 20),
@@ -149,7 +151,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                                 style: GoogleFonts.inter(
                                   fontSize: 13 * fontScale,
                                   fontWeight: FontWeight.w600,
-                                  color: Colors.black)),
+                                  color: theme.textTheme.bodyLarge?.color)),
                               const SizedBox(height: 8),
                               TextField(
                                 controller: _expireController,
@@ -159,8 +161,8 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                                   _ExpireDateFormatter(),
                                 ],
                                 onChanged: (_) => setState(() {}),
-                                style: GoogleFonts.inter(fontSize: 14 * fontScale),
-                                decoration: _fieldDeco("MM / YYYY"),
+                                style: GoogleFonts.inter(fontSize: 14 * fontScale, color: theme.textTheme.bodyLarge?.color),
+                                decoration: _fieldDeco("MM / YYYY", theme),
                               ),
                             ],
                           ),
@@ -176,7 +178,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                                     style: GoogleFonts.inter(
                                       fontSize: 13 * fontScale,
                                       fontWeight: FontWeight.w600,
-                                      color: Colors.black)),
+                                      color: theme.textTheme.bodyLarge?.color)),
                                   const SizedBox(width: 4),
                                   Icon(Icons.help_outline,
                                     size: 15, color: Colors.grey[500]),
@@ -191,8 +193,8 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                                 inputFormatters: [
                                   FilteringTextInputFormatter.digitsOnly],
                                 onChanged: (_) => setState(() {}),
-                                style: GoogleFonts.inter(fontSize: 14 * fontScale),
-                                decoration: _fieldDeco("123")
+                                style: GoogleFonts.inter(fontSize: 14 * fontScale, color: theme.textTheme.bodyLarge?.color),
+                                decoration: _fieldDeco("123", theme)
                                   .copyWith(counterText: ''),
                               ),
                             ],
@@ -208,6 +210,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                       label: "Make this my default card",
                       value: _makeDefault,
                       fontScale: fontScale,
+                      theme: theme,
                       onChanged: (v) => setState(() => _makeDefault = v),
                     ),
 
@@ -218,6 +221,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                       label: "Save this card for next time",
                       value: _saveCard,
                       fontScale: fontScale,
+                      theme: theme,
                       onChanged: (v) => setState(() => _saveCard = v),
                       useRadio: true,
                     ),
@@ -265,6 +269,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
     required String label,
     required bool value,
     required double fontScale,
+    required ThemeData theme,
     required ValueChanged<bool> onChanged,
     bool useRadio = false,
   }) {
@@ -275,7 +280,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
           style: GoogleFonts.inter(
             fontSize: 14 * fontScale,
             fontWeight: FontWeight.w600,
-            color: Colors.black)),
+            color: theme.textTheme.bodyLarge?.color)),
         useRadio
           ? GestureDetector(
               onTap: () => onChanged(!value),
@@ -286,7 +291,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                   border: Border.all(
                     color: value ? Colors.green : Colors.grey[400]!,
                     width: 2),
-                  color: value ? Colors.green : Colors.white),
+                  color: value ? Colors.green : theme.cardColor),
                 child: value
                   ? const Icon(Icons.check, size: 14, color: Colors.white)
                   : null,
@@ -298,7 +303,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
               activeColor: Colors.white,
               activeTrackColor: Colors.green,
               inactiveThumbColor: Colors.white,
-              inactiveTrackColor: Colors.grey[300],
+              inactiveTrackColor: theme.brightness == Brightness.dark ? Colors.white24 : Colors.grey[300],
             ),
       ],
     );

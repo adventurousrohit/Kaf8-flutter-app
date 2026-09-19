@@ -35,8 +35,10 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
     final padding = ResponsiveUtils.paddingScale(context) * 16;
     final fontScale = ResponsiveUtils.fontScale(context);
     final spacing = ResponsiveUtils.spacingScale(context) * 16;
+    final theme = Theme.of(context);
 
     return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.all(padding),
@@ -50,7 +52,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                 style: GoogleFonts.inter(
                   fontSize: 24 * fontScale,
                   fontWeight: FontWeight.w600,
-                  color: Colors.black87,
+                  color: theme.textTheme.titleLarge?.color,
                 ),
               ),
 

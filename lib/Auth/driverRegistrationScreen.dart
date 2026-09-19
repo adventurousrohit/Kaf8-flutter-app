@@ -20,37 +20,34 @@ class DriverRegistration extends StatefulWidget {
 
 class _DriverRegistrationState extends State<DriverRegistration> {
   // Controllers
-  final _firstNameController    = TextEditingController();
-  final _lastNameController     = TextEditingController();
-  final _phoneController        = TextEditingController();
-  final _locationController     = TextEditingController();
-  final _emailController        = TextEditingController();
-  final _passwordController     = TextEditingController();
-  final _vehicleTypeController  = TextEditingController();
-  final _vehicleModelController = TextEditingController();
-  final _licensePlateController = TextEditingController();
-  final _noteController         = TextEditingController();
+  final _firstNameController = TextEditingController();
+  final _lastNameController  = TextEditingController();
+  final _phoneController     = TextEditingController();
+  final _emailController     = TextEditingController();
+  final _passwordController  = TextEditingController();
+  final _noteController      = TextEditingController();
 
   bool _passwordVisible = false;
   bool _isLoading       = false;
 
   // Country picker
-  String _selectedFlag = '🇮🇩';
-  String _selectedCode = '+62';
+  String _selectedFlag = '🇫🇷';
+  String _selectedCode = '+33';
 
   // Files
   File? _profileImage;
-  File? _ownershipFile;
 
   final List<Map<String, String>> _countries = [
-    {'flag': '🇮🇩', 'code': '+62',  'name': 'Indonesia'},
-    {'flag': '🇮🇳', 'code': '+91',  'name': 'India'},
-    {'flag': '🇺🇸', 'code': '+1',   'name': 'USA'},
+    {'flag': '🇫🇷', 'code': '+33',  'name': 'France'},
+    {'flag': '🇩🇪', 'code': '+49',  'name': 'Germany'},
+    {'flag': '🇧🇪', 'code': '+32',  'name': 'Belgium'},
+    {'flag': '🇳🇱', 'code': '+31',  'name': 'Netherlands'},
+    {'flag': '🇨🇭', 'code': '+41',  'name': 'Switzerland'},
+    {'flag': '🇪🇸', 'code': '+34',  'name': 'Spain'},
+    {'flag': '🇮🇹', 'code': '+39',  'name': 'Italy'},
     {'flag': '🇬🇧', 'code': '+44',  'name': 'UK'},
-    {'flag': '🇦🇺', 'code': '+61',  'name': 'Australia'},
-    {'flag': '🇸🇦', 'code': '+966', 'name': 'Saudi Arabia'},
-    {'flag': '🇦🇪', 'code': '+971', 'name': 'UAE'},
-    {'flag': '🇵🇰', 'code': '+92',  'name': 'Pakistan'},
+    {'flag': '🇵🇹', 'code': '+351', 'name': 'Portugal'},
+    {'flag': '🇵🇱', 'code': '+48',  'name': 'Poland'},
   ];
 
   bool get _isEnabled =>
@@ -65,8 +62,7 @@ class _DriverRegistrationState extends State<DriverRegistration> {
     super.initState();
     for (final c in [
       _firstNameController, _lastNameController, _phoneController,
-      _emailController, _passwordController, _vehicleTypeController,
-      _vehicleModelController, _licensePlateController,
+      _emailController, _passwordController,
     ]) {
       c.addListener(() => setState(() {}));
     }
@@ -76,9 +72,7 @@ class _DriverRegistrationState extends State<DriverRegistration> {
   void dispose() {
     for (final c in [
       _firstNameController, _lastNameController, _phoneController,
-      _locationController, _emailController, _passwordController,
-      _vehicleTypeController, _vehicleModelController,
-      _licensePlateController, _noteController,
+      _emailController, _passwordController, _noteController,
     ]) {
       c.dispose();
     }
@@ -86,15 +80,8 @@ class _DriverRegistrationState extends State<DriverRegistration> {
   }
 
   Future<void> _pickProfileImage() async {
-    final picked = await ImagePicker()
-        .pickImage(source: ImageSource.gallery);
+    final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
     if (picked != null) setState(() => _profileImage = File(picked.path));
-  }
-
-  Future<void> _pickOwnershipFile() async {
-    final picked = await ImagePicker()
-        .pickImage(source: ImageSource.gallery);
-    if (picked != null) setState(() => _ownershipFile = File(picked.path));
   }
 
   void _showCountryPicker() {
@@ -128,19 +115,15 @@ class _DriverRegistrationState extends State<DriverRegistration> {
     setState(() => _isLoading = true);
 
     final response = await ApiService.register(
-      firstName: _firstNameController.text.trim(),
-      lastName:  _lastNameController.text.trim(),
-      fullName:  '${_firstNameController.text.trim()} ${_lastNameController.text.trim()}',
-      email:     _emailController.text.trim(),
-      password:  _passwordController.text.trim(),
-      phone:     '$_selectedCode${_phoneController.text.trim()}',
-      location:  _locationController.text.trim(),
-      address:   _locationController.text.trim(),
-      vehicleType: _vehicleTypeController.text.trim(),
-      vehiclePhoto: _ownershipFile?.path ?? "string",
-      avatar:    _profileImage?.path ?? "string",
+      firstName:    _firstNameController.text.trim(),
+      lastName:     _lastNameController.text.trim(),
+      fullName:     '${_firstNameController.text.trim()} ${_lastNameController.text.trim()}',
+      email:        _emailController.text.trim(),
+      password:     _passwordController.text.trim(),
+      phone:        '$_selectedCode${_phoneController.text.trim()}',
+      avatar:       _profileImage?.path,
       availability: true,
-      role:      "client",
+      role:         "transporter",
     );
 
     setState(() => _isLoading = false);
@@ -158,23 +141,23 @@ class _DriverRegistrationState extends State<DriverRegistration> {
   }
 
   // ── Shared field decoration ─────────────────────────────────────────────
-  InputDecoration _deco(String hint, {Widget? prefix, Widget? suffix}) =>
+  InputDecoration _deco(String hint, ThemeData theme, {Widget? prefix, Widget? suffix}) =>
       InputDecoration(
         hintText: hint,
         hintStyle: GoogleFonts.inter(
             color: Colors.grey[400], fontSize: 14),
         filled: true,
-        fillColor: Colors.white,
+        fillColor: theme.cardColor,
         contentPadding:
         const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         prefixIcon: prefix,
         suffixIcon: suffix,
         enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.grey[300]!)),
+            borderSide: BorderSide(color: theme.dividerColor)),
         border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.grey[300]!)),
+            borderSide: BorderSide(color: theme.dividerColor)),
         focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: const BorderSide(
@@ -185,9 +168,11 @@ class _DriverRegistrationState extends State<DriverRegistration> {
   Widget build(BuildContext context) {
     final fontScale = ResponsiveUtils.fontScale(context);
     final size      = MediaQuery.of(context).size;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Stack(
         children: [
           // ── Top-left geometric background ──────────────────────────
@@ -199,7 +184,7 @@ class _DriverRegistrationState extends State<DriverRegistration> {
               width: size.width * 0.67,
               fit: BoxFit.contain,
               alignment: Alignment.topLeft,
-              opacity: const AlwaysStoppedAnimation(0.2),
+              opacity: AlwaysStoppedAnimation(isDark ? 0.05 : 0.2),
             ),
           ),
           // ── Bottom-right lavender/purple shape ─────────────────────
@@ -209,7 +194,7 @@ class _DriverRegistrationState extends State<DriverRegistration> {
               'assets/images/bg_bottom_right.png',
               width: size.width * 0.60,
               fit: BoxFit.contain,
-              opacity: const AlwaysStoppedAnimation(0.30),
+              opacity: AlwaysStoppedAnimation(isDark ? 0.08 : 0.30),
             ),
           ),
           Positioned(
@@ -221,7 +206,7 @@ class _DriverRegistrationState extends State<DriverRegistration> {
                 'assets/images/bg_bottom_right.png',
                 width: size.width * 0.35,
                 fit: BoxFit.contain,
-                opacity: const AlwaysStoppedAnimation(0.15),
+                opacity: AlwaysStoppedAnimation(isDark ? 0.03 : 0.15),
               ),
             ),
           ),
@@ -258,15 +243,15 @@ class _DriverRegistrationState extends State<DriverRegistration> {
                                       decoration: BoxDecoration(
                                         shape: BoxShape.circle,
                                         border: Border.all(
-                                            color: Colors.grey[700]!,
+                                            color: isDark ? Colors.white24 : Colors.grey[700]!,
                                             width: 1.8),
-                                        color: Colors.white
+                                        color: theme.cardColor
                                             .withOpacity(0.5),
                                       ),
-                                      child: const Icon(
+                                      child: Icon(
                                           Icons.arrow_back_ios_new,
                                           size: 15,
-                                          color: Colors.black),
+                                          color: theme.iconTheme.color),
                                     ),
                                   ),
                                 ),
@@ -285,7 +270,7 @@ class _DriverRegistrationState extends State<DriverRegistration> {
                                   style: GoogleFonts.inter(
                                     fontSize: 20 * fontScale,
                                     fontWeight: FontWeight.w700,
-                                    color: Colors.black,
+                                    color: theme.textTheme.titleLarge?.color,
                                   )),
                               const SizedBox(height: 4),
                               RichText(
@@ -294,7 +279,7 @@ class _DriverRegistrationState extends State<DriverRegistration> {
                                   text: 'Register yourself on ',
                                   style: GoogleFonts.inter(
                                       fontSize: 12 * fontScale,
-                                      color: Colors.grey[600]),
+                                      color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6)),
                                   children: [
                                     TextSpan(
                                       text: '"KAF8"',
@@ -308,7 +293,7 @@ class _DriverRegistrationState extends State<DriverRegistration> {
                                       ' and become a\nmember to start mission',
                                       style: GoogleFonts.inter(
                                           fontSize: 12 * fontScale,
-                                          color: Colors.grey[600]),
+                                          color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6)),
                                     ),
                                   ],
                                 ),
@@ -331,9 +316,9 @@ class _DriverRegistrationState extends State<DriverRegistration> {
                             width: 72, height: 72,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: Colors.white,
+                              color: theme.cardColor,
                               border: Border.all(
-                                  color: Colors.grey[300]!, width: 1.5),
+                                  color: theme.dividerColor, width: 1.5),
                               boxShadow: [BoxShadow(
                                   color: Colors.black.withOpacity(0.08),
                                   blurRadius: 8)],
@@ -352,7 +337,7 @@ class _DriverRegistrationState extends State<DriverRegistration> {
                         Text("Upload Profile Picture",
                             style: GoogleFonts.inter(
                               fontSize: 13 * fontScale,
-                              color: Colors.black87,
+                              color: theme.textTheme.bodyMedium?.color,
                             )),
                       ],
                     ),
@@ -367,34 +352,35 @@ class _DriverRegistrationState extends State<DriverRegistration> {
                         const SizedBox(height: 20),
 
                         // First name
-                        _label("First name", fontScale),
+                        _label("First name", fontScale, theme),
                         const SizedBox(height: 6),
                         TextField(
                             controller: _firstNameController,
-                            style: GoogleFonts.inter(fontSize: 14 * fontScale),
-                            decoration: _deco("Enter full name")),
+                            style: GoogleFonts.inter(fontSize: 14 * fontScale, color: theme.textTheme.bodyLarge?.color),
+                            decoration: _deco("Enter full name", theme)),
                         const SizedBox(height: 14),
 
                         // Last name
-                        _label("Last name", fontScale),
+                        _label("Last name", fontScale, theme),
                         const SizedBox(height: 6),
                         TextField(
                             controller: _lastNameController,
-                            style: GoogleFonts.inter(fontSize: 14 * fontScale),
-                            decoration: _deco("Enter full name")),
+                            style: GoogleFonts.inter(fontSize: 14 * fontScale, color: theme.textTheme.bodyLarge?.color),
+                            decoration: _deco("Enter full name", theme)),
                         const SizedBox(height: 14),
 
                         // Phone number with country picker
-                        _label("Phone number", fontScale),
+                        _label("Phone number", fontScale, theme),
                         const SizedBox(height: 6),
                         TextField(
                           controller: _phoneController,
                           keyboardType: TextInputType.phone,
                           inputFormatters: [
                             FilteringTextInputFormatter.digitsOnly],
-                          style: GoogleFonts.inter(fontSize: 14 * fontScale),
+                          style: GoogleFonts.inter(fontSize: 14 * fontScale, color: theme.textTheme.bodyLarge?.color),
                           decoration: _deco(
                             "Mobile number",
+                            theme,
                             prefix: GestureDetector(
                               onTap: _showCountryPicker,
                               child: Container(
@@ -419,7 +405,7 @@ class _DriverRegistrationState extends State<DriverRegistration> {
                                         style: GoogleFonts.inter(
                                             fontSize: 14 * fontScale,
                                             fontWeight: FontWeight.w500,
-                                            color: Colors.black)),
+                                            color: theme.textTheme.bodyLarge?.color)),
                                     const SizedBox(width: 2),
                                     Icon(Icons.keyboard_arrow_down,
                                         size: 16,
@@ -428,7 +414,7 @@ class _DriverRegistrationState extends State<DriverRegistration> {
                                         margin: const EdgeInsets.only(
                                             left: 6),
                                         width: 1, height: 20,
-                                        color: Colors.grey[300]),
+                                        color: theme.dividerColor),
                                   ],
                                 ),
                               ),
@@ -437,37 +423,26 @@ class _DriverRegistrationState extends State<DriverRegistration> {
                         ),
                         const SizedBox(height: 14),
 
-                        // Your Location
-                        _label("Your Location", fontScale),
-                        const SizedBox(height: 6),
-                        TextField(
-                            controller: _locationController,
-                            style: GoogleFonts.inter(fontSize: 14 * fontScale),
-                            decoration: _deco("",
-                                prefix: Icon(Icons.my_location_outlined,
-                                    size: 20,
-                                    color: Colors.grey[500]))),
-                        const SizedBox(height: 14),
-
                         // Email
-                        _label("Email", fontScale),
+                        _label("Email", fontScale, theme),
                         const SizedBox(height: 6),
                         TextField(
                             controller: _emailController,
                             keyboardType: TextInputType.emailAddress,
-                            style: GoogleFonts.inter(fontSize: 14 * fontScale),
-                            decoration: _deco("Enter email")),
+                            style: GoogleFonts.inter(fontSize: 14 * fontScale, color: theme.textTheme.bodyLarge?.color),
+                            decoration: _deco("Enter email", theme)),
                         const SizedBox(height: 14),
 
                         // Password
-                        _label("Password", fontScale),
+                        _label("Password", fontScale, theme),
                         const SizedBox(height: 6),
                         TextField(
                           controller: _passwordController,
                           obscureText: !_passwordVisible,
-                          style: GoogleFonts.inter(fontSize: 14 * fontScale),
+                          style: GoogleFonts.inter(fontSize: 14 * fontScale, color: theme.textTheme.bodyLarge?.color),
                           decoration: _deco(
                             "Enter password",
+                            theme,
                             suffix: IconButton(
                               icon: Icon(
                                   _passwordVisible
@@ -483,113 +458,15 @@ class _DriverRegistrationState extends State<DriverRegistration> {
                         ),
                         const SizedBox(height: 14),
 
-                        // Vehicle Type
-                        _label("Vehicle Type", fontScale),
-                        const SizedBox(height: 6),
-                        TextField(
-                            controller: _vehicleTypeController,
-                            style: GoogleFonts.inter(fontSize: 14 * fontScale),
-                            decoration: _deco("Your Vehicle")),
-                        const SizedBox(height: 14),
-
-                        // Vehicle Model
-                        _label("Vehicle Model", fontScale),
-                        const SizedBox(height: 6),
-                        TextField(
-                            controller: _vehicleModelController,
-                            style: GoogleFonts.inter(fontSize: 14 * fontScale),
-                            decoration: _deco("e.g. toyota")),
-                        const SizedBox(height: 14),
-
-                        // License Plate Number
-                        _label("License Plate Number", fontScale),
-                        const SizedBox(height: 6),
-                        TextField(
-                            controller: _licensePlateController,
-                            style: GoogleFonts.inter(fontSize: 14 * fontScale),
-                            decoration: _deco("Enter License Plate")),
-                        const SizedBox(height: 20),
-
-                        // Upload Proof of Vehicle Ownership
-                        Text("Upload Proof of Vehicle Ownership",
-                            style: GoogleFonts.inter(
-                                fontSize: 14 * fontScale,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.black)),
-                        const SizedBox(height: 10),
-                        GestureDetector(
-                          onTap: _pickOwnershipFile,
-                          child: Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                                color: Colors.white,
-                                border: Border.all(
-                                    color: Colors.grey[300]!),
-                                borderRadius: BorderRadius.circular(12)),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 48, height: 48,
-                                  decoration: BoxDecoration(
-                                      color: Colors.grey[100],
-                                      borderRadius:
-                                      BorderRadius.circular(10),
-                                      border: Border.all(
-                                          color: Colors.grey[300]!)),
-                                  child: _ownershipFile != null
-                                      ? ClipRRect(
-                                      borderRadius:
-                                      BorderRadius.circular(10),
-                                      child: Image.file(
-                                          _ownershipFile!,
-                                          fit: BoxFit.cover))
-                                      : Icon(
-                                      Icons.camera_alt_outlined,
-                                      color: Colors.grey[400],
-                                      size: 22),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                    CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        _ownershipFile != null
-                                            ? _ownershipFile!.path
-                                            .split('/')
-                                            .last
-                                            : "Motobike.png",
-                                        style: GoogleFonts.inter(
-                                            fontSize: 13 * fontScale,
-                                            fontWeight: FontWeight.w500,
-                                            color: Colors.black87),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text("JPEG | PNG | PDF",
-                                          style: GoogleFonts.inter(
-                                              fontSize: 11 * fontScale,
-                                              color: Colors.grey[400])),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-
-                        const SizedBox(height: 20),
-
                         // Add Note (Optional)
-                        _label("Add Note (Optional)", fontScale),
+                        _label("Add Note (Optional)", fontScale, theme),
                         const SizedBox(height: 8),
                         TextField(
                             controller: _noteController,
                             maxLines: 4,
-                            style: GoogleFonts.inter(fontSize: 13 * fontScale),
+                            style: GoogleFonts.inter(fontSize: 13 * fontScale, color: theme.textTheme.bodyLarge?.color),
                             decoration: _deco(
-                                "Write short service presentation or welcome message here...")),
+                                "Write short service presentation or welcome message here...", theme)),
                         const SizedBox(height: 20),
 
                         // Terms text
@@ -597,7 +474,7 @@ class _DriverRegistrationState extends State<DriverRegistration> {
                           "By clicking Create account, you agree to the system's Terms and policies",
                           style: GoogleFonts.inter(
                               fontSize: 12 * fontScale,
-                              color: Colors.grey[600]),
+                              color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6)),
                         ),
 
                         const SizedBox(height: 20),
@@ -622,7 +499,7 @@ class _DriverRegistrationState extends State<DriverRegistration> {
                                 text: "Already have an account? ",
                                 style: GoogleFonts.inter(
                                     fontSize: 13 * fontScale,
-                                    color: Colors.grey[600]),
+                                    color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6)),
                                 children: [
                                   TextSpan(
                                     text: "Login",
@@ -650,11 +527,11 @@ class _DriverRegistrationState extends State<DriverRegistration> {
     );
   }
 
-  Widget _label(String text, double fontScale) => Text(
+  Widget _label(String text, double fontScale, ThemeData theme) => Text(
     text,
     style: GoogleFonts.inter(
         fontSize: 13 * fontScale,
         fontWeight: FontWeight.w500,
-        color: Colors.black87),
+        color: theme.textTheme.bodyLarge?.color?.withOpacity(0.87)),
   );
 }

@@ -15,11 +15,14 @@ class MenuItemWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return
       Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: const Color(0XFFF9FAF8),
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(12),
       ),
       child:
@@ -28,13 +31,14 @@ class MenuItemWidget extends StatelessWidget {
           imagePath,
           width: 20,
           height: 20,
+          color: isDark ? Colors.white70 : null,
         ),
         title: Text(
           title,
           style: GoogleFonts.poppins(
             fontSize: 15,
             fontWeight: FontWeight.w500,
-            color: const Color(0XFF363A33),
+            color: theme.textTheme.bodyLarge?.color,
           ),
         ),
         trailing: const Icon(
@@ -43,6 +47,51 @@ class MenuItemWidget extends StatelessWidget {
           color: Colors.grey,
         ),
         onTap: onTap,
+      ),
+    );
+  }
+}
+
+class MenuSwitchWidget extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  const MenuSwitchWidget({
+    super.key,
+    required this.icon,
+    required this.title,
+    required this.value,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: theme.cardColor,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: ListTile(
+        leading: Icon(icon, size: 20, color: theme.iconTheme.color),
+        title: Text(
+          title,
+          style: GoogleFonts.poppins(
+            fontSize: 15,
+            fontWeight: FontWeight.w500,
+            color: theme.textTheme.bodyLarge?.color,
+          ),
+        ),
+        trailing: Switch(
+          value: value,
+          onChanged: onChanged,
+          activeColor: Colors.white,
+          activeTrackColor: Colors.green,
+        ),
       ),
     );
   }

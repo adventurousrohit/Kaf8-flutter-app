@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import 'api_endpoints.dart';
@@ -32,11 +33,16 @@ final class ApiClient {
     String path, {
     Map<String, String>? query,
     Map<String, String>? headers,
-  }) {
-    return _client.get(
-      _uri(path, query: query),
+  }) async {
+    final url = _uri(path, query: query);
+    debugPrint("🚀 API REQUEST [GET]: $url");
+    final response = await _client.get(
+      url,
       headers: {..._jsonHeaders(), ...?headers},
     );
+    debugPrint("✅ API RESPONSE [GET] [$url]: ${response.statusCode}");
+    debugPrint("📄 DATA: ${response.body}");
+    return response;
   }
 
   Future<http.Response> post(
@@ -44,12 +50,19 @@ final class ApiClient {
     Object? body,
     Map<String, String>? query,
     Map<String, String>? headers,
-  }) {
-    return _client.post(
-      _uri(path, query: query),
+  }) async {
+    final url = _uri(path, query: query);
+    final encodedBody = _encodeBody(body);
+    debugPrint("🚀 API REQUEST [POST]: $url");
+    if (encodedBody != null) debugPrint("📦 BODY: $encodedBody");
+    final response = await _client.post(
+      url,
       headers: {..._jsonHeaders(), ...?headers},
-      body: _encodeBody(body),
+      body: encodedBody,
     );
+    debugPrint("✅ API RESPONSE [POST] [$url]: ${response.statusCode}");
+    debugPrint("📄 DATA: ${response.body}");
+    return response;
   }
 
   Future<http.Response> put(
@@ -57,12 +70,19 @@ final class ApiClient {
     Object? body,
     Map<String, String>? query,
     Map<String, String>? headers,
-  }) {
-    return _client.put(
-      _uri(path, query: query),
+  }) async {
+    final url = _uri(path, query: query);
+    final encodedBody = _encodeBody(body);
+    debugPrint("🚀 API REQUEST [PUT]: $url");
+    if (encodedBody != null) debugPrint("📦 BODY: $encodedBody");
+    final response = await _client.put(
+      url,
       headers: {..._jsonHeaders(), ...?headers},
-      body: _encodeBody(body),
+      body: encodedBody,
     );
+    debugPrint("✅ API RESPONSE [PUT] [$url]: ${response.statusCode}");
+    debugPrint("📄 DATA: ${response.body}");
+    return response;
   }
 
   Future<http.Response> patch(
@@ -70,23 +90,35 @@ final class ApiClient {
     Object? body,
     Map<String, String>? query,
     Map<String, String>? headers,
-  }) {
-    return _client.patch(
-      _uri(path, query: query),
+  }) async {
+    final url = _uri(path, query: query);
+    final encodedBody = _encodeBody(body);
+    debugPrint("🚀 API REQUEST [PATCH]: $url");
+    if (encodedBody != null) debugPrint("📦 BODY: $encodedBody");
+    final response = await _client.patch(
+      url,
       headers: {..._jsonHeaders(), ...?headers},
-      body: _encodeBody(body),
+      body: encodedBody,
     );
+    debugPrint("✅ API RESPONSE [PATCH] [$url]: ${response.statusCode}");
+    debugPrint("📄 DATA: ${response.body}");
+    return response;
   }
 
   Future<http.Response> delete(
     String path, {
     Map<String, String>? query,
     Map<String, String>? headers,
-  }) {
-    return _client.delete(
-      _uri(path, query: query),
+  }) async {
+    final url = _uri(path, query: query);
+    debugPrint("🚀 API REQUEST [DELETE]: $url");
+    final response = await _client.delete(
+      url,
       headers: {..._jsonHeaders(), ...?headers},
     );
+    debugPrint("✅ API RESPONSE [DELETE] [$url]: ${response.statusCode}");
+    debugPrint("📄 DATA: ${response.body}");
+    return response;
   }
 
   /// JSON body except when [body] is already a [String].
@@ -105,7 +137,10 @@ final class ApiClient {
     List<http.MultipartFile> files = const [],
     Map<String, String>? query,
   }) async {
-    final request = http.MultipartRequest(method, _uri(path, query: query));
+    final url = _uri(path, query: query);
+    debugPrint("🚀 API REQUEST [$method MULTIPART]: $url");
+    debugPrint("📦 FIELDS: $fields");
+    final request = http.MultipartRequest(method, url);
     if (accessToken != null && accessToken!.trim().isNotEmpty) {
       request.headers['Authorization'] = 'Bearer $accessToken';
     }
@@ -113,7 +148,10 @@ final class ApiClient {
     request.fields.addAll(fields);
     request.files.addAll(files);
     final streamed = await _client.send(request);
-    return http.Response.fromStream(streamed);
+    final response = await http.Response.fromStream(streamed);
+    debugPrint("✅ API RESPONSE [$method MULTIPART] [$url]: ${response.statusCode}");
+    debugPrint("📄 DATA: ${response.body}");
+    return response;
   }
 
   Future<http.Response> postMultipart(

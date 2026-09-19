@@ -10,10 +10,13 @@ class AccountScreenEdit extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor:  Colors.white,
+      backgroundColor:  theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: theme.appBarTheme.backgroundColor,
         elevation: 0,
         centerTitle: true,
         leadingWidth: 100,
@@ -22,12 +25,12 @@ class AccountScreenEdit extends StatelessWidget {
           child: Row(
             children: [
               const SizedBox(width: 10),
-              const Icon(Icons.arrow_back_ios, color: Colors.black, size: 18),
+              Icon(Icons.arrow_back_ios, color: theme.iconTheme.color, size: 18),
               const SizedBox(width: 4),
               Text(
                 "Cancel",
                 style: GoogleFonts.poppins(
-                  color: Colors.black,
+                  color: theme.textTheme.bodyLarge?.color,
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
                 ),
@@ -35,12 +38,14 @@ class AccountScreenEdit extends StatelessWidget {
             ],
           ),
         ),
-        title: Text("My Account",style: GoogleFonts.poppins(fontWeight: FontWeight.bold,fontSize: 17),),
+        title: Text("My Account",style: GoogleFonts.poppins(fontWeight: FontWeight.bold,fontSize: 17, color: theme.textTheme.titleLarge?.color),),
         actions: [
           Padding(
-            padding: EdgeInsetsGeometry.only(right: 10),
-            child: Text("Save",style: GoogleFonts.poppins(fontSize: 15,fontWeight: FontWeight.w700,
-                color: Color(0XFF00C853)),),
+            padding: const EdgeInsets.only(right: 10),
+            child: Center(
+              child: Text("Save",style: GoogleFonts.poppins(fontSize: 15,fontWeight: FontWeight.w700,
+                  color: const Color(0XFF00C853)),),
+            ),
           )
         ],
       ),
@@ -57,7 +62,7 @@ class AccountScreenEdit extends StatelessWidget {
                     Container(
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        border: Border.all(color: Colors.grey.shade200, width: 2),
+                        border: Border.all(color: theme.dividerColor, width: 2),
                       ),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(55),
@@ -76,13 +81,13 @@ class AccountScreenEdit extends StatelessWidget {
                         height: 35,
                         width: 35,
                         decoration: BoxDecoration(
-                          color:  Colors.white,
+                          color:  theme.cardColor,
                           shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 2),
+                          border: Border.all(color: theme.cardColor, width: 2),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.camera_alt,
-                          color: Color(0XFF60635E),
+                          color: isDark ? Colors.white70 : const Color(0XFF60635E),
                           size: 18,
                         ),
                       ),
@@ -96,14 +101,14 @@ class AccountScreenEdit extends StatelessWidget {
                 Row(
                   children: [
                     const SizedBox(height: 15),
-                    Expanded(
+                    const Expanded(
                       flex: 1,
                       child: DeliveryTextFormField(
                         hintText: "405",
                       ),
                     ),
                     const SizedBox(width: 6),
-                    Expanded(
+                    const Expanded(
                       flex: 3,
                       child: DeliveryTextFormField(
                         hintText: "555-0128",
@@ -111,10 +116,10 @@ class AccountScreenEdit extends StatelessWidget {
                     )
                   ],
                 ),
-                DeliveryTextFormField(
+                const DeliveryTextFormField(
                   hintText: "12-10-1996",
                 ),
-                DeliveryTextFormField(
+                const DeliveryTextFormField(
                   hintText: "Address-Home",
                   suffixIcon: Icon(Icons.keyboard_arrow_right_rounded,color: Colors.grey,),
                 ),
