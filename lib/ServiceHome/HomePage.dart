@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
@@ -125,7 +127,7 @@ const List<_VehicleItem> _fallbackVehicleItems = [
     VehicleTypeModel(
       id: 'fallback-car',
       name: 'Car',
-      icon: 'assets/images/vehicles/icon_car.png',
+      icon: 'assets/images/Caricon.png',
       baseCost: 25,
       description: '',
     ),
@@ -134,7 +136,7 @@ const List<_VehicleItem> _fallbackVehicleItems = [
     VehicleTypeModel(
       id: 'fallback-van',
       name: 'Van',
-      icon: 'assets/images/vehicles/icon_van.png',
+      icon: 'assets/image/Van.png',
       baseCost: 35,
       description: '',
     ),
@@ -161,7 +163,7 @@ const List<_VehicleItem> _fallbackVehicleItems = [
     VehicleTypeModel(
       id: 'fallback-breakdown',
       name: 'Breakdown Vehicle',
-      icon: 'assets/images/vehicles/icon_breakdown_vehicle.png',
+      icon: 'assets/images/TowTruck.png',
       baseCost: 80,
       description: '',
     ),
@@ -192,6 +194,11 @@ class _HomePageState extends State<HomePage> {
   List<_BannerItem> _banners = _fallbackBanners;
   List<_VehicleItem> _vehicleItems = _fallbackVehicleItems;
   bool _driversLoading = false;
+  bool _searchLoading = false;
+  String? _carrierLoadError;
+  List<UserModel> _searchDrivers = [];
+  Timer? _searchDebounce;
+  int _searchRequestId = 0;
 
   // Filter state
   double _minRating = 0.0;
@@ -201,7 +208,9 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _initializeHome();
-    _searchController.addListener(() => _performSearch(_searchController.text));
+    _searchController.addListener(
+      () => _performSearch(_searchController.text),
+    );
   }
 
   Future<void> _initializeHome() async {
@@ -290,7 +299,6 @@ class _HomePageState extends State<HomePage> {
         .whereType<Map>()
         .map((e) {
       final model = VehicleTypeModel.fromJson(Map<String, dynamic>.from(e));
-      // Map icon strings (emojis or old names) to local PNG assets from assets/icons/
       String iconPath = model.icon;
       final name = model.name.toLowerCase();
       if (iconPath.contains('🚲') || name.contains('bicycle')) {
@@ -329,7 +337,11 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _loadDrivers() async {
     if (!mounted) return;
-    setState(() => _driversLoading = true);
+    final isSearchActive = _searchController.text.trim().isNotEmpty;
+    setState(() {
+      _driversLoading = !isSearchActive;
+      if (!isSearchActive) _carrierLoadError = null;
+    });
     final result = _userPosition != null
         ? await ApiService.getNearbyTransporters(
       latitude: _userPosition!.latitude,
@@ -339,42 +351,111 @@ class _HomePageState extends State<HomePage> {
         : await ApiService.getTransporters(limit: 10);
     if (!mounted) return;
 
-    List<UserModel> drivers = [];
-    if (result['success'] == true) {
-      final raw = result['data'];
-      final list = (raw is List) ? raw : (raw is Map ? raw['data'] : null);
-      if (list is List) {
-        for (final t in list) {
-          if (t is! Map) continue;
-          final userMap = (t['User'] is Map)
-              ? Map<String, dynamic>.from(t['User'])
-              : <String, dynamic>{};
-          final transporterId = '${t['id'] ?? ''}';
-          if (transporterId.isEmpty) continue;
-          final isFav = await _safeCheckFavorite(transporterId);
-          drivers.add(
-            UserModel(
-              transporterId: transporterId,
-              fullName: '${userMap['fullName'] ?? 'Driver'}',
-              isOnline: t['isOnline'] == true,
-              rating: double.tryParse('${t['averageRating'] ?? 0}') ?? 0,
-              reviewCount: int.tryParse('${t['totalReviews'] ?? 0}') ?? 0,
-              location: '${t['address'] ?? ''}',
-              phone: '${userMap['phone'] ?? ''}',
-              avatarUrl: '${userMap['avatar'] ?? ''}',
-              distanceKm: double.tryParse('${t['distance'] ?? ''}'),
-              isFavorite: isFav,
-            ),
-          );
+    if (result['success'] != true) {
+      setState(() {
+        _driversLoading = false;
+        if (_searchController.text.trim().isEmpty) {
+          _carrierLoadError =
+              result['message']?.toString() ?? 'Unable to load carriers.';
         }
-      }
+      });
+      return;
     }
 
+    final raw = result['data'];
+    final list = (raw is List) ? raw : (raw is Map ? raw['data'] : null);
+    if (list is! List) {
+      setState(() {
+        _driversLoading = false;
+        if (_searchController.text.trim().isEmpty) {
+          _carrierLoadError = 'Unable to read carrier results.';
+        }
+      });
+      return;
+    }
+
+    final drivers = await _mapTransporters(list);
+    if (!mounted) return;
     setState(() {
       _originalNearbyDrivers = drivers;
-      _nearbyDrivers = drivers;
       _driversLoading = false;
+      _carrierLoadError = null;
+      if (_searchController.text.trim().isEmpty) {
+        _nearbyDrivers = _applyDriverFilters(drivers);
+      }
     });
+  }
+
+  Future<void> _searchCarriers(String query, int requestId) async {
+    final result = await ApiService.searchTransporters(query: query, limit: 10);
+    if (!mounted || requestId != _searchRequestId) return;
+
+    if (result['success'] != true) {
+      setState(() {
+        _searchLoading = false;
+        _carrierLoadError =
+            result['message']?.toString() ?? 'Unable to search carriers.';
+      });
+      return;
+    }
+
+    final raw = result['data'];
+    final list = (raw is List) ? raw : (raw is Map ? raw['data'] : null);
+    if (list is! List) {
+      setState(() {
+        _searchLoading = false;
+        _carrierLoadError = 'Unable to read carrier search results.';
+      });
+      return;
+    }
+
+    final drivers = await _mapTransporters(list);
+    if (!mounted || requestId != _searchRequestId) return;
+
+    final queryLower = query.toLowerCase().trim();
+    final filtered = drivers.where((d) {
+      return d.fullName.toLowerCase().contains(queryLower) ||
+          d.location.toLowerCase().contains(queryLower) ||
+          d.phone.toLowerCase().contains(queryLower);
+    }).toList();
+
+    setState(() {
+      _searchDrivers = filtered;
+      _nearbyDrivers = _applyDriverFilters(filtered);
+      _searchLoading = false;
+      _carrierLoadError = null;
+    });
+  }
+
+  Future<List<UserModel>> _mapTransporters(List<dynamic> list) async {
+    final drivers = <UserModel>[];
+    for (final t in list) {
+      if (t is! Map) continue;
+      final userMap = (t['User'] is Map)
+          ? Map<String, dynamic>.from(t['User'])
+          : ((t['user'] is Map)
+              ? Map<String, dynamic>.from(t['user'])
+              : <String, dynamic>{});
+      final transporterId = '${t['id'] ?? t['transporterId'] ?? t['userId'] ?? userMap['id'] ?? ''}';
+      if (transporterId.isEmpty) continue;
+      final isFav = await _safeCheckFavorite(transporterId);
+      final name = '${userMap['fullName'] ?? userMap['name'] ?? t['fullName'] ?? t['name'] ?? 'Driver'}';
+      drivers.add(
+        UserModel(
+          transporterId: transporterId,
+          fullName: name,
+          isOnline: t['isOnline'] == true,
+          rating: double.tryParse('${t['averageRating'] ?? t['rating'] ?? 0}') ?? 0,
+          reviewCount: int.tryParse('${t['totalReviews'] ?? t['reviews'] ?? 0}') ?? 0,
+          location: '${t['address'] ?? t['location'] ?? ''}',
+          phone: '${userMap['phone'] ?? t['phone'] ?? ''}',
+          avatarUrl: '${userMap['avatar'] ?? t['avatar'] ?? ''}',
+          distanceKm: double.tryParse('${t['distance'] ?? ''}'),
+          isFavorite: isFav,
+        ),
+      );
+    }
+    return drivers;
   }
 
   Future<bool> _safeCheckFavorite(String transporterId) async {
@@ -386,151 +467,195 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _performSearch(String query) {
-    _filterDrivers();
+    _searchDebounce?.cancel();
+    final normalizedQuery = query.trim().toLowerCase();
+    final requestId = ++_searchRequestId;
+
+    if (normalizedQuery.isEmpty) {
+      setState(() {
+        _searchLoading = false;
+        _carrierLoadError = null;
+        _nearbyDrivers = _applyDriverFilters(_originalNearbyDrivers);
+      });
+      return;
+    }
+
+    // Instant local filtering on loaded drivers
+    final localMatches = _originalNearbyDrivers.where((d) {
+      return d.fullName.toLowerCase().contains(normalizedQuery) ||
+          d.location.toLowerCase().contains(normalizedQuery) ||
+          d.phone.toLowerCase().contains(normalizedQuery);
+    }).toList();
+
+    setState(() {
+      _searchLoading = true;
+      _carrierLoadError = null;
+      _nearbyDrivers = _applyDriverFilters(localMatches);
+    });
+
+    _searchDebounce = Timer(
+      const Duration(milliseconds: 300),
+      () => _searchCarriers(normalizedQuery, requestId),
+    );
   }
 
   void _filterDrivers() {
-    final query = _searchController.text.toLowerCase();
+    final query = _searchController.text.trim();
+    final source = query.isEmpty ? _originalNearbyDrivers : _searchDrivers;
     setState(() {
-      _nearbyDrivers = _originalNearbyDrivers.where((d) {
-        final matchesSearch = d.fullName.toLowerCase().contains(query);
-        final matchesRating = d.rating >= _minRating;
-        final matchesOnline = !_onlyOnline || d.isOnline;
-        return matchesSearch && matchesRating && matchesOnline;
-      }).toList();
+      _nearbyDrivers = _applyDriverFilters(source);
     });
+  }
+
+  List<UserModel> _applyDriverFilters(List<UserModel> drivers) {
+    return drivers.where((driver) {
+      final matchesRating = driver.rating >= _minRating;
+      final matchesOnline = !_onlyOnline || driver.isOnline;
+      return matchesRating && matchesOnline;
+    }).toList();
   }
 
   void _showFilterBottomSheet() {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    Get.bottomSheet(
-      StatefulBuilder(
-        builder: (context, setModalState) {
-          return Container(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
-            decoration: BoxDecoration(
-              color: theme.cardColor,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-            ),
-            child: SafeArea(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: isDark ? Colors.grey[700] : Colors.grey[300],
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    "Filter Carriers",
-                    style: GoogleFonts.inter(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: theme.textTheme.titleLarge?.color,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Online only toggle
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        "Show online carriers only",
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          color: theme.textTheme.bodyLarge?.color,
-                        ),
-                      ),
-                      Switch(
-                        value: _onlyOnline,
-                        activeColor: Colors.green,
-                        onChanged: (val) {
-                          setModalState(() => _onlyOnline = val);
-                        },
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Rating slider
-                  Text(
-                    "Minimum Rating: ${_minRating.toStringAsFixed(1)}",
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      color: theme.textTheme.bodyLarge?.color,
-                    ),
-                  ),
-                  Slider(
-                    value: _minRating,
-                    min: 0,
-                    max: 5,
-                    divisions: 10,
-                    activeColor: Colors.green,
-                    label: _minRating.toStringAsFixed(1),
-                    onChanged: (val) {
-                      setModalState(() => _minRating = val);
-                    },
-                  ),
-
-                  const SizedBox(height: 24),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 52,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                      ),
-                      onPressed: () {
-                        _filterDrivers();
-                        Get.back();
-                      },
-                      child: Text(
-                        "Apply Filters",
-                        style: GoogleFonts.inter(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Center(
-                    child: TextButton(
-                      onPressed: () {
-                        setModalState(() {
-                          _minRating = 0.0;
-                          _onlyOnline = false;
-                        });
-                        _filterDrivers();
-                        Get.back();
-                      },
-                      child: Text(
-                        "Reset All",
-                        style: TextStyle(color: Colors.grey[500]),
-                      ),
-                    ),
-                  ),
-                ],
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Container(
+              padding: EdgeInsets.fromLTRB(
+                20,
+                12,
+                20,
+                MediaQuery.of(context).padding.bottom + 24,
               ),
-            ),
-          );
-        }
-      ),
+              decoration: BoxDecoration(
+                color: theme.cardColor,
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              child: SafeArea(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: isDark ? Colors.grey[700] : Colors.grey[300],
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      'filter_carriers'.tr,
+                      style: GoogleFonts.inter(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: theme.textTheme.titleLarge?.color,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Online only toggle
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'show_online_only'.tr,
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            color: theme.textTheme.bodyLarge?.color,
+                          ),
+                        ),
+                        Switch(
+                          value: _onlyOnline,
+                          activeColor: Colors.green,
+                          onChanged: (val) {
+                            setModalState(() => _onlyOnline = val);
+                          },
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Rating slider
+                    Text(
+                      "${'minimum_rating'.tr}: ${_minRating.toStringAsFixed(1)}",
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        color: theme.textTheme.bodyLarge?.color,
+                      ),
+                    ),
+                    Slider(
+                      value: _minRating,
+                      min: 0,
+                      max: 5,
+                      divisions: 10,
+                      activeColor: Colors.green,
+                      label: _minRating.toStringAsFixed(1),
+                      onChanged: (val) {
+                        setModalState(() => _minRating = val);
+                      },
+                    ),
+
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                        ),
+                        onPressed: () {
+                          _filterDrivers();
+                          Navigator.pop(context);
+                        },
+                        child: Text(
+                          'apply_filters'.tr,
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Center(
+                      child: TextButton(
+                        onPressed: () {
+                          setModalState(() {
+                            _minRating = 0.0;
+                            _onlyOnline = false;
+                          });
+                          _filterDrivers();
+                          Navigator.pop(context);
+                        },
+                        child: Text(
+                          'reset_all'.tr,
+                          style: TextStyle(color: Colors.grey[500]),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -544,6 +669,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _pageController.dispose();
     _searchController.dispose();
     super.dispose();
@@ -560,7 +686,6 @@ class _HomePageState extends State<HomePage> {
       backgroundColor: theme.scaffoldBackgroundColor,
       body: Stack(
         children: [
-          // ── Top-left geometric background ──────────────────────────
           Positioned(
             top: 0,
             left: 0,
@@ -622,7 +747,7 @@ class _HomePageState extends State<HomePage> {
                         const SizedBox(height: 18),
                         _buildVehicleGrid(fontScale, isDark),
                         const SizedBox(height: 18),
-                        _buildSectionHeader("Carriers near me", fontScale, theme),
+                        _buildSectionHeader('carriers_near_me'.tr, fontScale, theme),
                         const SizedBox(height: 12),
                         _buildDriverCards(theme),
                         const SizedBox(height: 20),
@@ -660,7 +785,7 @@ class _HomePageState extends State<HomePage> {
                 Row(
                   children: [
                     Text(
-                      "Your location",
+                      'your_location'.tr,
                       style: GoogleFonts.inter(
                         fontSize: 12 * fontScale,
                         color: Colors.grey[600],
@@ -748,17 +873,41 @@ class _HomePageState extends State<HomePage> {
               ),
               child: TextField(
                 controller: _searchController,
+                onChanged: _performSearch,
+                onSubmitted: _performSearch,
                 style: GoogleFonts.inter(
                   fontSize: 14 * fontScale,
                   color: theme.textTheme.bodyLarge?.color,
                 ),
                 decoration: InputDecoration(
-                  hintText: "Search here",
+                  hintText: 'search_here'.tr,
                   hintStyle: GoogleFonts.inter(
                     fontSize: 14 * fontScale,
                     color: Colors.grey[400],
                   ),
                   prefixIcon: Icon(Icons.search, color: Colors.grey[400], size: 20),
+                  suffixIcon: _searchLoading
+                      ? const Padding(
+                          padding: EdgeInsets.all(12.0),
+                          child: SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.green,
+                            ),
+                          ),
+                        )
+                      : (_searchController.text.isNotEmpty
+                          ? IconButton(
+                              icon: Icon(Icons.close,
+                                  color: Colors.grey[400], size: 18),
+                              onPressed: () {
+                                _searchController.clear();
+                                _performSearch('');
+                              },
+                            )
+                          : null),
                   filled: true,
                   fillColor: Colors.transparent,
                   contentPadding: const EdgeInsets.symmetric(vertical: 12),
@@ -968,13 +1117,67 @@ class _HomePageState extends State<HomePage> {
         child: Center(child: CircularProgressIndicator()),
       );
     }
-    if (_nearbyDrivers.isEmpty) {
-      return const SizedBox(
-        height: 80,
+    if (_carrierLoadError != null) {
+      return SizedBox(
+        height: 110,
         child: Center(
-          child: Text(
-            "No carriers found nearby",
-            style: TextStyle(color: Colors.grey),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                _carrierLoadError!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: Colors.red),
+              ),
+              TextButton(
+                onPressed: () {
+                  final query = _searchController.text.trim();
+                  if (query.isEmpty) {
+                    _loadDrivers();
+                  } else {
+                    _performSearch(query);
+                  }
+                },
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    if (_nearbyDrivers.isEmpty) {
+      final query = _searchController.text.trim();
+      return Container(
+        height: 120,
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: theme.cardColor,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: theme.dividerColor, width: 1),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.search_off_rounded,
+                size: 32,
+                color: Colors.grey[400],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                query.isEmpty
+                    ? "No carriers found nearby"
+                    : 'No carriers found for "$query".',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.grey[600],
+                ),
+              ),
+            ],
           ),
         ),
       );

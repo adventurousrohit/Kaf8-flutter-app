@@ -1,8 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../Service/api_service.dart';
+import '../Utils/currency_formatter.dart';
 import 'orderDetails.dart';
 
 /// Shown after order creation when paymentMethod == "pay_now".
@@ -28,6 +30,14 @@ class _PaymentCheckoutScreenState extends State<PaymentCheckoutScreen> {
 
   Future<void> _initPaymentSheet() async {
     setState(() { _status = _Status.loading; _errorMessage = null; });
+
+    if (kIsWeb) {
+      setState(() {
+        _status = _Status.error;
+        _errorMessage = 'Stripe payment sheet is not supported on Web. Please run on Android/iOS.';
+      });
+      return;
+    }
 
     final orderId = widget.order['id'] as String?;
     final amount  = double.tryParse(
@@ -71,6 +81,7 @@ class _PaymentCheckoutScreenState extends State<PaymentCheckoutScreen> {
   }
 
   Future<void> _presentSheet() async {
+    if (kIsWeb) return;
     try {
       await Stripe.instance.presentPaymentSheet();
       // Success — navigate to order details
@@ -144,7 +155,7 @@ class _PaymentCheckoutScreenState extends State<PaymentCheckoutScreen> {
                       Text('Delivery cost',
                           style: GoogleFonts.inter(
                               fontSize: 15, color: theme.textTheme.bodyLarge?.color?.withOpacity(0.87))),
-                      Text('€${amount.toStringAsFixed(2)}',
+                      Text(CurrencyFormatter.format(amount),
                           style: GoogleFonts.inter(
                               fontSize: 15,
                               fontWeight: FontWeight.w700,
@@ -199,7 +210,7 @@ class _PaymentCheckoutScreenState extends State<PaymentCheckoutScreen> {
                         borderRadius: BorderRadius.circular(30)),
                   ),
                   child: Text(
-                    'Pay €${amount.toStringAsFixed(2)}',
+                    'Pay ${CurrencyFormatter.format(amount)}',
                     style: GoogleFonts.inter(
                         fontSize: 17,
                         fontWeight: FontWeight.w700,

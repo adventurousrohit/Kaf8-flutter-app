@@ -76,7 +76,6 @@ class _TrackingScreenState extends State<TrackingScreen> {
       ),
     };
   }
-
   Color get _statusColor {
     switch (_statusStr) {
       case 'active':    return Colors.blue;

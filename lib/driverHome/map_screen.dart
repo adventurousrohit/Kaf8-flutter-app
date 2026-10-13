@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../Controller/order_controller.dart';
 import '../Service/socket_service.dart';
+import '../Utils/currency_formatter.dart';
 
 class MapScreen extends StatefulWidget {
   final Map<String, dynamic> order;
@@ -140,7 +141,7 @@ class _MapScreenState extends State<MapScreen> {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    '$_status · €${_cost.toStringAsFixed(2)}',
+                    '$_status · ${CurrencyFormatter.format(_cost)}',
                     style: GoogleFonts.inter(
                         fontSize: 13, fontWeight: FontWeight.w600, color: theme.textTheme.bodyLarge?.color),
                   ),

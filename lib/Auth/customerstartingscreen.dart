@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_navigation/src/extension_navigation.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../Utils/appColor.dart';
 import '../Utils/primaryButtion.dart';
@@ -87,7 +86,9 @@ class _GetStartedScreenState extends State<GetStartedScreen> {
 
                   // Title
                   Text(
-                    isDriver ? "Service Provider" : "Let's Get Started",
+                    isDriver
+                        ? 'auth_service_provider'.tr
+                        : 'auth_get_started'.tr,
                     style: GoogleFonts.inter(
                       fontSize: 26 * fontScale,
                       fontWeight: FontWeight.w700,
@@ -96,13 +97,11 @@ class _GetStartedScreenState extends State<GetStartedScreen> {
                   ),
 
                   SizedBox(height: 8 * scale),
-
-                  // Subtitle (underlined like in screenshot)
                   Text(
                     isDriver
-                        ? 'Join the fleet and start delivering'
-                        : 'Create an account or login\nto explore about our app',
-                    textAlign: TextAlign.center,
+                        ? 'auth_join_fleet'.tr
+                        : 'auth_create_account'.tr,
+                    textAlign: TextAlign.start,
                     style: GoogleFonts.inter(
                       fontSize: 14 * fontScale,
                       color: theme.textTheme.bodyMedium?.color,
@@ -124,7 +123,7 @@ class _GetStartedScreenState extends State<GetStartedScreen> {
 
                   // ── Login Button ──────────────────────────────────
                   PrimaryButton(
-                    text: 'Login',
+                    text: 'auth_login'.tr,
                     borderRadius: 30,
                     onPressed: () {
                       Navigator.push(
@@ -148,7 +147,7 @@ class _GetStartedScreenState extends State<GetStartedScreen> {
                         padding:
                         const EdgeInsets.symmetric(horizontal: 16),
                         child: Text(
-                          "or",
+                          'auth_or'.tr,
                           style: TextStyle(
                             color: theme.textTheme.bodySmall?.color,
                             fontSize: 14 * fontScale,
@@ -165,14 +164,14 @@ class _GetStartedScreenState extends State<GetStartedScreen> {
 
                   // ── Google ────────────────────────────────────────
                   SocialButton(
-                    text: "Continue with Google",
+                    text: 'auth_continue_google'.tr,
                     assetPath: 'assets/icons/google_icon.png',
                     backgroundColor: const Color(0xFF5384EE),
                     borderRadius: 30,
                     onPressed: () {
                       Get.snackbar(
-                        "Coming Soon",
-                        "Google login will be available in a future update",
+                        'auth_coming_soon'.tr,
+                        'auth_google_future'.tr,
                         backgroundColor: Colors.grey[800],
                         colorText: Colors.white,
                         duration: const Duration(seconds: 2),
@@ -187,7 +186,7 @@ class _GetStartedScreenState extends State<GetStartedScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        "Do not have an account? ",
+                        'auth_no_account'.tr,
                         style: GoogleFonts.inter(
                           fontSize: 14 * fontScale,
                           fontWeight: FontWeight.w400,
@@ -203,7 +202,7 @@ class _GetStartedScreenState extends State<GetStartedScreen> {
                           }
                         },
                         child: Text(
-                          "Register",
+                          'auth_register'.tr,
                           style: GoogleFonts.inter(
                             fontSize: 14 * fontScale,
                             fontWeight: FontWeight.w600,

@@ -1,5 +1,3 @@
-
-
 allprojects {
     repositories {
         google()
@@ -16,6 +14,35 @@ rootProject.layout.buildDirectory.value(newBuildDir)
 subprojects {
     val newSubprojectBuildDir: Directory = newBuildDir.dir(project.name)
     project.layout.buildDirectory.value(newSubprojectBuildDir)
+}
+
+subprojects {
+    plugins.withId("com.android.library") {
+        val android = extensions.getByType(com.android.build.gradle.LibraryExtension::class.java)
+        tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+            compilerOptions {
+                val targetVer = android.compileOptions.targetCompatibility
+                if (targetVer == JavaVersion.VERSION_1_8) {
+                    jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8)
+                } else {
+                    jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+                }
+            }
+        }
+    }
+    plugins.withId("com.android.application") {
+        val android = extensions.getByType(com.android.build.gradle.AppExtension::class.java)
+        tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+            compilerOptions {
+                val targetVer = android.compileOptions.targetCompatibility
+                if (targetVer == JavaVersion.VERSION_1_8) {
+                    jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8)
+                } else {
+                    jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+                }
+            }
+        }
+    }
 }
 
 subprojects {

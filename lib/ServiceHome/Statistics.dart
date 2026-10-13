@@ -2,6 +2,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../Service/api_service.dart';
+import '../Utils/currency_formatter.dart';
 import '../profile/myProfile.dart';
 
 class StatisticsScreen extends StatefulWidget {
@@ -119,7 +120,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   _Summary(title: "Total Orders",   value: "$_totalOrders", theme: theme),
-                  _Summary(title: "Total Earnings", value: "€ ${_totalEarnings.toStringAsFixed(2)}", theme: theme),
+                  _Summary(title: "Total Earnings", value: CurrencyFormatter.format(_totalEarnings), theme: theme),
                 ],
               ),
             ),

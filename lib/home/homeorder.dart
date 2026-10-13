@@ -67,7 +67,11 @@ class _homeorderState extends State<homeorder> {
       final address = await LocationService.getAddressFromLatLng(position);
       if (!mounted) return;
       setState(() {
-        if (address != null) _currentAddress = address;
+        if (address != null) {
+          _currentAddress = address;
+        } else {
+          _currentAddress = "Current Location";
+        }
         _isFetchingLocation = false;
         _markers.add(
           Marker(
@@ -86,6 +90,7 @@ class _homeorderState extends State<homeorder> {
     }
 
     setState(() {
+      _currentAddress = "Tap map or search pickup location";
       _isFetchingLocation = false;
     });
   }
@@ -202,7 +207,6 @@ class _homeorderState extends State<homeorder> {
       ),
       body: Stack(
         children: [
-          // Google Map filling the background
           GoogleMap(
             initialCameraPosition: CameraPosition(
               target: _initialMapTarget,

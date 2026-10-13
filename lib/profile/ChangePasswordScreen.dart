@@ -98,12 +98,12 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     final confirm = _confirmController.text;
 
     if (newPw != confirm) {
-      Get.snackbar("Error", "Passwords do not match",
+      Get.snackbar('error'.tr, 'auth_password_mismatch'.tr,
           backgroundColor: Colors.red, colorText: Colors.white);
       return;
     }
     if (newPw.length < 6) {
-      Get.snackbar("Error", "Password must be at least 6 characters",
+      Get.snackbar('error'.tr, 'auth_password_too_short'.tr,
           backgroundColor: Colors.red, colorText: Colors.white);
       return;
     }
@@ -145,8 +145,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       );
     } else {
       Get.snackbar(
-        "Error",
-        response['message']?.toString() ?? "Failed to change password",
+        'error'.tr,
+        response['message']?.toString() ?? 'auth_failed_change_password'.tr,
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
@@ -205,7 +205,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                       ),
                       const Spacer(),
                       Text(
-                        _isAuthFlow ? "Change Password" : "Reset Password",
+                        _isAuthFlow
+                            ? 'auth_change_password'.tr
+                            : 'auth_reset_password'.tr,
                         style: GoogleFonts.inter(
                             fontSize: 17 * fontScale, fontWeight: FontWeight.w600, color: theme.textTheme.titleLarge?.color),
                       ),
@@ -225,27 +227,27 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
                         if (_isAuthFlow) ...[
                           // ── Authenticated flow: current password ────
-                          _label("Current Password", fontScale, theme),
+                          _label('auth_current_password'.tr, fontScale, theme),
                           const SizedBox(height: 8),
                           TextField(
                             controller: _currentPasswordController,
                             obscureText: !_currentVisible,
                             style: GoogleFonts.inter(fontSize: 14 * fontScale, color: theme.textTheme.bodyLarge?.color),
                             decoration: _fieldDeco(
-                                "Enter current password", _currentVisible,
+                                'auth_enter_current_password'.tr, _currentVisible,
                                 () => setState(() => _currentVisible = !_currentVisible), theme),
                           ),
                           const SizedBox(height: 18),
                         ] else ...[
                           // ── Forgot-password flow: reset code ────────
-                          _label("Reset Code", fontScale, theme),
+                          _label('auth_reset_code'.tr, fontScale, theme),
                           const SizedBox(height: 8),
                           TextField(
                             controller: _codeController,
                             keyboardType: TextInputType.number,
                             style: GoogleFonts.inter(fontSize: 14 * fontScale, color: theme.textTheme.bodyLarge?.color),
                             decoration: InputDecoration(
-                              hintText: "Enter 6-digit code from email",
+                              hintText: 'auth_reset_code_email_hint'.tr,
                               hintStyle: GoogleFonts.inter(
                                   color: Colors.grey[400], fontSize: 14),
                               filled: true,
@@ -269,27 +271,27 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                           const SizedBox(height: 18),
                         ],
 
-                        _label("New Password", fontScale, theme),
+                        _label('auth_new_password'.tr, fontScale, theme),
                         const SizedBox(height: 8),
                         TextField(
                           controller: _newPasswordController,
                           obscureText: !_newVisible,
                           style: GoogleFonts.inter(fontSize: 14 * fontScale, color: theme.textTheme.bodyLarge?.color),
                           decoration: _fieldDeco(
-                              "Enter new password", _newVisible,
+                              'auth_enter_new_password'.tr, _newVisible,
                               () => setState(() => _newVisible = !_newVisible), theme),
                         ),
 
                         const SizedBox(height: 18),
 
-                        _label("Confirm Password", fontScale, theme),
+                        _label('auth_confirm_password'.tr, fontScale, theme),
                         const SizedBox(height: 8),
                         TextField(
                           controller: _confirmController,
                           obscureText: !_confirmVisible,
                           style: GoogleFonts.inter(fontSize: 14 * fontScale, color: theme.textTheme.bodyLarge?.color),
                           decoration: _fieldDeco(
-                              "Re-enter new password", _confirmVisible,
+                              'auth_reenter_new_password'.tr, _confirmVisible,
                               () => setState(
                                   () => _confirmVisible = !_confirmVisible), theme),
                         ),
@@ -317,8 +319,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                                         strokeWidth: 2, color: Colors.white))
                                 : Text(
                                     _isAuthFlow
-                                        ? "Change Password"
-                                        : "Reset Password",
+                                        ? 'auth_change_password'.tr
+                                        : 'auth_reset_password'.tr,
                                     style: GoogleFonts.inter(
                                         fontSize: 16 * fontScale,
                                         fontWeight: FontWeight.w600,
@@ -375,7 +377,9 @@ class _SuccessDialog extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              isAuthFlow ? "Password Changed" : "Password Reset",
+              isAuthFlow
+                  ? 'auth_password_changed'.tr
+                  : 'auth_password_reset'.tr,
               style: GoogleFonts.inter(
                   fontSize: 18 * fontScale,
                   fontWeight: FontWeight.w700,
@@ -384,8 +388,8 @@ class _SuccessDialog extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               isAuthFlow
-                  ? "Your password has been successfully updated."
-                  : "Your password has been successfully reset. Please log in with your new password.",
+                  ? 'auth_password_updated'.tr
+                  : 'auth_password_reset_success'.tr,
               textAlign: TextAlign.center,
               style: GoogleFonts.inter(
                   fontSize: 13 * fontScale, color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6)),
@@ -401,7 +405,7 @@ class _SuccessDialog extends StatelessWidget {
                         borderRadius: BorderRadius.circular(30))),
                 onPressed: onReturn,
                 child: Text(
-                  isAuthFlow ? "Done" : "Back to Login",
+                  isAuthFlow ? 'auth_done'.tr : 'auth_back_to_login'.tr,
                   style: GoogleFonts.inter(
                       fontSize: 15 * fontScale,
                       fontWeight: FontWeight.w600,

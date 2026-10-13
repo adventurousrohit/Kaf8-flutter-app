@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../Controller/user_profile_controller.dart';
 import '../Service/api_service.dart';
 import '../Utils/avatar_widget.dart';
+import '../Utils/notification_localizer.dart';
 
 class _NotifItem {
   final String title;
@@ -25,7 +26,7 @@ class DriverNotificationScreen extends StatefulWidget {
 }
 
 class _DriverNotificationScreenState extends State<DriverNotificationScreen> {
-  List<_NotifItem> _notifications = _notificationsFallback;
+  List<_NotifItem> _notifications = [];
   bool _isLoading = false;
   String? _error;
 
@@ -46,7 +47,7 @@ class _DriverNotificationScreenState extends State<DriverNotificationScreen> {
         final map = Map<String, dynamic>.from(item);
         final type = (map['type'] ?? "system").toString();
         return _NotifItem(
-          title: (map['title'] ?? "Notification").toString(),
+          title: (map['title'] ?? 'Notification').toString(),
           body: (map['message'] ?? "").toString(),
           time: (map['createdAt'] ?? "").toString(),
           type: type.contains("order") ? "goods" : "vehicle",
@@ -56,7 +57,7 @@ class _DriverNotificationScreenState extends State<DriverNotificationScreen> {
       _notifications = [];
     } else {
       _notifications = [];
-      _error = response['message']?.toString() ?? 'Unable to load notifications';
+      _error = response['message']?.toString() ?? 'unable_to_load_notifications'.tr;
     }
     setState(() => _isLoading = false);
   }
@@ -85,7 +86,7 @@ class _DriverNotificationScreenState extends State<DriverNotificationScreen> {
                       : _notifications.isEmpty
                           ? Center(
                               child: Text(
-                                'No notifications yet',
+                                'no_notifications_yet'.tr,
                                 style: GoogleFonts.inter(color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6)),
                               ),
                             )
@@ -115,7 +116,7 @@ class _DriverNotificationScreenState extends State<DriverNotificationScreen> {
                 size: 20, color: theme.iconTheme.color),
           ),
           const SizedBox(width: 10),
-          Text('Notifications',
+          Text('notifications_title'.tr,
               style: GoogleFonts.inter(
                   fontSize: 20, fontWeight: FontWeight.w700, color: theme.textTheme.titleLarge?.color)),
           const Spacer(),
@@ -152,39 +153,6 @@ class _DriverNotificationScreenState extends State<DriverNotificationScreen> {
   }
 }
 
-const List<_NotifItem> _notificationsFallback = [
-  _NotifItem(
-      title: 'Goods',
-      body: 'Lorem ipsum dolor sit amet Consectetur Adipiscing elit.',
-      time: '09:41 AM',
-      type: 'goods'),
-  _NotifItem(
-      title: 'Vehicle',
-      body: 'Lorem ipsum dolor sit amet Consectetur Adipiscing elit.',
-      time: '09:20 AM',
-      type: 'vehicle'),
-  _NotifItem(
-      title: 'Goods',
-      body: 'Lorem ipsum dolor sit amet Consectetur Adipiscing elit.',
-      time: '08:55 AM',
-      type: 'goods'),
-  _NotifItem(
-      title: 'Goods',
-      body: 'Lorem ipsum dolor sit amet Consectetur Adipiscing elit.',
-      time: '08:30 AM',
-      type: 'goods'),
-  _NotifItem(
-      title: 'Vehicle',
-      body: 'Lorem ipsum dolor sit amet Consectetur Adipiscing elit.',
-      time: '07:10 AM',
-      type: 'vehicle'),
-  _NotifItem(
-      title: 'Goods',
-      body: 'Lorem ipsum dolor sit amet Consectetur Adipiscing elit.',
-      time: '06:45 AM',
-      type: 'goods'),
-];
-
 class _NotifCard extends StatelessWidget {
   final _NotifItem item;
   final ThemeData theme;
@@ -199,8 +167,9 @@ class _NotifCard extends StatelessWidget {
   Color get _statusColor =>
       item.type == 'vehicle' ? Colors.blue : Colors.green;
 
-  String get _statusLabel =>
-      item.type == 'vehicle' ? 'New status' : 'Accepted';
+  String get _statusLabel => item.type == 'vehicle'
+      ? 'notification_new_status'.tr
+      : 'notification_accepted'.tr;
 
   @override
   Widget build(BuildContext context) {
@@ -239,7 +208,7 @@ class _NotifCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Text(item.title,
+                    Text(localizeNotificationTitle(item.title),
                         style: GoogleFonts.inter(
                             fontSize: 14, fontWeight: FontWeight.w700, color: theme.textTheme.bodyLarge?.color)),
                     const Spacer(),

@@ -93,13 +93,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
   void _handleRegister() async {
     final fullName        = nameController.text.trim();
     final phone           = phoneController.text.trim();
-    final email           = emailController.text.trim();
+    final email           = emailController.text.trim().toLowerCase();
     final password        = passwordController.text.trim();
     final confirmPassword = confirmPasswordController.text.trim();
 
+    if (email.isEmpty || !GetUtils.isEmail(email)) {
+      Get.snackbar('error'.tr, 'auth_enter_valid_email'.tr,
+          backgroundColor: Colors.red, colorText: Colors.white);
+      return;
+    }
     if (password != confirmPassword) {
       setState(() => isPasswordWrong = true);
-      Get.snackbar("Error", "Passwords do not match",
+      Get.snackbar('error'.tr, 'auth_password_mismatch'.tr,
           backgroundColor: Colors.red, colorText: Colors.white);
       return;
     }
@@ -123,13 +128,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
     setState(() => isLoading = false);
 
     if (response['success'] == true) {
-      Get.snackbar("Success", response['message'] ?? "Registration successful",
+      Get.snackbar(
+          'auth_success'.tr, _localizeMessage(response['message']) ?? 'auth_registration_success'.tr,
           backgroundColor: Colors.green, colorText: Colors.white);
       Get.offAll(() => const LoginScreen());
     } else {
-      Get.snackbar("Error", response['message'] ?? "Registration failed",
+      Get.snackbar(
+          'error'.tr, _localizeMessage(response['message']) ?? 'auth_registration_failed'.tr,
           backgroundColor: Colors.red, colorText: Colors.white);
     }
+  }
+
+  String? _localizeMessage(dynamic msg) {
+    if (msg == null) return null;
+    final str = msg.toString();
+    final lower = str.toLowerCase();
+    if (lower.contains('déjà utilisé') ||
+        lower.contains('already in use') ||
+        lower.contains('already used') ||
+        lower.contains('already exists')) {
+      return 'auth_email_already_used'.tr;
+    }
+    return str;
   }
 
   // ── Shared decoration ──────────────────────────────────────────────────────
@@ -272,7 +292,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     child: Column(
                       children: [
                         Text(
-                          "Register Yourself",
+                          'auth_register_yourself'.tr,
                           style: GoogleFonts.inter(
                             fontSize: 26 * fontScale,
                             fontWeight: FontWeight.w700,
@@ -281,7 +301,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          "Welcome Back! You've\nbeen missed",
+                          'auth_login_welcome'.tr,
                           textAlign: TextAlign.center,
                           style: GoogleFonts.inter(
                             fontSize: 14 * fontScale,
@@ -295,18 +315,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   SizedBox(height: 24 * scale),
 
                   // ── Full name ─────────────────────────────────────────
-                  _label("Full name", fontScale, theme),
+                  _label('full_name'.tr, fontScale, theme),
                   const SizedBox(height: 8),
                   TextField(
                     controller: nameController,
                     style: GoogleFonts.inter(fontSize: 14 * fontScale, color: theme.textTheme.bodyLarge?.color),
-                    decoration: _fieldDecoration(hint: "Enter full name"),
+                    decoration: _fieldDecoration(hint: 'auth_enter_full_name'.tr),
                   ),
 
                   SizedBox(height: 14 * scale),
 
                   // ── Phone number ──────────────────────────────────────
-                  _label("Phone number", fontScale, theme),
+                  _label('auth_phone_number'.tr, fontScale, theme),
                   const SizedBox(height: 8),
                   TextField(
                     controller: phoneController,
@@ -316,7 +336,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ],
                     style: GoogleFonts.inter(fontSize: 14 * fontScale, color: theme.textTheme.bodyLarge?.color),
                     decoration: _fieldDecoration(
-                      hint: "Mobile number",
+                      hint: 'auth_mobile_number'.tr,
                       prefixIcon: GestureDetector(
                         onTap: _showCountryPicker,
                         child: Container(
@@ -366,26 +386,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   SizedBox(height: 14 * scale),
 
                   // ── Email ─────────────────────────────────────────────
-                  _label("Email", fontScale, theme),
+                  _label('email'.tr, fontScale, theme),
                   const SizedBox(height: 8),
                   TextField(
                     controller: emailController,
                     keyboardType: TextInputType.emailAddress,
                     style: GoogleFonts.inter(fontSize: 14 * fontScale, color: theme.textTheme.bodyLarge?.color),
-                    decoration: _fieldDecoration(hint: "Enter email"),
+                    decoration: _fieldDecoration(hint: 'auth_enter_email'.tr),
                   ),
 
                   SizedBox(height: 14 * scale),
 
                   // ── Password ──────────────────────────────────────────
-                  _label("Password", fontScale, theme),
+                  _label('password'.tr, fontScale, theme),
                   const SizedBox(height: 8),
                   TextField(
                     controller: passwordController,
                     obscureText: !isPasswordVisible,
                     style: GoogleFonts.inter(fontSize: 14 * fontScale, color: theme.textTheme.bodyLarge?.color),
                     decoration: _fieldDecoration(
-                      hint: "Enter password",
+                      hint: 'auth_enter_password'.tr,
                       hasError: isPasswordWrong,
                       suffixIcon: IconButton(
                         icon: Icon(
@@ -404,14 +424,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   SizedBox(height: 14 * scale),
 
                   // ── Confirm Password ──────────────────────────────────
-                  _label("Confirm Password", fontScale, theme),
+                  _label('auth_confirm_password'.tr, fontScale, theme),
                   const SizedBox(height: 8),
                   TextField(
                     controller: confirmPasswordController,
                     obscureText: !isConfirmPasswordVisible,
                     style: GoogleFonts.inter(fontSize: 14 * fontScale, color: theme.textTheme.bodyLarge?.color),
                     decoration: _fieldDecoration(
-                      hint: "Re-enter password",
+                      hint: 'auth_reenter_password'.tr,
                       hasError: isPasswordWrong,
                       suffixIcon: IconButton(
                         icon: Icon(
@@ -432,7 +452,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     Padding(
                       padding: const EdgeInsets.only(top: 6),
                       child: Text(
-                        "Passwords do not match",
+                        'auth_password_mismatch'.tr,
                         style: TextStyle(
                             color: Colors.red,
                             fontSize: 12 * fontScale),
@@ -445,14 +465,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   RichText(
                     text: TextSpan(
                       text:
-                      "By clicking Create account, you agree to the system's ",
+                      'auth_terms_intro'.tr,
                       style: GoogleFonts.inter(
                           fontSize: 13 * fontScale,
                           color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
                           fontWeight: FontWeight.w400),
                       children: [
                         TextSpan(
-                          text: "Terms and policies",
+                          text: 'terms_policies'.tr,
                           style: GoogleFonts.inter(
                             fontSize: 13 * fontScale,
                             color: theme.textTheme.bodyLarge?.color,
@@ -467,7 +487,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                   // ── Register button ───────────────────────────────────
                   PrimaryButton(
-                    text: 'Register',
+                    text: 'auth_register'.tr,
                     borderRadius: 30,
                     onPressed: isEnabled ? _handleRegister : null,
                     isDisabled: !isEnabled,
@@ -482,14 +502,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       onTap: () => Get.to(() => const LoginScreen()),
                       child: RichText(
                         text: TextSpan(
-                          text: "Already have an account? ",
+                          text: 'auth_already_account'.tr,
                           style: GoogleFonts.inter(
                             color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
                             fontSize: 14 * fontScale,
                           ),
                           children: [
                             TextSpan(
-                              text: "Login",
+                              text: 'auth_login'.tr,
                               style: GoogleFonts.inter(
                                 color: Colors.green,
                                 fontWeight: FontWeight.w600,

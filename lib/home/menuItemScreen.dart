@@ -27,6 +27,8 @@ class MenuItemWidget extends StatelessWidget {
       ),
       child:
       ListTile(
+        focusColor: Colors.transparent,
+        hoverColor: Colors.transparent,
         leading: Image.asset(
           imagePath,
           width: 20,

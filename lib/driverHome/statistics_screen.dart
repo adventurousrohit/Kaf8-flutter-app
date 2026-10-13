@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../Service/api_service.dart';
+import '../Utils/currency_formatter.dart';
 
 // NOTE: Add fl_chart to pubspec.yaml for a production chart.
 // This screen uses a custom painter for the bar/line charts.
@@ -92,7 +93,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                   const SizedBox(height: 20),
                   _buildChartCard(
                     title: 'Earnings',
-                    value: '€ ${_totalEarnings.toStringAsFixed(2)}',
+                    value: CurrencyFormatter.format(_totalEarnings),
                     filter: _earningsFilter,
                     onFilterChange: (v) {
                       setState(() => _earningsFilter = v);
@@ -183,7 +184,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         Expanded(
           child: _summaryCard(
               label: 'Total Earnings',
-              value: '€ ${_totalEarnings.toStringAsFixed(2)}',
+              value: CurrencyFormatter.format(_totalEarnings),
               icon: Icons.attach_money,
               theme: theme),
         ),

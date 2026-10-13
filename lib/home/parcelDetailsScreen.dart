@@ -7,6 +7,7 @@ import 'package:kaf8/Service/api_service.dart';
 import 'package:kaf8/Service/location_service.dart';
 import 'package:kaf8/Service/vehicle_type_model.dart';
 
+import '../Utils/currency_formatter.dart';
 import '../../../components/delivery_textWidget.dart';
 import '../../../small-widgets/app_colors.dart';
 import '../small-widgets/app_assets.dart';
@@ -365,17 +366,17 @@ class _ParcelDetailsScreenState extends State<ParcelDetailsScreen> {
                   const SizedBox(height: 7),
                   _costRow(
                     "$selectedSize Package",
-                    "€${_sizeCost[selectedSize]?.toStringAsFixed(2)}",
+                    CurrencyFormatter.format(_sizeCost[selectedSize] ?? 0),
                     theme,
                   ),
                   _costRow(
                     _selectedVehicle?.name ?? 'Vehicle',
-                    "€${(_selectedVehicle?.baseCost ?? 0).toStringAsFixed(2)}",
+                    CurrencyFormatter.format(_selectedVehicle?.baseCost ?? 0),
                     theme,
                   ),
                   _costRow(
                     "Total Cost",
-                    "€${_deliveryCost.toStringAsFixed(2)}",
+                    CurrencyFormatter.format(_deliveryCost),
                     theme,
                     isTotal: true,
                   ),

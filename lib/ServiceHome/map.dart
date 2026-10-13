@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
-import 'package:kaf8/ServiceHome/Statistics.dart';
+import 'package:kaf8/home/orderDetails.dart';
 import '../profile/myProfile.dart';
 
 import 'call.dart';
@@ -227,8 +227,7 @@ class TrackingScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(8.0),
                 child: InkWell(
                   onTap: (){
-                    Get.to(const StatisticsScreen());
-
+                    Get.to(() => const OrderDetailsScreen());
                   },
                   child: Text("More details",
                           style: TextStyle(

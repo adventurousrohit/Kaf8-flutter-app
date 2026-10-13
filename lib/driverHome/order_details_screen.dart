@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../Controller/order_controller.dart';
+import '../Utils/currency_formatter.dart';
 import 'call_screen.dart';
 
 class OrderDetailsScreen extends StatelessWidget {
@@ -189,7 +190,7 @@ class OrderDetailsScreen extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 2),
-                    Text('€${_deliveryCost.toStringAsFixed(2)}',
+                    Text(CurrencyFormatter.format(_deliveryCost),
                         style: GoogleFonts.inter(
                             fontSize: 18,
                             fontWeight: FontWeight.w800,
@@ -211,7 +212,7 @@ class OrderDetailsScreen extends StatelessWidget {
             ),
             child: Column(
               children: [
-                _priceRow('Delivery cost', '€${_deliveryCost.toStringAsFixed(2)}', theme),
+                _priceRow('Delivery cost', CurrencyFormatter.format(_deliveryCost), theme),
                 _priceRow(
                   'Payment',
                   OrderController.paymentMethodLabel(order['paymentMethod']?.toString()),

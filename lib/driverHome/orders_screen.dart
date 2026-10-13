@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../Controller/order_controller.dart';
 import '../Controller/user_profile_controller.dart';
 import '../Utils/avatar_widget.dart';
+import '../Utils/currency_formatter.dart';
 import 'map_screen.dart';
 import 'notification_screen.dart';
 import 'order_details_screen.dart';
@@ -304,8 +305,13 @@ class _DriverOrderCard extends StatelessWidget {
     this.onComplete,
   });
 
-  List get _packages =>
-      (order['Packages'] ?? order['packages'] ?? []) as List;
+  List get _packages {
+    final pkgs = order['Packages'] ?? order['packages'];
+    if (pkgs is List) return pkgs;
+    final pkg = order['Package'] ?? order['package'];
+    if (pkg is Map) return [pkg];
+    return [];
+  }
 
   String get _parcelType =>
       _packages.isNotEmpty
@@ -401,7 +407,7 @@ class _DriverOrderCard extends StatelessWidget {
                       children: [
                         const Text('🚚', style: TextStyle(fontSize: 14)),
                         const Spacer(),
-                        Text('€${_cost.toStringAsFixed(2)}',
+                        Text(CurrencyFormatter.format(_cost),
                             style: GoogleFonts.inter(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w800,

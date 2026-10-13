@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:kaf8/home/settingScreen.dart';
 
 import '../ServiceHome/HomePage.dart';
 import '../Utils/responsiveUtils.dart';
 import '../home/OrderScreen.dart';
-import '../driverHome/driverHomePage.dart';
 import '../setting/settingScreen2.dart';
 import '../profile/myProfile.dart';
 
@@ -14,13 +13,15 @@ import '../profile/myProfile.dart';
 // ─────────────────────────────────────────────────────────────────────────────
 
 class BottomNavItem {
-  final IconData icon;
-  final String label;
+  final String imagePath;
+  final String labelKey;
+  final String defaultLabel;
   final int index;
 
   BottomNavItem({
-    required this.icon,
-    required this.label,
+    required this.imagePath,
+    required this.labelKey,
+    required this.defaultLabel,
     required this.index,
   });
 }
@@ -48,10 +49,30 @@ class _BaseScreenState extends State<BaseScreen> {
   ];
 
   List<BottomNavItem> _getNavItems() => [
-    BottomNavItem(icon: Icons.home_rounded,          label: 'Home',     index: 0),
-    BottomNavItem(icon: Icons.receipt_long_outlined, label: 'Bookings', index: 1),
-    BottomNavItem(icon: Icons.settings_outlined,     label: 'Settings', index: 2),
-    BottomNavItem(icon: Icons.person_outline,        label: 'Profile',  index: 3),
+    BottomNavItem(
+      imagePath: 'assets/bottomBarImages/HomeIcon.png',
+      labelKey: 'home',
+      defaultLabel: 'Home',
+      index: 0,
+    ),
+    BottomNavItem(
+      imagePath: 'assets/bottomBarImages/BookingIcon.png',
+      labelKey: 'booking',
+      defaultLabel: 'Booking',
+      index: 1,
+    ),
+    BottomNavItem(
+      imagePath: 'assets/bottomBarImages/SettingIcon.png',
+      labelKey: 'settings_title',
+      defaultLabel: 'Setting',
+      index: 2,
+    ),
+    BottomNavItem(
+      imagePath: 'assets/bottomBarImages/ProfileIcon.png',
+      labelKey: 'profile',
+      defaultLabel: 'Profile',
+      index: 3,
+    ),
   ];
 
   @override
@@ -66,24 +87,30 @@ class _BaseScreenState extends State<BaseScreen> {
     final fontScale = ResponsiveUtils.fontScale(context);
     final screens   = _getScreens();
     final navItems  = _getNavItems();
-    final theme = Theme.of(context);
+    final theme     = Theme.of(context);
+    final bottomInset = MediaQuery.of(context).padding.bottom;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       body: PageView(
         controller: _controller,
-        physics: const NeverScrollableScrollPhysics(), // disable swipe — nav controls it
+        physics: const NeverScrollableScrollPhysics(),
         onPageChanged: (index) => setState(() => _currentIndex = index),
         children: screens,
       ),
       bottomNavigationBar: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        padding: EdgeInsets.fromLTRB(
+          28,
+          0,
+          28,
+          bottomInset > 0 ? bottomInset + 8 : 16,
+        ),
         child: _buildBottomNavBar(navItems, scale, fontScale, theme),
       ),
     );
   }
 
-  // ── Green pill bottom nav ──────────────────────────────────────────────────
+  // ── Green pill bottom nav with Icons + Text Labels ─────────────────────────
   Widget _buildBottomNavBar(
       List<BottomNavItem> navItems,
       double scale,
@@ -92,10 +119,10 @@ class _BaseScreenState extends State<BaseScreen> {
       ) {
     final isDark = theme.brightness == Brightness.dark;
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 10 * scale, horizontal: 8),
+      padding: EdgeInsets.symmetric(vertical: 8 * scale, horizontal: 10),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E1E1E) : Colors.green,
-        borderRadius: BorderRadius.circular(40),
+        borderRadius: BorderRadius.circular(36),
         boxShadow: [
           BoxShadow(
             color: (isDark ? Colors.black : Colors.green).withOpacity(0.40),
@@ -109,6 +136,10 @@ class _BaseScreenState extends State<BaseScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: navItems.map((item) {
           final bool isSelected = _currentIndex == item.index;
+          final String labelText = item.labelKey.tr.isNotEmpty && item.labelKey.tr != item.labelKey
+              ? item.labelKey.tr
+              : item.defaultLabel;
+
           return GestureDetector(
             onTap: () {
               _controller.jumpToPage(item.index);
@@ -117,29 +148,34 @@ class _BaseScreenState extends State<BaseScreen> {
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 250),
               padding: EdgeInsets.symmetric(
-                  horizontal: isSelected ? 14 : 10, vertical: 6),
+                horizontal: isSelected ? 12 * scale : 8 * scale,
+                vertical: 6 * scale,
+              ),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? (isDark ? Colors.green.withOpacity(0.2) : Colors.white.withOpacity(0.20))
+                    ? (isDark ? Colors.green.withOpacity(0.2) : Colors.white.withOpacity(0.25))
                     : Colors.transparent,
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(18),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    item.icon,
-                    size: 24 * scale,
-                    color: isSelected ? (isDark ? Colors.green : Colors.white) : (isDark ? Colors.white54 : Colors.white60),
+                  Image.asset(
+                    item.imagePath,
+                    width: 40 * scale,
+                    height: 42 * scale,
+                    color: isSelected
+                        ? (isDark ? Colors.green : Colors.white)
+                        : (isDark ? Colors.white54 : Colors.white60),
                   ),
-                  const SizedBox(height: 3),
                   Text(
-                    item.label,
+                    labelText,
                     style: GoogleFonts.inter(
                       fontSize: 11 * fontScale,
-                      fontWeight:
-                      isSelected ? FontWeight.w600 : FontWeight.w400,
-                      color: isSelected ? (isDark ? Colors.green : Colors.white) : (isDark ? Colors.white54 : Colors.white60),
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                      color: isSelected
+                          ? (isDark ? Colors.green : Colors.white)
+                          : (isDark ? Colors.white54 : Colors.white60),
                     ),
                   ),
                 ],

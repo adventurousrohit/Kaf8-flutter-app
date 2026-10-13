@@ -15,6 +15,7 @@ import 'package:kaf8/driverHome/statistics_screen.dart';
 
 import '../Help/help.dart';
 import '../setting/LanguageScreen.dart';
+import '../setting/settingScreen2.dart';
 import 'add_vehicle_sheet.dart';
 import 'notification_screen.dart';
 
@@ -723,7 +724,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen>
                       _drawerDivider(theme),
                       _drawerItem(
                         icon: Icons.language_outlined,
-                        label: "Language",
+                        label: 'language'.tr,
                         theme: theme,
                         onTap: () {
                           Navigator.pop(context);
@@ -733,10 +734,11 @@ class _DriverHomeScreenState extends State<DriverHomeScreen>
                       _drawerDivider(theme),
                       _drawerItem(
                         icon: Icons.chat_bubble_outline,
-                        label: "About us",
+                        label: 'about_us'.tr,
                         theme: theme,
                         onTap: () {
                           Navigator.pop(context);
+                          Get.to(() => StaticInfoScreen(title: 'about_us'.tr, content: kAboutUs));
                         },
                       ),
                     ]),

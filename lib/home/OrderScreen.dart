@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../Controller/order_controller.dart';
 import '../Controller/user_profile_controller.dart';
 import '../Utils/avatar_widget.dart';
+import '../Utils/currency_formatter.dart';
 import '../Utils/responsiveUtils.dart';
 import '../Help/notification.dart';
 import '../profile/myProfile.dart';
@@ -101,7 +102,7 @@ class _OrdersScreenState extends State<OrdersScreen>
                     children: [
                       const SizedBox(width: 44),
                       const Spacer(),
-                      Text("My Orders",
+                      Text('my_orders'.tr,
                           style: GoogleFonts.inter(
                               fontSize: 18 * fontScale,
                               fontWeight: FontWeight.w600,
@@ -158,9 +159,9 @@ class _OrdersScreenState extends State<OrdersScreen>
                     ),
                     child: Row(
                       children: [
-                        _tabPill("New",     0, fontScale, theme),
-                        _tabPill("Active",  1, fontScale, theme),
-                        _tabPill("History", 2, fontScale, theme),
+                        _tabPill('pending'.tr, 0, fontScale, theme),
+                        _tabPill('active'.tr,  1, fontScale, theme),
+                        _tabPill('history'.tr, 2, fontScale, theme),
                       ],
                     ),
                   ),
@@ -325,8 +326,13 @@ class _OrderCard extends StatelessWidget {
     }
   }
 
-  List get _packages =>
-      (order['Packages'] ?? order['packages'] ?? []) as List;
+  List get _packages {
+    final pkgs = order['Packages'] ?? order['packages'];
+    if (pkgs is List) return pkgs;
+    final pkg = order['Package'] ?? order['package'];
+    if (pkg is Map) return [pkg];
+    return [];
+  }
 
   String get _parcelType =>
       _packages.isNotEmpty
@@ -335,6 +341,11 @@ class _OrderCard extends StatelessWidget {
 
   double get _cost =>
       double.tryParse(order['deliveryCost']?.toString() ?? '0') ?? 0;
+
+  String get _buttonText =>
+      (_statusStr == 'active' || _statusStr == 'pending')
+          ? "Check Status"
+          : "View Details";
 
   @override
   Widget build(BuildContext context) {
@@ -418,7 +429,7 @@ class _OrderCard extends StatelessWidget {
                               fontWeight: FontWeight.w600)),
                     ),
                     const SizedBox(height: 8),
-                    Text("€${_cost.toStringAsFixed(2)}",
+                    Text(CurrencyFormatter.format(_cost),
                         style: GoogleFonts.inter(
                             fontSize: 18 * fontScale,
                             fontWeight: FontWeight.w800,
@@ -477,7 +488,7 @@ class _OrderCard extends StatelessWidget {
                 ),
                 onPressed: () =>
                     Get.to(() => OrderDetailsScreen(order: order)),
-                child: Text("View Details",
+                child: Text(_buttonText,
                     style: GoogleFonts.inter(
                         fontSize: 13 * fontScale,
                         fontWeight: FontWeight.w600,

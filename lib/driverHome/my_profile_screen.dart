@@ -219,7 +219,7 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
                         ),
                       ),
                       const Spacer(),
-                      Text("My Profile",
+                      Text('my_profile'.tr,
                         style: GoogleFonts.inter(
                             fontSize: 17 * fontScale,
                             fontWeight: FontWeight.w600,
@@ -285,39 +285,39 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
                               const SizedBox(height: 24),
 
                               // First name
-                              _fieldLabel("First Name", fontScale, theme),
+                              _fieldLabel('auth_first_name'.tr, fontScale, theme),
                               TextField(
                                 controller: _firstNameController,
                                 style: GoogleFonts.inter(fontSize: 14 * fontScale, color: theme.textTheme.bodyLarge?.color),
-                                decoration: _inputDecoration("First name", theme),
+                                decoration: _inputDecoration('auth_first_name'.tr, theme),
                               ),
 
                               const SizedBox(height: 14),
 
                               // Last name
-                              _fieldLabel("Last Name", fontScale, theme),
+                              _fieldLabel('auth_last_name'.tr, fontScale, theme),
                               TextField(
                                 controller: _lastNameController,
                                 style: GoogleFonts.inter(fontSize: 14 * fontScale, color: theme.textTheme.bodyLarge?.color),
-                                decoration: _inputDecoration("Last name", theme),
+                                decoration: _inputDecoration('auth_last_name'.tr, theme),
                               ),
 
                               const SizedBox(height: 14),
 
                               // Phone
-                              _fieldLabel("Phone Number", fontScale, theme),
+                              _fieldLabel('phone_label'.tr, fontScale, theme),
                               TextField(
                                 controller: _phoneController,
                                 keyboardType: TextInputType.phone,
                                 inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9+\s]'))],
                                 style: GoogleFonts.inter(fontSize: 14 * fontScale, color: theme.textTheme.bodyLarge?.color),
-                                decoration: _inputDecoration("Phone number", theme),
+                                decoration: _inputDecoration('phone_label'.tr, theme),
                               ),
 
                               const SizedBox(height: 14),
 
                               // Location
-                              _fieldLabel("Your Location", fontScale, theme),
+                              _fieldLabel('your_location'.tr, fontScale, theme),
                               TextField(
                                 controller: _locationController,
                                 style: GoogleFonts.inter(fontSize: 14 * fontScale, color: theme.textTheme.bodyLarge?.color),
@@ -329,7 +329,7 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
                               const SizedBox(height: 14),
 
                               // Email (read-only)
-                              _fieldLabel("Email", fontScale, theme),
+                              _fieldLabel('email'.tr, fontScale, theme),
                               TextField(
                                 readOnly: true,
                                 controller: TextEditingController(text: _email),
@@ -392,7 +392,7 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
                                       Icon(Icons.lock_outline,
                                           color: Appcolor.secondaryColor, size: 20),
                                       const SizedBox(width: 12),
-                                      Text("Change Password",
+                                      Text('change_password'.tr,
                                           style: GoogleFonts.inter(
                                               fontSize: 14 * fontScale,
                                               fontWeight: FontWeight.w500,
@@ -420,7 +420,7 @@ class _DriverProfileScreenState extends State<DriverProfileScreen> {
                                   ),
                                   onPressed: _saving ? null : _save,
                                   child: Text(
-                                    _saving ? "Saving..." : "Save Changes",
+                                    _saving ? 'saving'.tr : 'save_changes'.tr,
                                     style: GoogleFonts.inter(
                                         fontSize: 16 * fontScale,
                                         fontWeight: FontWeight.w600,

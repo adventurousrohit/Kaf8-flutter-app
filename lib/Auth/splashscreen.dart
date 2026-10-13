@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 
-import '../../small-widgets/app_assets.dart';
-import '../../small-widgets/app_colors.dart';
 import '../Service/api_service.dart';
 import '../Service/fcm_service.dart';
 import '../home/mainhomepage.dart' as customerHome;
 import '../ServiceHome/mainHomePage.dart' as serviceHome;
 import '../driverHome/driverHomePage.dart';
+import '../small-widgets/app_assets.dart';
+import '../small-widgets/app_colors.dart';
 import 'onBoarding.dart';
 
 

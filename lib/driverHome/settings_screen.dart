@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kaf8/Auth/customerstartingscreen.dart';
 import 'package:kaf8/Service/api_service.dart';
 import '../Controller/user_profile_controller.dart';
 import '../Controller/theme_controller.dart';
+import '../setting/LanguageScreen.dart';
+import '../setting/settingScreen2.dart';
+import '../Help/help.dart';
+import '../module/userProfileScreen/getx/languageController.dart';
 import '../Utils/avatar_widget.dart';
 import 'my_profile_screen.dart';
 
@@ -26,138 +31,190 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: isDark ? theme.scaffoldBackgroundColor : const Color(0xFF2ECC40),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // ── Header ───────────────────────────────────────────────────
-            Obx(() => Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-              child: Row(
-                children: [
-                  AvatarWidget(
-                    avatarUrl: profileCtrl.avatarUrl,
-                    name: profileCtrl.displayName,
-                    radius: 24,
-                  ),
-                  const SizedBox(width: 14),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+      backgroundColor: isDark
+          ? theme.scaffoldBackgroundColor
+          : const Color(0xFF2ECC40),
+      body: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.light,
+          statusBarBrightness: Brightness.dark,
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              // ── Header ───────────────────────────────────────────────────
+              Obx(
+                () => Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                  child: Row(
                     children: [
-                      Text(
-                        profileCtrl.displayName.isNotEmpty ? profileCtrl.displayName : 'Driver',
-                        style: GoogleFonts.inter(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white)),
-                      Text(
-                        profileCtrl.profile.value?['email']?.toString() ?? '',
-                        style: GoogleFonts.inter(
-                            fontSize: 12,
-                            color: Colors.white.withOpacity(0.8))),
+                      AvatarWidget(
+                        avatarUrl: profileCtrl.avatarUrl,
+                        name: profileCtrl.displayName,
+                        radius: 24,
+                      ),
+                      const SizedBox(width: 14),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            profileCtrl.displayName.isNotEmpty
+                                ? profileCtrl.displayName
+                                : 'Driver',
+                            style: GoogleFonts.inter(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
+                          Text(
+                            profileCtrl.profile.value?['email']?.toString() ??
+                                '',
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              color: Colors.white.withOpacity(0.8),
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
-                ],
-              ),
-            )),
-
-            // ── White card ───────────────────────────────────────────────
-            Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: theme.scaffoldBackgroundColor,
-                  borderRadius:
-                      const BorderRadius.vertical(top: Radius.circular(28)),
                 ),
-                child: ListView(
-                  padding: const EdgeInsets.all(20),
-                  children: [
-                    // Group 1
-                    _settingsGroup(theme, [
-                      _SettingItem(
-                        icon: Icons.person_outline,
-                        label: 'My profile',
-                        onTap: () => Get.to(() => const DriverProfileScreen()),
-                      ),
-                      _SettingItem(
-                        icon: Icons.circle_outlined,
-                        label: 'Online Offline',
-                        trailing: Switch(
-                          value: _isOnline,
-                          onChanged: (v) => setState(() => _isOnline = v),
-                          activeColor: Colors.green,
-                          materialTapTargetSize:
-                              MaterialTapTargetSize.shrinkWrap,
+              ),
+
+              // ── White card ───────────────────────────────────────────────
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: theme.scaffoldBackgroundColor,
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(28),
+                    ),
+                  ),
+                  child: ListView(
+                    padding: const EdgeInsets.all(20),
+                    children: [
+                      // Group 1
+                      _settingsGroup(theme, [
+                        _SettingItem(
+                          icon: Icons.person_outline,
+                          label: 'My profile',
+                          onTap: () =>
+                              Get.to(() => const DriverProfileScreen()),
                         ),
-                        onTap: null,
-                      ),
-                      _SettingItem(
-                        icon: isDark ? Icons.dark_mode : Icons.light_mode_outlined,
-                        label: 'dark_mode'.tr,
-                        trailing: Obx(() => Switch(
-                          value: themeCtrl.themeMode.value == ThemeMode.dark,
-                          onChanged: (v) => themeCtrl.toggleTheme(),
-                          activeColor: Colors.green,
-                        )),
-                        onTap: null,
-                      ),
-                      _SettingItem(
-                        icon: Icons.notifications_outlined,
-                        label: 'Notification',
-                        onTap: () {
-                          // Get.to(() => NotificationScreen());
-                        },
-                      ),
-                      _SettingItem(
-                        icon: Icons.bar_chart_outlined,
-                        label: 'Statistics',
-                        onTap: () {
-                          // Get.to(() => StatisticsScreen());
-                        },
-                        isLast: true,
-                      ),
-                    ]),
+                        _SettingItem(
+                          icon: Icons.circle_outlined,
+                          label: 'Online Offline',
+                          trailing: Switch(
+                            value: _isOnline,
+                            onChanged: (v) => setState(() => _isOnline = v),
+                            activeColor: Colors.green,
+                            materialTapTargetSize:
+                                MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          onTap: null,
+                        ),
+                        _SettingItem(
+                          icon: isDark
+                              ? Icons.dark_mode
+                              : Icons.light_mode_outlined,
+                          label: 'dark_mode'.tr,
+                          trailing: Obx(
+                            () => Switch(
+                              value:
+                                  themeCtrl.themeMode.value == ThemeMode.dark,
+                              onChanged: (v) => themeCtrl.toggleTheme(),
+                              activeColor: Colors.green,
+                            ),
+                          ),
+                          onTap: null,
+                        ),
+                        _SettingItem(
+                          icon: Icons.notifications_outlined,
+                          label: 'Notification',
+                          onTap: () {
+                            // Get.to(() => NotificationScreen());
+                          },
+                        ),
+                        _SettingItem(
+                          icon: Icons.bar_chart_outlined,
+                          label: 'Statistics',
+                          onTap: () {
+                            // Get.to(() => StatisticsScreen());
+                          },
+                          isLast: true,
+                        ),
+                      ]),
 
-                    const SizedBox(height: 16),
+                      const SizedBox(height: 16),
 
-                    // Group 2
-                    _settingsGroup(theme, [
-                      _SettingItem(
-                        icon: Icons.help_outline,
-                        label: 'Help & Support',
-                        onTap: () {},
-                      ),
-                      _SettingItem(
-                        icon: Icons.language_outlined,
-                        label: 'Language',
-                        onTap: () {},
-                      ),
-                      _SettingItem(
-                        icon: Icons.info_outline,
-                        label: 'About us',
-                        onTap: () {},
-                        isLast: true,
-                      ),
-                    ]),
+                      // Group 2
+                      _settingsGroup(theme, [
+                        _SettingItem(
+                          icon: Icons.help_outline,
+                          label: 'help_support'.tr,
+                          onTap: () => Get.to(() => const HelpScreen()),
+                        ),
+                        _SettingItem(
+                          icon: Icons.language_outlined,
+                          label: 'language'.tr,
+                          trailing: Obx(() {
+                            final langCtrl =
+                                Get.isRegistered<LanguageController>()
+                                ? Get.find<LanguageController>()
+                                : Get.put(
+                                    LanguageController(),
+                                    permanent: true,
+                                  );
+                            return Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  langCtrl.selectedLanguage.value,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 13,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                Icon(
+                                  Icons.chevron_right,
+                                  color: Colors.grey[400],
+                                  size: 20,
+                                ),
+                              ],
+                            );
+                          }),
+                          onTap: () => Get.to(() => const LanguageScreen()),
+                        ),
+                        _SettingItem(
+                          icon: Icons.info_outline,
+                          label: 'about_us'.tr,
+                          onTap: () => Get.to(() => StaticInfoScreen(title: 'about_us'.tr, content: kAboutUs)),
+                          isLast: true,
+                        ),
+                      ]),
 
-                    const SizedBox(height: 16),
+                      const SizedBox(height: 16),
 
-                    // Logout
-                    _settingsGroup(theme, [
-                      _SettingItem(
-                        icon: Icons.logout,
-                        label: 'Log out',
-                        onTap: () => _showLogoutDialog(context),
-                        isLast: true,
-                        iconColor: Colors.red,
-                        labelColor: Colors.red,
-                      ),
-                    ]),
-                  ],
+                      // Logout
+                      _settingsGroup(theme, [
+                        _SettingItem(
+                          icon: Icons.logout,
+                          label: 'Log out',
+                          onTap: () => _showLogoutDialog(context),
+                          isLast: true,
+                          iconColor: Colors.red,
+                          labelColor: Colors.red,
+                        ),
+                      ]),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -168,7 +225,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           title: Text(
             'logout_title'.tr,
             style: GoogleFonts.inter(fontWeight: FontWeight.w700),
@@ -182,7 +241,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onPressed: () => Navigator.pop(context),
               child: Text(
                 'cancel'.tr,
-                style: GoogleFonts.inter(color: Colors.grey, fontWeight: FontWeight.w600),
+                style: GoogleFonts.inter(
+                  color: Colors.grey,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
             TextButton(
@@ -193,7 +255,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
               child: Text(
                 'logout'.tr,
-                style: GoogleFonts.inter(color: Colors.red, fontWeight: FontWeight.w600),
+                style: GoogleFonts.inter(
+                  color: Colors.red,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ],
@@ -209,9 +274,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 3))
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
         ],
       ),
       child: Column(
@@ -229,24 +295,36 @@ class _SettingsScreenState extends State<SettingsScreen> {
       children: [
         ListTile(
           onTap: item.onTap,
-          leading: Icon(item.icon,
-              color: item.iconColor ?? Colors.grey[600], size: 22),
-          title: Text(item.label,
-              style: GoogleFonts.inter(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: item.labelColor ?? theme.textTheme.bodyLarge?.color?.withOpacity(0.87))),
-          trailing: item.trailing ??
+          leading: Icon(
+            item.icon,
+            color: item.iconColor ?? Colors.grey[600],
+            size: 22,
+          ),
+          title: Text(
+            item.label,
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color:
+                  item.labelColor ??
+                  theme.textTheme.bodyLarge?.color?.withOpacity(0.87),
+            ),
+          ),
+          trailing:
+              item.trailing ??
               Icon(Icons.chevron_right, color: Colors.grey[400], size: 20),
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 2,
+          ),
         ),
         if (showDivider)
           Divider(
-              height: 1,
-              indent: 54,
-              endIndent: 16,
-              color: theme.dividerColor),
+            height: 1,
+            indent: 54,
+            endIndent: 16,
+            color: theme.dividerColor,
+          ),
       ],
     );
   }

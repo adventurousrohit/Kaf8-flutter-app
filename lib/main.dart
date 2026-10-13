@@ -65,6 +65,7 @@ class MyApp extends StatelessWidget {
   }
 }*/
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -77,14 +78,17 @@ import 'Controller/theme_controller.dart';
 import 'Controller/order_controller.dart';
 import 'Controller/user_profile_controller.dart';
 import 'Service/fcm_service.dart';
+import 'module/userProfileScreen/getx/languageController.dart';
 import 'translations/app_translations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // TODO: replace with your pk_test_... key from https://dashboard.stripe.com/test/apikeys
-  Stripe.publishableKey = 'pk_test_51TcdEnBwPJsOQ66WZ9My5LDpGn4Lu3q0gtFzAS4KUhkVry78NeJG9Nvv4kTqvA3nceqEnAGltdHQrFIKcV47DTkC00lYTrqsda';
-  await Stripe.instance.applySettings();
+  if (!kIsWeb) {
+    // TODO: replace with your pk_test_... key from https://dashboard.stripe.com/test/apikeys
+    Stripe.publishableKey = 'pk_test_51TcdEnBwPJsOQ66WZ9My5LDpGn4Lu3q0gtFzAS4KUhkVry78NeJG9Nvv4kTqvA3nceqEnAGltdHQrFIKcV47DTkC00lYTrqsda';
+    await Stripe.instance.applySettings();
+  }
 
   // Firebase — graceful: won't crash if google-services.json / GoogleService-Info.plist
   // are missing yet. Add those files and FCM will activate automatically.
@@ -111,14 +115,19 @@ void main() async {
   final prefs = await SharedPreferences.getInstance();
   final savedLocale = prefs.getString('locale_code');
   Locale appLocale = const Locale('en', 'US');
-  if (savedLocale != null) {
+  if (savedLocale != null && savedLocale.isNotEmpty) {
     final parts = savedLocale.split('_');
-    if (parts.length == 2) appLocale = Locale(parts[0], parts[1]);
+    if (parts.length == 2) {
+      appLocale = Locale(parts[0], parts[1]);
+    } else if (parts.length == 1) {
+      appLocale = Locale(parts[0]);
+    }
   }
 
   Get.put(ThemeController());
   Get.put(OrderController());
   Get.put(UserProfileController(), permanent: true);
+  Get.put(LanguageController(), permanent: true);
 
   runApp(MyApp(initialLocale: appLocale));
 }
@@ -149,6 +158,11 @@ class MyApp extends StatelessWidget {
           foregroundColor: Colors.black,
           elevation: 0,
           centerTitle: true,
+          systemOverlayStyle: SystemUiOverlayStyle(
+            statusBarColor: Colors.transparent,
+            statusBarIconBrightness: Brightness.dark,
+            statusBarBrightness: Brightness.light,
+          ),
           iconTheme: IconThemeData(color: Colors.black),
           titleTextStyle: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),
         ),
@@ -170,6 +184,11 @@ class MyApp extends StatelessWidget {
           foregroundColor: Colors.white,
           elevation: 0,
           centerTitle: true,
+          systemOverlayStyle: SystemUiOverlayStyle(
+            statusBarColor: Colors.transparent,
+            statusBarIconBrightness: Brightness.light,
+            statusBarBrightness: Brightness.dark,
+          ),
           iconTheme: IconThemeData(color: Colors.white),
           titleTextStyle: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
         ),
@@ -184,12 +203,27 @@ class MyApp extends StatelessWidget {
 
       /// ✅ GLOBAL KEYBOARD HIDE
       builder: (context, child) {
-        return Listener(
-          behavior: HitTestBehavior.translucent,
-          onPointerDown: (_) {
-            FocusManager.instance.primaryFocus?.unfocus();
-          },
-          child: child!,
+        final theme = Theme.of(context);
+        final isDark = theme.brightness == Brightness.dark;
+
+        return AnnotatedRegion<SystemUiOverlayStyle>(
+          value: SystemUiOverlayStyle(
+            statusBarColor: Colors.transparent,
+            statusBarIconBrightness:
+                isDark ? Brightness.light : Brightness.dark,
+            statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
+            systemNavigationBarColor:
+                isDark ? const Color(0xFF121212) : Colors.white,
+            systemNavigationBarIconBrightness:
+                isDark ? Brightness.light : Brightness.dark,
+          ),
+          child: Listener(
+            behavior: HitTestBehavior.translucent,
+            onPointerDown: (_) {
+              FocusManager.instance.primaryFocus?.unfocus();
+            },
+            child: child!,
+          ),
         );
       },
 
@@ -201,7 +235,7 @@ class MyApp extends StatelessWidget {
             SystemChannels.textInput.invokeMethod('TextInput.hide');
           });
 
-          return const Splashscreen();
+          return  Splashscreen();
         },
       ),
     );

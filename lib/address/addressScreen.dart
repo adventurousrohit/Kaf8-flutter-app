@@ -149,7 +149,7 @@ class _AddressScreensState extends State<AddressScreens> {
                       ),
                       const Spacer(),
                       Text(
-                        "Address",
+                        'my_addresses'.tr,
                         style: GoogleFonts.inter(
                           fontSize: 17 * fontScale,
                           fontWeight: FontWeight.w600,

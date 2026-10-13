@@ -13,6 +13,9 @@ import '../Auth/RoleSelectionScreen.dart';
 import '../Controller/theme_controller.dart';
 import '../module/userProfileScreen/getx/languageController.dart';
 import '../module/userProfileScreen/getx/switchController.dart';
+import '../setting/LanguageScreen.dart';
+import '../setting/settingScreen2.dart';
+import '../Help/helpchat.dart';
 import 'languageMenuItem.dart';
 import 'languageScreen.dart';
 import 'menuItemScreen.dart';
@@ -79,7 +82,7 @@ class SettingScreens extends StatelessWidget {
                 title: "Language",
                 trailingText: langController.selectedLanguage.value,
                 onTap: () {
-                   Get.to(LanguageScreens());
+                   Get.to(() => LanguageScreen());
 
                 },
               )),
@@ -95,16 +98,22 @@ class SettingScreens extends StatelessWidget {
                   fontWeight: FontWeight.w600,color: isDark ? Colors.white70 : const Color(0XFF70756B)),
               ),
               const SizedBox(height: 9,),
-              MenuItemWidget(imagePath:  AppAssets.privacy, title: "Privacy Policy",
-                  onTap:()=> print("policy")
+              MenuItemWidget(
+                imagePath: AppAssets.privacy,
+                title: "privacy_policy".tr,
+                onTap: () => Get.to(() => StaticInfoScreen(title: "privacy_policy".tr, content: kPrivacy)),
               ),
-              const SizedBox(height: 9,),
-              MenuItemWidget(imagePath:  AppAssets.support, title: "Customer Support",
-                  onTap:()=> print("support")
+              const SizedBox(height: 9),
+              MenuItemWidget(
+                imagePath: AppAssets.support,
+                title: "live_chat".tr,
+                onTap: () => Get.to(() => const HelpChatScreen()),
               ),
-              const SizedBox(height: 9,),
-              MenuItemWidget(imagePath:  AppAssets.terms, title: "Terms & Conditions",
-                  onTap:()=> print("terms")
+              const SizedBox(height: 9),
+              MenuItemWidget(
+                imagePath: AppAssets.terms,
+                title: "terms_policies".tr,
+                onTap: () => Get.to(() => StaticInfoScreen(title: "terms_policies".tr, content: kTerms)),
               ),
               const SizedBox(height: 10,),
               Text("Danger Actions",style: GoogleFonts.poppins(fontSize: 12,

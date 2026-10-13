@@ -46,7 +46,7 @@ class OnBoardings extends StatelessWidget {
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 20),
                             child: BahamasTextWidget(
-                              text: onBoardingData.heading ?? "",
+                              text: (onBoardingData.heading ?? "").tr,
                               textAlign: TextAlign.center,
                               fontSize: 24,
                               fontWeight: FontWeight.w700,
@@ -57,7 +57,7 @@ class OnBoardings extends StatelessWidget {
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 40),
                             child: BahamasTextWidget(
-                              text: onBoardingData.title,
+                              text: onBoardingData.title.tr,
                               textAlign: TextAlign.center,
                               fontSize: 14,
                               fontWeight: FontWeight.w400,
@@ -104,7 +104,7 @@ class OnBoardings extends StatelessWidget {
                               height: 52,
                               buttonColor: isDark ? Colors.white10 : const Color(0XFFECF1E8),
                               onTap: () => Get.to(const RoleSelectionScreen()),
-                              buttonText: "Skip",
+                              buttonText: 'skip'.tr,
                               radius: BorderRadius.circular(12), textColor: const Color(0XFF00C853),
                             ),
                           ),
@@ -116,7 +116,7 @@ class OnBoardings extends StatelessWidget {
                               height: 52,
                               radius: BorderRadius.circular(12),
                               onTap: () => controller.onNextClicked(),
-                              buttonText: controller.currentPage == 2 ? "Get Started" : "Next",
+                              buttonText: controller.currentPage == 2 ? 'get_started'.tr : 'next'.tr,
                               textColor: Colors.white,
                             ),
                           ),
@@ -167,18 +167,18 @@ class OnBoardingController extends GetxController {
   final List<OnBoardingModel> onBoarding = [
     OnBoardingModel(
       image: AppAssets.first,
-      title: 'Schedule pickup and drop in seconds',
-      heading: 'Book your drop easily',
+      title: 'onboarding_title_1',
+      heading: 'onboarding_heading_1',
     ),
     OnBoardingModel(
       image: AppAssets.second,
-      title: "Follow your goods in real time.",
-      heading: 'Track Your Shipment Live',
+      title: 'onboarding_title_2',
+      heading: 'onboarding_heading_2',
     ),
     OnBoardingModel(
       image: AppAssets.third,
-      title: "Professional drivers and secure handling for every delivery.",
-      heading: 'Safe & Secure Transport',
+      title: 'onboarding_title_3',
+      heading: 'onboarding_heading_3',
     ),
   ];
 }

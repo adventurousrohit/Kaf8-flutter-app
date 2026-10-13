@@ -44,7 +44,7 @@ class _EnterEmailScreenState extends State<EnterEmailScreen> {
     final email = _emailController.text.trim();
 
     if (!GetUtils.isEmail(email)) {
-      Get.snackbar("Error", "Please enter a valid email address",
+      Get.snackbar('error'.tr, 'auth_invalid_email'.tr,
           backgroundColor: Colors.red, colorText: Colors.white);
       return;
     }
@@ -62,8 +62,8 @@ class _EnterEmailScreenState extends State<EnterEmailScreen> {
       });
     } else {
       Get.snackbar(
-        "Error",
-        response['message'] ?? "Failed to send reset code",
+        'error'.tr,
+        response['message'] ?? 'auth_failed_reset_code'.tr,
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
@@ -114,7 +114,7 @@ class _EnterEmailScreenState extends State<EnterEmailScreen> {
                         ),
                       ),
                       const Spacer(),
-                      Text("Enter Email",
+                      Text('auth_enter_email_title'.tr,
                         style: GoogleFonts.inter(
                             fontSize: 17 * fontScale,
                             fontWeight: FontWeight.w600)),
@@ -132,7 +132,7 @@ class _EnterEmailScreenState extends State<EnterEmailScreen> {
                       children: [
                         const SizedBox(height: 16),
 
-                        Text("Email",
+                        Text('email'.tr,
                           style: GoogleFonts.inter(
                               fontSize: 14 * fontScale,
                               fontWeight: FontWeight.w500,
@@ -145,7 +145,7 @@ class _EnterEmailScreenState extends State<EnterEmailScreen> {
                           enabled: !_linkSent,
                           style: GoogleFonts.inter(fontSize: 14 * fontScale),
                           decoration: InputDecoration(
-                            hintText: "Enter email",
+                            hintText: 'auth_enter_email'.tr,
                             hintStyle: GoogleFonts.inter(color: Colors.grey[400], fontSize: 14),
                             filled: true,
                             fillColor: Colors.white,
@@ -171,7 +171,7 @@ class _EnterEmailScreenState extends State<EnterEmailScreen> {
                                 const Icon(Icons.check_circle_outline, color: Colors.green, size: 40),
                                 const SizedBox(height: 10),
                                 Text(
-                                  "A reset code has been sent to:",
+                                  'auth_reset_code_sent'.tr,
                                   textAlign: TextAlign.center,
                                   style: GoogleFonts.inter(fontSize: 13 * fontScale, color: Colors.black87),
                                 ),
@@ -205,7 +205,7 @@ class _EnterEmailScreenState extends State<EnterEmailScreen> {
                                         ),
                                       );
                                     },
-                                    child: Text("Enter Reset Code",
+                                    child: Text('auth_enter_reset_code'.tr,
                                       style: GoogleFonts.inter(
                                           fontSize: 16 * fontScale,
                                           fontWeight: FontWeight.w600,
@@ -236,7 +236,7 @@ class _EnterEmailScreenState extends State<EnterEmailScreen> {
                                       width: 22, height: 22,
                                       child: CircularProgressIndicator(
                                           strokeWidth: 2, color: Colors.white))
-                                  : Text("Continue",
+                                  : Text('auth_continue'.tr,
                                       style: GoogleFonts.inter(
                                           fontSize: 16 * fontScale,
                                           fontWeight: FontWeight.w600,
@@ -251,11 +251,11 @@ class _EnterEmailScreenState extends State<EnterEmailScreen> {
                         Center(
                           child: RichText(
                             text: TextSpan(
-                              text: "Haven't received the email? ",
+                              text: 'auth_no_email_received'.tr,
                               style: GoogleFonts.inter(fontSize: 13 * fontScale, color: Colors.grey),
                               children: [
                                 TextSpan(
-                                  text: "Send OTP via SMS",
+                                  text: 'auth_send_otp_sms'.tr,
                                   style: GoogleFonts.inter(
                                       fontSize: 13 * fontScale,
                                       color: Colors.black87,

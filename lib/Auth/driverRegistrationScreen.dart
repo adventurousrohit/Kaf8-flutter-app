@@ -107,20 +107,42 @@ class _DriverRegistrationState extends State<DriverRegistration> {
   }
 
   void _handleRegister() async {
-    if (!GetUtils.isEmail(_emailController.text.trim())) {
-      Get.snackbar("Error", "Enter valid email",
+    final firstName = _firstNameController.text.trim();
+    final lastName  = _lastNameController.text.trim();
+    final phone     = _phoneController.text.trim();
+    final email     = _emailController.text.trim().toLowerCase();
+    final password  = _passwordController.text.trim();
+
+    if (firstName.isEmpty || lastName.isEmpty) {
+      Get.snackbar('error'.tr, 'auth_enter_full_name'.tr,
           backgroundColor: Colors.red, colorText: Colors.white);
       return;
     }
+    if (email.isEmpty || !GetUtils.isEmail(email)) {
+      Get.snackbar('error'.tr, 'auth_enter_valid_email'.tr,
+          backgroundColor: Colors.red, colorText: Colors.white);
+      return;
+    }
+    if (phone.isEmpty) {
+      Get.snackbar('error'.tr, 'auth_phone_number'.tr,
+          backgroundColor: Colors.red, colorText: Colors.white);
+      return;
+    }
+    if (password.length < 6) {
+      Get.snackbar('error'.tr, 'auth_password_too_short'.tr,
+          backgroundColor: Colors.red, colorText: Colors.white);
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     final response = await ApiService.register(
-      firstName:    _firstNameController.text.trim(),
-      lastName:     _lastNameController.text.trim(),
-      fullName:     '${_firstNameController.text.trim()} ${_lastNameController.text.trim()}',
-      email:        _emailController.text.trim(),
-      password:     _passwordController.text.trim(),
-      phone:        '$_selectedCode${_phoneController.text.trim()}',
+      firstName:    firstName,
+      lastName:     lastName,
+      fullName:     '$firstName $lastName',
+      email:        email,
+      password:     password,
+      phone:        '$_selectedCode$phone',
       avatar:       _profileImage?.path,
       availability: true,
       role:         "transporter",
@@ -129,15 +151,28 @@ class _DriverRegistrationState extends State<DriverRegistration> {
     setState(() => _isLoading = false);
 
     if (response['success'] == true) {
-      Get.snackbar("Success",
-          response['message'] ?? "Registration successful",
+      Get.snackbar('auth_success'.tr,
+          _localizeMessage(response['message']) ?? 'auth_registration_success'.tr,
           backgroundColor: Colors.green, colorText: Colors.white);
       Get.offAll(() => const LoginScreen());
     } else {
-      Get.snackbar("Error",
-          response['message'] ?? "Registration failed",
+      Get.snackbar('error'.tr,
+          _localizeMessage(response['message']) ?? 'auth_registration_failed'.tr,
           backgroundColor: Colors.red, colorText: Colors.white);
     }
+  }
+
+  String? _localizeMessage(dynamic msg) {
+    if (msg == null) return null;
+    final str = msg.toString();
+    final lower = str.toLowerCase();
+    if (lower.contains('déjà utilisé') ||
+        lower.contains('already in use') ||
+        lower.contains('already used') ||
+        lower.contains('already exists')) {
+      return 'auth_email_already_used'.tr;
+    }
+    return str;
   }
 
   // ── Shared field decoration ─────────────────────────────────────────────
@@ -266,7 +301,7 @@ class _DriverRegistrationState extends State<DriverRegistration> {
                               const SizedBox(height: 6),
 
                               // Title
-                              Text("Register Yourself",
+                              Text('auth_register_yourself'.tr,
                                   style: GoogleFonts.inter(
                                     fontSize: 20 * fontScale,
                                     fontWeight: FontWeight.w700,
@@ -276,7 +311,7 @@ class _DriverRegistrationState extends State<DriverRegistration> {
                               RichText(
                                 textAlign: TextAlign.center,
                                 text: TextSpan(
-                                  text: 'Register yourself on ',
+                                  text: 'auth_provider_intro'.tr,
                                   style: GoogleFonts.inter(
                                       fontSize: 12 * fontScale,
                                       color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6)),
@@ -289,8 +324,7 @@ class _DriverRegistrationState extends State<DriverRegistration> {
                                           fontWeight: FontWeight.w600),
                                     ),
                                     TextSpan(
-                                      text:
-                                      ' and become a\nmember to start mission',
+                                      text: 'auth_provider_intro_end'.tr,
                                       style: GoogleFonts.inter(
                                           fontSize: 12 * fontScale,
                                           color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6)),
@@ -334,7 +368,7 @@ class _DriverRegistrationState extends State<DriverRegistration> {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        Text("Upload Profile Picture",
+                        Text('auth_upload_picture'.tr,
                             style: GoogleFonts.inter(
                               fontSize: 13 * fontScale,
                               color: theme.textTheme.bodyMedium?.color,
@@ -352,25 +386,25 @@ class _DriverRegistrationState extends State<DriverRegistration> {
                         const SizedBox(height: 20),
 
                         // First name
-                        _label("First name", fontScale, theme),
+                        _label('auth_first_name'.tr, fontScale, theme),
                         const SizedBox(height: 6),
                         TextField(
                             controller: _firstNameController,
                             style: GoogleFonts.inter(fontSize: 14 * fontScale, color: theme.textTheme.bodyLarge?.color),
-                            decoration: _deco("Enter full name", theme)),
+                            decoration: _deco('auth_enter_full_name'.tr, theme)),
                         const SizedBox(height: 14),
 
                         // Last name
-                        _label("Last name", fontScale, theme),
+                        _label('auth_last_name'.tr, fontScale, theme),
                         const SizedBox(height: 6),
                         TextField(
                             controller: _lastNameController,
                             style: GoogleFonts.inter(fontSize: 14 * fontScale, color: theme.textTheme.bodyLarge?.color),
-                            decoration: _deco("Enter full name", theme)),
+                            decoration: _deco('auth_enter_full_name'.tr, theme)),
                         const SizedBox(height: 14),
 
                         // Phone number with country picker
-                        _label("Phone number", fontScale, theme),
+                        _label('auth_phone_number'.tr, fontScale, theme),
                         const SizedBox(height: 6),
                         TextField(
                           controller: _phoneController,
@@ -379,7 +413,7 @@ class _DriverRegistrationState extends State<DriverRegistration> {
                             FilteringTextInputFormatter.digitsOnly],
                           style: GoogleFonts.inter(fontSize: 14 * fontScale, color: theme.textTheme.bodyLarge?.color),
                           decoration: _deco(
-                            "Mobile number",
+                            'auth_mobile_number'.tr,
                             theme,
                             prefix: GestureDetector(
                               onTap: _showCountryPicker,
@@ -424,24 +458,24 @@ class _DriverRegistrationState extends State<DriverRegistration> {
                         const SizedBox(height: 14),
 
                         // Email
-                        _label("Email", fontScale, theme),
+                        _label('email'.tr, fontScale, theme),
                         const SizedBox(height: 6),
                         TextField(
                             controller: _emailController,
                             keyboardType: TextInputType.emailAddress,
                             style: GoogleFonts.inter(fontSize: 14 * fontScale, color: theme.textTheme.bodyLarge?.color),
-                            decoration: _deco("Enter email", theme)),
+                            decoration: _deco('auth_enter_email'.tr, theme)),
                         const SizedBox(height: 14),
 
                         // Password
-                        _label("Password", fontScale, theme),
+                        _label('password'.tr, fontScale, theme),
                         const SizedBox(height: 6),
                         TextField(
                           controller: _passwordController,
                           obscureText: !_passwordVisible,
                           style: GoogleFonts.inter(fontSize: 14 * fontScale, color: theme.textTheme.bodyLarge?.color),
                           decoration: _deco(
-                            "Enter password",
+                            'auth_enter_password'.tr,
                             theme,
                             suffix: IconButton(
                               icon: Icon(
@@ -459,19 +493,19 @@ class _DriverRegistrationState extends State<DriverRegistration> {
                         const SizedBox(height: 14),
 
                         // Add Note (Optional)
-                        _label("Add Note (Optional)", fontScale, theme),
+                        _label('auth_add_note'.tr, fontScale, theme),
                         const SizedBox(height: 8),
                         TextField(
                             controller: _noteController,
                             maxLines: 4,
                             style: GoogleFonts.inter(fontSize: 13 * fontScale, color: theme.textTheme.bodyLarge?.color),
                             decoration: _deco(
-                                "Write short service presentation or welcome message here...", theme)),
+                                'auth_note_hint'.tr, theme)),
                         const SizedBox(height: 20),
 
                         // Terms text
                         Text(
-                          "By clicking Create account, you agree to the system's Terms and policies",
+                          '${'auth_terms_intro'.tr}${'terms_policies'.tr}',
                           style: GoogleFonts.inter(
                               fontSize: 12 * fontScale,
                               color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6)),
@@ -481,7 +515,7 @@ class _DriverRegistrationState extends State<DriverRegistration> {
 
                         // Register button
                         PrimaryButton(
-                          text: 'Register',
+                          text: 'auth_register'.tr,
                           borderRadius: 30,
                           onPressed: _isEnabled ? _handleRegister : null,
                           isDisabled: !_isEnabled,
@@ -496,13 +530,13 @@ class _DriverRegistrationState extends State<DriverRegistration> {
                             onTap: () => Get.to(() => const LoginScreen()),
                             child: RichText(
                               text: TextSpan(
-                                text: "Already have an account? ",
+                                text: 'auth_already_account'.tr,
                                 style: GoogleFonts.inter(
                                     fontSize: 13 * fontScale,
                                     color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6)),
                                 children: [
                                   TextSpan(
-                                    text: "Login",
+                                    text: 'auth_login'.tr,
                                     style: GoogleFonts.inter(
                                         fontSize: 13 * fontScale,
                                         fontWeight: FontWeight.w600,

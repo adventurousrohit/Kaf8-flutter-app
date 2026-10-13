@@ -3,6 +3,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'api_service.dart';
+import '../Utils/notification_localizer.dart';
 
 // Must be top-level for FCM background handler
 @pragma('vm:entry-point')
@@ -118,7 +119,7 @@ class FcmService {
     final notification = message.notification;
     if (notification == null) return;
 
-    final title = notification.title ?? 'KAF8';
+    final title = localizeNotificationTitle(notification.title ?? 'KAF8');
     final body = notification.body ?? '';
 
     _localNotifications.show(

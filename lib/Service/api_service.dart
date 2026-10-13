@@ -348,10 +348,11 @@ class ApiService {
   /// ✅ Get My Orders (role-filtered)
   static Future<Map<String, dynamic>> getMyOrders({String? status}) async {
     var url = "$baseUrl/order/my-orders";
-    if (status != null) url += "?status=$status";
-    debugPrint("📡 ApiService: Calling getMyOrders with status=$status");
+    if (status != null) url += "?status=$status&statusOrder=$status";
+    debugPrint("📡 ApiService: Calling getMyOrders with status=$status ($url)");
     try {
       final response = await authenticatedRequest('GET', Uri.parse(url));
+      debugPrint("📡 ApiService: getMyOrders statusCode=${response.statusCode} body=${response.body}");
       final data = jsonDecode(response.body) as Map<String, dynamic>;
       return data;
     } catch (e) {
@@ -737,6 +738,32 @@ class ApiService {
     }
   }
 
+  /// ✅ Search Transporters by query
+  static Future<Map<String, dynamic>> searchTransporters({
+    required String query,
+    int limit = 10,
+  }) async {
+    try {
+      final params = <String, String>{
+        'q': query,
+        'query': query,
+        'search': query,
+        'limit': '$limit',
+      };
+      final uri = Uri.parse("$baseUrl/search/transporters").replace(
+        queryParameters: params,
+      );
+      final response = await authenticatedRequest('GET', uri);
+      final res = _normalizeResponse(response);
+      if (res['success'] == true) {
+        return res;
+      }
+      return await getTransporters(limit: limit, search: query);
+    } catch (_) {
+      return await getTransporters(limit: limit, search: query);
+    }
+  }
+
   static Future<Map<String, dynamic>> getNearbyTransporters({
     required double latitude,
     required double longitude,
@@ -888,7 +915,7 @@ class ApiService {
   }
 
   /// ✅ Authenticated Helper
-  static Future<http.Response> authenticatedRequest(
+    static Future<http.Response> authenticatedRequest(
     String method,
     Uri url, {
     Map<String, String>? headers,

@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../small-widgets/app_assets.dart';
 import '../small-widgets/app_colors.dart';
 import '../Controller/order_controller.dart';
+import '../Utils/currency_formatter.dart';
 import '../Service/api_service.dart';
 import 'cencelOrder.dart';
 import 'trackingScreen.dart';
@@ -67,8 +68,13 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
   double get _deliveryCost =>
       double.tryParse(order?['deliveryCost']?.toString() ?? '0') ?? 0;
 
-  List get _packages =>
-      (order?['Packages'] ?? order?['packages'] ?? []) as List;
+  List get _packages {
+    final pkgs = order?['Packages'] ?? order?['packages'];
+    if (pkgs is List) return pkgs;
+    final pkg = order?['Package'] ?? order?['package'];
+    if (pkg is Map) return [pkg];
+    return [];
+  }
 
   String? get _trackingNumber {
     if (_packages.isNotEmpty) {
@@ -271,7 +277,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
             _buildSummaryRow("Payment Method", _paymentMethod, theme),
             _buildSummaryRow(
               "Total Cost",
-              "€${_deliveryCost.toStringAsFixed(2)}",
+              CurrencyFormatter.format(_deliveryCost),
               theme,
               isBold: true,
             ),

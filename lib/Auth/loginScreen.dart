@@ -36,17 +36,17 @@ class _LoginScreenState extends State<LoginScreen> {
     final password = passwordController.text.trim();
 
     if (email.isEmpty) {
-      Get.snackbar("Error", "Please enter email",
+      Get.snackbar('error'.tr, 'auth_please_enter_email'.tr,
           backgroundColor: Colors.red, colorText: Colors.white);
       return;
     }
     if (!GetUtils.isEmail(email)) {
-      Get.snackbar("Error", "Please enter a valid email",
+      Get.snackbar('error'.tr, 'auth_invalid_email'.tr,
           backgroundColor: Colors.red, colorText: Colors.white);
       return;
     }
     if (password.isEmpty) {
-      Get.snackbar("Error", "Please enter password",
+      Get.snackbar('error'.tr, 'auth_please_enter_password'.tr,
           backgroundColor: Colors.red, colorText: Colors.white);
       return;
     }
@@ -64,7 +64,7 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => isLoading = false);
 
     if (response['success'] == true) {
-      Get.snackbar("Success", response['message'] ?? "Login successful",
+      Get.snackbar('auth_success'.tr, response['message'] ?? 'auth_login_success'.tr,
           backgroundColor: Colors.green, colorText: Colors.white);
 
       // Upload FCM token now that auth token is saved
@@ -82,7 +82,7 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } else {
       setState(() => isPasswordWrong = true);
-      Get.snackbar("Error", response['message'] ?? "Login failed",
+      Get.snackbar('error'.tr, response['message'] ?? 'auth_login_failed'.tr,
           backgroundColor: Colors.red, colorText: Colors.white);
     }
   }
@@ -181,7 +181,7 @@ class _LoginScreenState extends State<LoginScreen> {
               children: [
                 Padding(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 10),
+                      horizontal: 16, vertical: 6),
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
@@ -205,30 +205,30 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       Image.asset(
                         'assets/images/logo.png',
-                        height: 100 * scale,
+                        height: 80 * scale,
                       ),
                     ],
                   ),
                 ),
-                SizedBox(height: 6 * scale),
+                const SizedBox(height: 4),
                 Text(
-                  "Login",
+                  'auth_login'.tr,
                   style: GoogleFonts.inter(
-                    fontSize: 26 * fontScale,
+                    fontSize: 25 * fontScale,
                     fontWeight: FontWeight.w700,
                     color: theme.textTheme.titleLarge?.color,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 3),
                 Text(
-                  "Welcome Back! You've\nbeen missed",
+                  'auth_login_welcome'.tr,
                   textAlign: TextAlign.center,
                   style: GoogleFonts.inter(
-                    fontSize: 14 * fontScale,
+                    fontSize: 13.5 * fontScale,
                     color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
                   ),
                 ),
-                SizedBox(height: 24 * scale),
+                SizedBox(height: 16 * scale),
                 Expanded(
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -236,38 +236,38 @@ class _LoginScreenState extends State<LoginScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Email",
+                          'email'.tr,
                           style: GoogleFonts.inter(
-                            fontSize: 14 * fontScale,
+                            fontSize: 13.5 * fontScale,
                             fontWeight: FontWeight.w500,
                             color: theme.textTheme.bodyLarge?.color,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 6),
                         TextField(
                           controller: emailController,
                           keyboardType: TextInputType.emailAddress,
                           style: GoogleFonts.inter(fontSize: 14 * fontScale, color: theme.textTheme.bodyLarge?.color),
                           decoration: _fieldDecoration(
-                            hint: "Enter your email",
+                            hint: 'auth_enter_email'.tr,
                           ),
                         ),
-                        SizedBox(height: 16 * scale),
+                        SizedBox(height: 12 * scale),
                         Text(
-                          "Password",
+                          'password'.tr,
                           style: GoogleFonts.inter(
-                            fontSize: 14 * fontScale,
+                            fontSize: 13.5 * fontScale,
                             fontWeight: FontWeight.w500,
                             color: theme.textTheme.bodyLarge?.color,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 6),
                         TextField(
                           controller: passwordController,
                           obscureText: !isPasswordVisible,
                           style: GoogleFonts.inter(fontSize: 14 * fontScale, color: theme.textTheme.bodyLarge?.color),
                           decoration: _fieldDecoration(
-                            hint: "Enter password",
+                            hint: 'auth_enter_password'.tr,
                             hasError: isPasswordWrong,
                             suffixIcon: IconButton(
                               icon: Icon(
@@ -282,11 +282,11 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 8),
                         GestureDetector(
                           onTap: () => Get.to(() => const EnterEmailScreen()),
                           child: Text(
-                            "Forgot password?",
+                            'auth_forgot_password'.tr,
                             style: GoogleFonts.inter(
                               fontSize: 13 * fontScale,
                               fontWeight: FontWeight.w500,
@@ -294,14 +294,14 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                         ),
-                        SizedBox(height: 28 * scale),
+                        SizedBox(height: 20 * scale),
                         PrimaryButton(
-                          text: 'Login',
+                          text: 'auth_login'.tr,
                           onPressed: isEnabled ? _handleLogin : null,
                           isDisabled: !isEnabled,
                           isLoading: isLoading,
                         ),
-                        SizedBox(height: 20 * scale),
+                        SizedBox(height: 14 * scale),
                         Row(
                           children: [
                             Expanded(
@@ -311,10 +311,10 @@ class _LoginScreenState extends State<LoginScreen> {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 16),
                               child: Text(
-                                "or",
+                                'auth_or'.tr,
                                 style: TextStyle(
                                   color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6),
-                                  fontSize: 14 * fontScale,
+                                  fontSize: 13 * fontScale,
                                 ),
                               ),
                             ),
@@ -323,22 +323,22 @@ class _LoginScreenState extends State<LoginScreen> {
                                     thickness: 1, color: theme.dividerColor)),
                           ],
                         ),
-                        SizedBox(height: 16 * scale),
+                        SizedBox(height: 14 * scale),
                         SocialButton(
-                          text: "Continue with Google",
+                          text: 'auth_continue_google'.tr,
                           assetPath: 'assets/icons/google_icon.png',
                           backgroundColor: const Color(0xFF5384EE),
                           onPressed: () {
                             Get.snackbar(
-                              "Coming Soon",
-                              "Google login will be available in a future update",
+                              'auth_coming_soon'.tr,
+                              'auth_google_future'.tr,
                               backgroundColor: Colors.grey[800],
                               colorText: Colors.white,
                               duration: const Duration(seconds: 2),
                             );
                           },
                         ),
-                        SizedBox(height: 20 * scale),
+                        SizedBox(height: 18 * scale),
                         Center(
                           child: GestureDetector(
                             onTap: () {
@@ -350,14 +350,14 @@ class _LoginScreenState extends State<LoginScreen> {
                             },
                             child: RichText(
                               text: TextSpan(
-                                text: "Do not have an account? ",
+                                text: 'auth_no_account'.tr,
                                 style: GoogleFonts.inter(
                                   color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
                                   fontSize: 14 * fontScale,
                                 ),
                                 children: [
                                   TextSpan(
-                                    text: "Register",
+                                    text: 'auth_register'.tr,
                                     style: GoogleFonts.inter(
                                       color: Colors.green,
                                       fontWeight: FontWeight.w600,
@@ -369,7 +369,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 30),
+                        const SizedBox(height: 16),
                       ],
                     ),
                   ),

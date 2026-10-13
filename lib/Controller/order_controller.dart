@@ -106,6 +106,7 @@ class OrderController extends GetxController {
       final result = await ApiService.acceptOrder(orderId);
       if (result['success'] == true) {
         availableOrders.removeWhere((o) => o['id'] == orderId);
+        await fetchActive();
       }
       return result;
     } catch (e) {
@@ -132,7 +133,16 @@ class OrderController extends GetxController {
   }
 
   List<Map<String, dynamic>> _asList(dynamic data) {
-    if (data is List) return data.cast<Map<String, dynamic>>();
+    if (data == null) return [];
+    if (data is List) {
+      return data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+    }
+    if (data is Map) {
+      final possibleList = data['orders'] ?? data['data'] ?? data['rows'] ?? data['results'];
+      if (possibleList is List) {
+        return possibleList.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+      }
+    }
     return [];
   }
 

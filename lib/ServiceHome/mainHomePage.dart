@@ -50,8 +50,8 @@ class _BaseScreenState extends State<BaseScreen> {
   List<BottomNavItem> _getNavItems() => [
     BottomNavItem(icon: Icons.home_rounded,          label: 'Home',     index: 0),
     BottomNavItem(icon: Icons.receipt_long_outlined, label: 'Bookings', index: 1),
-    BottomNavItem(icon: Icons.settings_outlined,     label: 'setting', index: 2),
-    BottomNavItem(icon: Icons.person_outline,        label: 'profile',  index: 3),
+    BottomNavItem(icon: Icons.settings_outlined,     label: 'Settings', index: 2),
+    BottomNavItem(icon: Icons.person_outline,        label: 'Profile',  index: 3),
   ];
 
   @override
@@ -67,6 +67,7 @@ class _BaseScreenState extends State<BaseScreen> {
     final screens   = _getScreens();
     final navItems  = _getNavItems();
     final theme = Theme.of(context);
+    final bottomInset = MediaQuery.of(context).padding.bottom;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -76,12 +77,15 @@ class _BaseScreenState extends State<BaseScreen> {
         onPageChanged: (index) => setState(() => _currentIndex = index),
         children: screens,
       ),
-      bottomNavigationBar: _currentIndex == 0
-          ? Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              child: _buildBottomNavBar(navItems, scale, fontScale, theme),
-            )
-          : null,
+      bottomNavigationBar: Padding(
+        padding: EdgeInsets.fromLTRB(
+          16,
+          0,
+          16,
+          bottomInset > 0 ? bottomInset + 8 : 16,
+        ),
+        child: _buildBottomNavBar(navItems, scale, fontScale, theme),
+      ),
     );
   }
 

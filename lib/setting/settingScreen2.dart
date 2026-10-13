@@ -11,6 +11,7 @@ import 'package:kaf8/setting/NotificationSettingScreen.dart';
 
 import '../Controller/user_profile_controller.dart';
 import '../Controller/theme_controller.dart';
+import '../module/userProfileScreen/getx/languageController.dart';
 import '../Help/favoritelist.dart';
 import '../Help/helpchat.dart';
 import '../Help/notification.dart';
@@ -242,7 +243,19 @@ class SettingScreen extends StatelessWidget {
                         _menuCard(theme, [
                           _menuItem(Icons.person_outline,       'my_profile'.tr,   fontScale, theme, () => Get.to(() => MyProfileScreen())),
                           _menuItem(Icons.location_on_outlined, 'my_address'.tr,   fontScale, theme, () => Get.to(() => AddressScreens())),
-                          _menuItem(Icons.language,             'language'.tr,     fontScale, theme, () => Get.to(() => LanguageScreen())),
+                          Obx(() {
+                            final langCtrl = Get.isRegistered<LanguageController>()
+                                ? Get.find<LanguageController>()
+                                : Get.put(LanguageController(), permanent: true);
+                            return _menuItem(
+                              Icons.language,
+                              'language'.tr,
+                              fontScale,
+                              theme,
+                              () => Get.to(() => const LanguageScreen()),
+                              trailingText: langCtrl.selectedLanguage.value,
+                            );
+                          }),
                           // Dark Mode Toggle
                           Obx(() => MenuSwitchWidget(
                             icon: themeCtrl.themeMode.value == ThemeMode.dark ? Icons.dark_mode : Icons.light_mode_outlined,
@@ -268,9 +281,9 @@ class SettingScreen extends StatelessWidget {
                         _sectionTitle('help_support'.tr, fontScale, theme),
                         _menuCard(theme, [
                           _menuItem(Icons.headset_mic_outlined,  'live_chat'.tr,       fontScale, theme, () => Get.to(() => const HelpChatScreen())),
-                          _menuItem(Icons.chat_bubble_outline,   'about_us'.tr,         fontScale, theme, () => Get.to(() => _StaticInfoScreen(title: 'about_us'.tr,         content: _kAboutUs))),
-                          _menuItem(Icons.description_outlined,  'terms_policies'.tr,  fontScale, theme, () => Get.to(() => _StaticInfoScreen(title: 'terms_policies'.tr,  content: _kTerms))),
-                          _menuItem(Icons.help_outline,          'privacy_policy'.tr,  fontScale, theme, () => Get.to(() => _StaticInfoScreen(title: 'privacy_policy'.tr,  content: _kPrivacy))),
+                          _menuItem(Icons.chat_bubble_outline,   'about_us'.tr,         fontScale, theme, () => Get.to(() => StaticInfoScreen(title: 'about_us'.tr,         content: kAboutUs))),
+                          _menuItem(Icons.description_outlined,  'terms_policies'.tr,  fontScale, theme, () => Get.to(() => StaticInfoScreen(title: 'terms_policies'.tr,  content: kTerms))),
+                          _menuItem(Icons.help_outline,          'privacy_policy'.tr,  fontScale, theme, () => Get.to(() => StaticInfoScreen(title: 'privacy_policy'.tr,  content: kPrivacy))),
                         ]),
 
                         const SizedBox(height: 20),
@@ -382,9 +395,14 @@ class SettingScreen extends StatelessWidget {
       ThemeData theme,
       VoidCallback onTap, {
         bool isLogout = false,
+        String? trailingText,
       }) {
     return InkWell(
       onTap: onTap,
+      focusColor: Colors.transparent,
+      hoverColor: Colors.transparent,
+      highlightColor: Colors.transparent,
+      splashColor: Colors.green.withOpacity(0.1),
       borderRadius: BorderRadius.circular(16),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -416,6 +434,22 @@ class SettingScreen extends StatelessWidget {
                 color: theme.textTheme.bodyLarge?.color?.withOpacity(0.87),
               ),
             ),
+            const Spacer(),
+            if (trailingText != null) ...[
+              Text(
+                trailingText,
+                style: GoogleFonts.inter(
+                  fontSize: 13 * fontScale,
+                  color: Colors.grey,
+                ),
+              ),
+              const SizedBox(width: 6),
+            ],
+            Icon(
+              Icons.chevron_right,
+              size: 18,
+              color: Colors.grey.shade400,
+            ),
           ],
         ),
       ),
@@ -425,7 +459,7 @@ class SettingScreen extends StatelessWidget {
 
 // ── Static content strings ──────────────────────────────────────────────────
 
-const _kAboutUs = '''
+const kAboutUs = '''
 KAF8 is a European logistics marketplace that connects people who need to send parcels with trusted independent transporters.
 
 Founded to make last-mile delivery faster, simpler, and more transparent, KAF8 lets you place an order in seconds, track your parcel live on the map, and pay securely — all from your phone.
@@ -435,7 +469,7 @@ Our network of verified transporters covers France and is expanding across Europ
 Contact us: support@kaf8.fr
 ''';
 
-const _kTerms = '''
+const kTerms = '''
 Terms & Policies — KAF8
 
 1. Service
@@ -457,7 +491,7 @@ KAF8's liability is limited to the declared value of the parcel, up to the maxim
 KAF8 reserves the right to update these terms at any time. Continued use of the app constitutes acceptance of the updated terms.
 ''';
 
-const _kPrivacy = '''
+const kPrivacy = '''
 Privacy Policy — KAF8
 
 1. Data We Collect
@@ -481,10 +515,10 @@ For privacy-related requests: privacy@kaf8.fr
 
 // ── Simple static info screen ───────────────────────────────────────────────
 
-class _StaticInfoScreen extends StatelessWidget {
+class StaticInfoScreen extends StatelessWidget {
   final String title;
   final String content;
-  const _StaticInfoScreen({required this.title, required this.content});
+  const StaticInfoScreen({super.key, required this.title, required this.content});
 
   @override
   Widget build(BuildContext context) {

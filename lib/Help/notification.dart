@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../Service/api_service.dart';
+import '../Utils/notification_localizer.dart';
 import '../Utils/responsiveUtils.dart';
 
 class NotificationPage extends StatefulWidget {
@@ -37,7 +39,7 @@ class _NotificationPageState extends State<NotificationPage> {
     } else {
       _notifications.clear();
       _completed.clear();
-      _error = response['message']?.toString() ?? 'Unable to load notifications';
+      _error = response['message']?.toString() ?? 'unable_to_load_notifications'.tr;
     }
     setState(() => _isLoading = false);
   }
@@ -93,7 +95,7 @@ class _NotificationPageState extends State<NotificationPage> {
                         ),
                       ),
                       const Spacer(),
-                      Text("Notifications",
+                      Text('notifications_title'.tr,
                           style: GoogleFonts.inter(
                               fontSize: 17 * fontScale,
                               fontWeight: FontWeight.w600,
@@ -124,7 +126,7 @@ class _NotificationPageState extends State<NotificationPage> {
                           : _notifications.isEmpty
                               ? Center(
                                   child: Text(
-                                    "No notifications yet",
+                                    'no_notifications_yet'.tr,
                                     style: GoogleFonts.inter(color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6)),
                                   ),
                                 )
@@ -180,7 +182,7 @@ class _NotificationPageState extends State<NotificationPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text((notif['title'] ?? "Notification").toString(),
+                Text(localizeNotificationTitle(notif['title']),
                     style: GoogleFonts.inter(
                         fontSize: 13 * fontScale,
                         fontWeight: FontWeight.w700,
@@ -207,7 +209,7 @@ class _NotificationPageState extends State<NotificationPage> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text("Mark all as read",
+              Text('mark_all_as_read'.tr,
                   style: GoogleFonts.inter(
                       fontSize: 9 * fontScale,
                       color: theme.textTheme.bodySmall?.color?.withOpacity(0.5))),
@@ -225,7 +227,7 @@ class _NotificationPageState extends State<NotificationPage> {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    done ? "Completed" : "Mark as Complete",
+                    done ? 'completed'.tr : 'mark_as_complete'.tr,
                     style: GoogleFonts.inter(
                         fontSize: 9 * fontScale,
                         fontWeight: FontWeight.w500,
