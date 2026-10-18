@@ -87,6 +87,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "957544714439-8110duip85dnm79nnlhh9ec54enbjpv7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.main.kaf8",
+            "certificate_hash": "97f682672aabc25b7b6f69115441424b73c82371"
+          }
+        },
+        {
           "client_id": "957544714439-4rgleaviu0vpkv6rgdla4h9tc5himvq4.apps.googleusercontent.com",
           "client_type": 3
         }
