@@ -71,7 +71,7 @@
         <!-- Google Maps API Key -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyAo1Mbtb9XOCL6amHphKGuPvRsolX_6DvM"/>
+            android:value="AIzaSyDnK7Te_sinQVQI-gGid8TDOF90_r-3nnw"/>
 
         <!-- Firebase Messaging Default Notification Channel -->
         <meta-data
